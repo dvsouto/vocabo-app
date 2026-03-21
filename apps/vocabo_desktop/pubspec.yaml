@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  tray_manager: ^0.2.3
   vocabo_core:
     path: ../../packages/vocabo_core
   vocabo_api:
@@ -26,3 +27,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/
