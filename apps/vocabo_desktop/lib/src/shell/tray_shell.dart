@@ -1,19 +1,21 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:vocabo_desktop/src/providers/window_mode_provider.dart';
 
-class TrayShell extends StatefulWidget {
+class TrayShell extends ConsumerStatefulWidget {
   const TrayShell({super.key, required this.child});
 
   final Widget child;
 
   @override
-  State<TrayShell> createState() => _TrayShellState();
+  ConsumerState<TrayShell> createState() => _TrayShellState();
 }
 
-class _TrayShellState extends State<TrayShell>
+class _TrayShellState extends ConsumerState<TrayShell>
     with TrayListener, WindowListener {
   @override
   void initState() {
@@ -34,12 +36,12 @@ class _TrayShellState extends State<TrayShell>
     await trayManager.setIcon('assets/tray_icon.png');
     await trayManager.setToolTip('Vocabo');
 
+    // Right-click menu only for quit
     final menu = Menu(items: [
-      MenuItem(key: 'show', label: 'Show Vocabo'),
+      MenuItem(key: 'open', label: 'Open Vocabo'),
       MenuItem.separator(),
       MenuItem(key: 'quit', label: 'Quit'),
     ]);
-
     await trayManager.setContextMenu(menu);
   }
 
@@ -50,7 +52,8 @@ class _TrayShellState extends State<TrayShell>
 
   @override
   void onTrayIconMouseDown() {
-    trayManager.popUpContextMenu();
+    // Left click: toggle tray panel
+    ref.read(windowModeProvider.notifier).togglePanel();
   }
 
   @override
@@ -61,9 +64,8 @@ class _TrayShellState extends State<TrayShell>
   @override
   void onTrayMenuItemClick(MenuItem menuItem) {
     switch (menuItem.key) {
-      case 'show':
-        windowManager.show();
-        windowManager.focus();
+      case 'open':
+        ref.read(windowModeProvider.notifier).showDashboard();
         break;
       case 'quit':
         windowManager.setPreventClose(false);

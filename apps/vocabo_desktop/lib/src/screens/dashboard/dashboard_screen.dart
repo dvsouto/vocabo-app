@@ -4,7 +4,6 @@ import 'package:vocabo_desktop/src/data/mock_data.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/dashboard_sidebar.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/stats_section.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/vocabulary_list.dart';
-import 'package:vocabo_desktop/src/widgets/tray_panel/tray_panel.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -15,23 +14,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedNavIndex = 0;
-
-  void _showTrayPanel() {
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black26,
-      builder: (_) => const Align(
-        alignment: Alignment.topRight,
-        child: Padding(
-          padding: EdgeInsets.only(top: 40, right: 40),
-          child: Material(
-            color: Colors.transparent,
-            child: TrayPanel(),
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   size: 20,
                                   color: VocaboColors.neutral,
                                 ),
-                                onPressed: _showTrayPanel,
+                                onPressed: () {},
                               ),
                             ],
                           ),
