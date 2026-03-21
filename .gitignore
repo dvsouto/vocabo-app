@@ -1,0 +1,49 @@
+# Dart/Flutter
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Ignore lock files in packages only (libraries convention)
+packages/*/pubspec.lock
+
+# Melos pubspec overrides
+pubspec_overrides.yaml
+
+# Melos
+.melos/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+*.xcworkspace/
+*.xcuserdata/
+Pods/
+
+# Android
+**/android/.gradle/
+**/android/local.properties
+**/android/key.properties
+**/android/*.jks
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+
+# Generated
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Environment
+.env
+.env.*

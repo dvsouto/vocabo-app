@@ -1,0 +1,28 @@
+name: vocabo_mobile
+description: Vocabo mobile app for iOS and Android
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.3
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  vocabo_core:
+    path: ../../packages/vocabo_core
+  vocabo_api:
+    path: ../../packages/vocabo_api
+  vocabo_ui:
+    path: ../../packages/vocabo_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

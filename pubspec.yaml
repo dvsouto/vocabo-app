@@ -1,0 +1,83 @@
+name: vocabo_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.11.3
+
+workspace:
+  - apps/vocabo_mobile
+  - apps/vocabo_desktop
+  - packages/vocabo_core
+  - packages/vocabo_api
+  - packages/vocabo_ui
+
+dev_dependencies:
+  melos: ^7.4.1
+
+melos:
+  name: vocabo
+
+  command:
+    bootstrap:
+      usePubspecOverrides: true
+
+  scripts:
+    analyze:
+      description: Run dart analyze in all packages
+      run: dart analyze .
+      exec:
+        concurrency: 5
+
+    format:
+      description: Format all Dart files
+      run: dart format .
+
+    format:check:
+      description: Check formatting without modifying files
+      run: dart format --set-exit-if-changed .
+
+    test:
+      description: Run tests in all packages
+      run: flutter test
+      exec:
+        concurrency: 3
+      packageFilters:
+        dirExists: test
+
+    test:core:
+      description: Run tests only in vocabo_core
+      run: dart test
+      packageFilters:
+        scope: vocabo_core
+
+    clean:
+      description: Clean all packages
+      run: flutter clean
+      exec:
+        concurrency: 5
+
+    build:mobile:ios:
+      description: Build mobile app for iOS
+      run: flutter build ios
+      packageFilters:
+        scope: vocabo_mobile
+
+    build:mobile:android:
+      description: Build mobile app for Android
+      run: flutter build apk
+      packageFilters:
+        scope: vocabo_mobile
+
+    build:desktop:macos:
+      description: Build desktop app for macOS
+      run: flutter build macos
+      packageFilters:
+        scope: vocabo_desktop
+
+    gen:
+      description: Run build_runner in packages that use it
+      run: dart run build_runner build --delete-conflicting-outputs
+      exec:
+        concurrency: 1
+      packageFilters:
+        dependsOn: build_runner

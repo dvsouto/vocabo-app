@@ -1,0 +1,20 @@
+name: vocabo_ui
+description: Shared design system, theme, and widgets for Vocabo
+publish_to: none
+version: 0.0.1
+
+environment:
+  sdk: ^3.11.3
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  vocabo_core:
+    path: ../vocabo_core
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

@@ -1,0 +1,1 @@
+library vocabo_core;
