@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_desktop/src/app.dart';
 
+// Keep tray panel entry point in the compilation unit
+export 'package:vocabo_desktop/tray_panel_main.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
