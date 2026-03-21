@@ -12,6 +12,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
+  google_fonts: ^6.2.1
   vocabo_core:
     path: ../vocabo_core
 
