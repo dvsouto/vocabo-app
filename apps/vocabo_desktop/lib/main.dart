@@ -8,7 +8,7 @@ void main() async {
   await windowManager.ensureInitialized();
   await windowManager.setPreventClose(true);
   await windowManager.setTitle('Vocabo');
-  await windowManager.setMinimumSize(const Size(900, 600));
+  await windowManager.setMinimumSize(const Size(1280, 800));
   await windowManager.setSize(const Size(1280, 800));
   await windowManager.setTitleBarStyle(
     TitleBarStyle.hidden,

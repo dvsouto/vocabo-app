@@ -36,7 +36,6 @@ class _TrayShellState extends ConsumerState<TrayShell>
     await trayManager.setIcon('assets/tray_icon.png');
     await trayManager.setToolTip('Vocabo');
 
-    // Right-click menu only for quit
     final menu = Menu(items: [
       MenuItem(key: 'open', label: 'Open Vocabo'),
       MenuItem.separator(),
@@ -52,8 +51,7 @@ class _TrayShellState extends ConsumerState<TrayShell>
 
   @override
   void onTrayIconMouseDown() {
-    // Left click: toggle tray panel
-    ref.read(windowModeProvider.notifier).togglePanel();
+    _toggleTrayPanel();
   }
 
   @override
@@ -65,12 +63,34 @@ class _TrayShellState extends ConsumerState<TrayShell>
   void onTrayMenuItemClick(MenuItem menuItem) {
     switch (menuItem.key) {
       case 'open':
-        ref.read(windowModeProvider.notifier).showDashboard();
+        _showMainWindow();
         break;
       case 'quit':
         windowManager.setPreventClose(false);
         exit(0);
     }
+  }
+
+  Future<void> _toggleTrayPanel() async {
+    final isVisible = ref.read(trayPanelVisibleProvider);
+
+    if (isVisible) {
+      ref.read(trayPanelVisibleProvider.notifier).state = false;
+    } else {
+      // Ensure main window is visible first
+      final windowVisible = await windowManager.isVisible();
+      if (!windowVisible) {
+        await windowManager.show();
+        await windowManager.focus();
+      }
+      ref.read(trayPanelVisibleProvider.notifier).state = true;
+    }
+  }
+
+  Future<void> _showMainWindow() async {
+    ref.read(trayPanelVisibleProvider.notifier).state = false;
+    await windowManager.show();
+    await windowManager.focus();
   }
 
   @override
