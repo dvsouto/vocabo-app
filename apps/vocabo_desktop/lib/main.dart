@@ -1,8 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:tray_manager/tray_manager.dart';
+import 'package:window_manager/window_manager.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
+
+  await windowManager.setPreventClose(true);
+
   runApp(const MyApp());
 }
 
@@ -30,17 +37,20 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with TrayListener {
+class _MyHomePageState extends State<MyHomePage>
+    with TrayListener, WindowListener {
   @override
   void initState() {
     super.initState();
     trayManager.addListener(this);
+    windowManager.addListener(this);
     _initTray();
   }
 
   @override
   void dispose() {
     trayManager.removeListener(this);
+    windowManager.removeListener(this);
     super.dispose();
   }
 
@@ -58,6 +68,11 @@ class _MyHomePageState extends State<MyHomePage> with TrayListener {
   }
 
   @override
+  void onWindowClose() {
+    windowManager.hide();
+  }
+
+  @override
   void onTrayIconMouseDown() {
     trayManager.popUpContextMenu();
   }
@@ -71,10 +86,13 @@ class _MyHomePageState extends State<MyHomePage> with TrayListener {
   void onTrayMenuItemClick(MenuItem menuItem) {
     switch (menuItem.key) {
       case 'show':
-        // TODO: bring window to front
+        windowManager.show();
+        windowManager.focus();
         break;
       case 'quit':
-        // TODO: quit app
+        windowManager.setPreventClose(false);
+        windowManager.close();
+        exit(0);
         break;
     }
   }
