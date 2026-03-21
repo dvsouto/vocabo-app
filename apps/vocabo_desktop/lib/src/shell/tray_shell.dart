@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:vocabo_desktop/src/providers/window_mode_provider.dart';
 
 class TrayShell extends ConsumerStatefulWidget {
   const TrayShell({super.key, required this.child});
@@ -17,6 +17,8 @@ class TrayShell extends ConsumerStatefulWidget {
 
 class _TrayShellState extends ConsumerState<TrayShell>
     with TrayListener, WindowListener {
+  static const _trayPanelChannel = MethodChannel('vocabo/tray_panel');
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +65,8 @@ class _TrayShellState extends ConsumerState<TrayShell>
   void onTrayMenuItemClick(MenuItem menuItem) {
     switch (menuItem.key) {
       case 'open':
-        _showMainWindow();
+        windowManager.show();
+        windowManager.focus();
         break;
       case 'quit':
         windowManager.setPreventClose(false);
@@ -72,25 +75,22 @@ class _TrayShellState extends ConsumerState<TrayShell>
   }
 
   Future<void> _toggleTrayPanel() async {
-    final isVisible = ref.read(trayPanelVisibleProvider);
-
-    if (isVisible) {
-      ref.read(trayPanelVisibleProvider.notifier).state = false;
-    } else {
-      // Ensure main window is visible first
-      final windowVisible = await windowManager.isVisible();
-      if (!windowVisible) {
-        await windowManager.show();
-        await windowManager.focus();
+    try {
+      final bounds = await trayManager.getBounds();
+      if (bounds != null) {
+        await _trayPanelChannel.invokeMethod('toggle', {
+          'x': bounds.left,
+          'y': bounds.top,
+        });
+      } else {
+        await _trayPanelChannel.invokeMethod('toggle', {
+          'x': 0.0,
+          'y': 0.0,
+        });
       }
-      ref.read(trayPanelVisibleProvider.notifier).state = true;
+    } catch (e) {
+      debugPrint('TrayPanel toggle error: $e');
     }
-  }
-
-  Future<void> _showMainWindow() async {
-    ref.read(trayPanelVisibleProvider.notifier).state = false;
-    await windowManager.show();
-    await windowManager.focus();
   }
 
   @override
