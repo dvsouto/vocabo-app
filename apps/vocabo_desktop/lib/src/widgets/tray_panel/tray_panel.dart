@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/data/mock_data.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
@@ -13,6 +14,8 @@ class TrayPanel extends StatefulWidget {
 }
 
 class _TrayPanelState extends State<TrayPanel> {
+  static const _channel = MethodChannel('vocabo/tray_panel_actions');
+
   final _searchController = TextEditingController();
   String _searchText = '';
 
@@ -20,6 +23,40 @@ class _TrayPanelState extends State<TrayPanel> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _openApp() {
+    if (widget.onOpenDashboard != null) {
+      widget.onOpenDashboard!();
+    } else {
+      _channel.invokeMethod('openApp');
+    }
+  }
+
+  void _confirmQuit() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Quit Vocabo'),
+        content: const Text('Are you sure you want to quit?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _channel.invokeMethod('quitApp');
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Quit'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -44,30 +81,21 @@ class _TrayPanelState extends State<TrayPanel> {
             children: [
               Text('Vocabo', style: VocaboTypography.titleLg),
               const Spacer(),
-              if (widget.onOpenDashboard != null)
-                IconButton(
-                  icon: const Icon(Icons.open_in_new, size: 18),
-                  color: VocaboColors.neutral,
-                  tooltip: 'Open Dashboard',
-                  onPressed: widget.onOpenDashboard,
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                ),
               IconButton(
-                icon: const Icon(Icons.history, size: 20),
+                icon: const Icon(Icons.open_in_new, size: 18),
                 color: VocaboColors.neutral,
-                onPressed: () {},
+                tooltip: 'Open Dashboard',
+                onPressed: _openApp,
                 constraints: const BoxConstraints(
                   minWidth: 32,
                   minHeight: 32,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.volume_up, size: 20),
+                icon: const Icon(Icons.power_settings_new, size: 20),
                 color: VocaboColors.neutral,
-                onPressed: () {},
+                tooltip: 'Quit Vocabo',
+                onPressed: _confirmQuit,
                 constraints: const BoxConstraints(
                   minWidth: 32,
                   minHeight: 32,
@@ -128,6 +156,14 @@ class _TrayPanelState extends State<TrayPanel> {
           ),
           const SizedBox(height: VocaboSpacing.sm),
 
+          // View Vocabulary button
+          VocaboSecondaryButton(
+            label: 'View Vocabulary',
+            isExpanded: true,
+            onPressed: _openApp,
+          ),
+          const SizedBox(height: VocaboSpacing.sm),
+
           // Add new word button
           VocaboPrimaryButton(
             label: 'Add New Word',
@@ -137,7 +173,7 @@ class _TrayPanelState extends State<TrayPanel> {
               color: VocaboColors.onPrimary,
               size: 18,
             ),
-            onPressed: () {},
+            onPressed: _openApp,
           ),
         ],
       ),

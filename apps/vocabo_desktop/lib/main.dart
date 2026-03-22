@@ -34,7 +34,7 @@ void trayPanelMain() {
       debugShowCheckedModeBanner: false,
       theme: VocaboTheme.light(),
       home: const Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: VocaboColors.surfaceContainerLowest,
         body: TrayPanel(),
       ),
     ),

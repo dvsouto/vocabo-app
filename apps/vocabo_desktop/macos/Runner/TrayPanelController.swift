@@ -136,6 +136,29 @@ class TrayPanelController {
         flutterEngine = engine
         flutterVC = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
 
+        // Setup actions channel on the secondary engine
+        let actionsChannel = FlutterMethodChannel(
+            name: "vocabo/tray_panel_actions",
+            binaryMessenger: engine.binaryMessenger
+        )
+        actionsChannel.setMethodCallHandler { [weak self] call, result in
+            NSLog("[Vocabo] TrayPanelController: Action received: %@", call.method)
+            switch call.method {
+            case "openApp":
+                self?.hide()
+                if let mainWindow = NSApp.windows.first(where: { $0 is MainFlutterWindow }) {
+                    mainWindow.makeKeyAndOrderFront(nil)
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                result(nil)
+            case "quitApp":
+                NSApp.terminate(nil)
+                result(nil)
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 340, height: 500),
             styleMask: [.titled, .fullSizeContentView],
