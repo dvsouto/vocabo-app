@@ -18,6 +18,7 @@ class TrayShell extends ConsumerStatefulWidget {
 class _TrayShellState extends ConsumerState<TrayShell>
     with TrayListener, WindowListener {
   static const _trayPanelChannel = MethodChannel('vocabo/tray_panel');
+  DateTime _lastToggle = DateTime(2000);
 
   @override
   void initState() {
@@ -75,19 +76,20 @@ class _TrayShellState extends ConsumerState<TrayShell>
   }
 
   Future<void> _toggleTrayPanel() async {
+    // Debounce: ignore toggles within 300ms to prevent double-fire
+    final now = DateTime.now();
+    if (now.difference(_lastToggle).inMilliseconds < 300) return;
+    _lastToggle = now;
+
     try {
       final bounds = await trayManager.getBounds();
-      if (bounds != null) {
-        await _trayPanelChannel.invokeMethod('toggle', {
-          'x': bounds.left,
-          'y': bounds.top,
-        });
-      } else {
-        await _trayPanelChannel.invokeMethod('toggle', {
-          'x': 0.0,
-          'y': 0.0,
-        });
-      }
+      final x = bounds?.left ?? 0.0;
+      final y = bounds?.top ?? 0.0;
+      debugPrint('TrayPanel toggle: bounds=$bounds, sending x=$x, y=$y');
+      await _trayPanelChannel.invokeMethod('toggle', {
+        'x': x,
+        'y': y,
+      });
     } catch (e) {
       debugPrint('TrayPanel toggle error: $e');
     }

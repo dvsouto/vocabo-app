@@ -10,6 +10,10 @@ class MainFlutterWindow: NSWindow {
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
+    // Setup tray panel controller here — engine is guaranteed to exist
+    NSLog("[Vocabo] MainFlutterWindow: Setting up TrayPanelController")
+    TrayPanelController.shared.setup(mainEngine: flutterViewController.engine)
+
     super.awakeFromNib()
   }
 }

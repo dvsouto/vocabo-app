@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/app.dart';
-
-// Keep tray panel entry point in the compilation unit
-export 'package:vocabo_desktop/tray_panel_main.dart';
+import 'package:vocabo_desktop/src/widgets/tray_panel/tray_panel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +21,22 @@ void main() async {
   runApp(
     const ProviderScope(
       child: VocaboDesktopApp(),
+    ),
+  );
+}
+
+@pragma('vm:entry-point')
+void trayPanelMain() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: VocaboTheme.light(),
+      home: const Scaffold(
+        backgroundColor: Colors.transparent,
+        body: TrayPanel(),
+      ),
     ),
   );
 }
