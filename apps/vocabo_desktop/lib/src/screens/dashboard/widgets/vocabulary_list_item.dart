@@ -27,17 +27,23 @@ class VocabularyListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Audio button
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: VocaboColors.primary,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.volume_up,
-              color: VocaboColors.onPrimary,
-              size: 20,
+          GestureDetector(
+            onTap: () {
+              // TODO: play TTS pronunciation
+              debugPrint('Play audio: ${vocabulary.term}');
+            },
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: VocaboColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.volume_up,
+                color: VocaboColors.onPrimary,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: VocaboSpacing.md),

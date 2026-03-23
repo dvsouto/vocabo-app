@@ -23,17 +23,23 @@ class TrayWordItem extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: VocaboColors.surfaceContainerLow,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.volume_up,
-                  size: 14,
-                  color: VocaboColors.primary,
+              GestureDetector(
+                onTap: () {
+                  // TODO: play TTS pronunciation
+                  debugPrint('Play audio: ${vocabulary.term}');
+                },
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: VocaboColors.surfaceContainerLow,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.volume_up,
+                    size: 14,
+                    color: VocaboColors.primary,
+                  ),
                 ),
               ),
             ],

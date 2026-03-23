@@ -109,6 +109,7 @@ class _TrayPanelState extends State<TrayPanel> {
           VocaboSearchField(
             controller: _searchController,
             hint: 'Search words...',
+            autofocus: true,
             onChanged: (v) => setState(() => _searchText = v),
           ),
 
