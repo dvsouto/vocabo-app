@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
@@ -238,6 +239,8 @@ class AddWordNotifier extends Notifier<AddWordState> {
     state = state.copyWith(isSaving: true);
 
     try {
+      final usageExamples = _buildUsageExamples();
+
       final currentHash = computeVocabularyHash(
         term: state.term,
         language: state.language,
@@ -246,7 +249,7 @@ class AddWordNotifier extends Notifier<AddWordState> {
         wordType: state.wordType?.value,
         pronunciation: state.pronunciation,
         ttsPronunciation: state.ttsPronunciation,
-        usageExamples: _buildUsageExamples(),
+        usageExamples: usageExamples,
       );
 
       final data = {
@@ -257,11 +260,14 @@ class AddWordNotifier extends Notifier<AddWordState> {
         'word_type': state.wordType?.value ?? 'noun',
         'pronunciation': state.pronunciation ?? '',
         'tts_pronunciation': state.ttsPronunciation ?? '',
-        'usage_examples': _buildUsageExamples(),
+        'usage_examples': usageExamples,
         'content_hash': state.autoDetect
             ? (state.backendHash ?? currentHash)
             : currentHash,
       };
+
+      debugPrint('[AddWord] save() - sending data: $data');
+      debugPrint('[AddWord] save() - autoDetect: ${state.autoDetect}, backendHash: ${state.backendHash}, currentHash: $currentHash');
 
       await ref
           .read(userVocabularyListProvider.notifier)
@@ -269,7 +275,13 @@ class AddWordNotifier extends Notifier<AddWordState> {
 
       state = state.copyWith(isSaving: false);
       return true;
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[AddWord] save() - ERROR: $e');
+      debugPrint('[AddWord] save() - Stack: $st');
+      if (e is DioException) {
+        debugPrint('[AddWord] save() - DioException status: ${e.response?.statusCode}');
+        debugPrint('[AddWord] save() - DioException body: ${e.response?.data}');
+      }
       state = state.copyWith(
         isSaving: false,
         errorMessage: () => e is DioException && e.response?.statusCode == 409

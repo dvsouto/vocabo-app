@@ -5,18 +5,18 @@ abstract final class MockDashboardData {
   static const int wordsThisWeek = 42;
 
   static final vocabularies = [
-    const Vocabulary(
+    Vocabulary(
       id: '1',
       term: 'Ephemeral',
       language: 'en',
       wordType: WordType.adjective,
       meaning: 'Lasting for a very short time.',
       pronunciation: '/ɪˈfem.ər.əl/',
-      usageExamples: UsageExamples(
-        sourceLang: ['"The ephemeral joys of summer."'],
-      ),
+      usageExamples: UsageExamples.fromJson({
+        'English': ['"The ephemeral joys of summer."'],
+      }),
     ),
-    const Vocabulary(
+    Vocabulary(
       id: '2',
       term: 'Sonder',
       language: 'en',
@@ -24,13 +24,13 @@ abstract final class MockDashboardData {
       meaning:
           'The realization that each random passerby is living a life as vivid and complex as your own.',
       pronunciation: '/ˈsɒn.dər/',
-      usageExamples: UsageExamples(
-        sourceLang: [
+      usageExamples: UsageExamples.fromJson({
+        'English': [
           '"Walking through the terminal, he felt a deep sense of sonder."'
         ],
-      ),
+      }),
     ),
-    const Vocabulary(
+    Vocabulary(
       id: '3',
       term: 'Petrichor',
       language: 'en',
@@ -38,9 +38,9 @@ abstract final class MockDashboardData {
       meaning:
           'A pleasant smell that frequently accompanies the first rain after a long period of warm, dry weather.',
       pronunciation: '/ˈpet.rɪ.kɔːr/',
-      usageExamples: UsageExamples(
-        sourceLang: ['"Other than the petrichor, the air was still."'],
-      ),
+      usageExamples: UsageExamples.fromJson({
+        'English': ['"Other than the petrichor, the air was still."'],
+      }),
     ),
   ];
 

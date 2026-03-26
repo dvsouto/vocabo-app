@@ -1,26 +1,40 @@
 import 'package:equatable/equatable.dart';
-import 'package:json_annotation/json_annotation.dart';
 
-part 'usage_examples.g.dart';
-
-@JsonSerializable()
 class UsageExamples extends Equatable {
-  @JsonKey(name: 'source_lang', defaultValue: [])
-  final List<String> sourceLang;
+  final Map<String, List<String>> _data;
 
-  @JsonKey(name: 'target_lang', defaultValue: [])
-  final List<String> targetLang;
+  const UsageExamples._(this._data);
 
-  const UsageExamples({
-    this.sourceLang = const [],
-    this.targetLang = const [],
-  });
+  factory UsageExamples.fromJson(Map<String, dynamic> json) {
+    final data = <String, List<String>>{};
+    for (final entry in json.entries) {
+      if (entry.value is List) {
+        data[entry.key] = (entry.value as List)
+            .map((e) => e.toString())
+            .toList(growable: false);
+      }
+    }
+    return UsageExamples._(data);
+  }
 
-  factory UsageExamples.fromJson(Map<String, dynamic> json) =>
-      _$UsageExamplesFromJson(json);
+  Map<String, dynamic> toJson() {
+    return _data.map((key, value) => MapEntry(key, value));
+  }
 
-  Map<String, dynamic> toJson() => _$UsageExamplesToJson(this);
+  List<String> get sourceLang {
+    if (_data.isEmpty) return const [];
+    return _data.values.first;
+  }
+
+  List<String> get targetLang {
+    if (_data.length < 2) return const [];
+    return _data.values.elementAt(1);
+  }
+
+  List<String> operator [](String key) => _data[key] ?? const [];
+
+  Map<String, List<String>> get entries => _data;
 
   @override
-  List<Object?> get props => [sourceLang, targetLang];
+  List<Object?> get props => [_data];
 }
