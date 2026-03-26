@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
-import 'package:vocabo_desktop/src/data/mock_data.dart';
+import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/dashboard_sidebar.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/stats_section.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/vocabulary_list.dart';
+import 'package:vocabo_desktop/src/widgets/add_word_modal/add_word_modal.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -46,109 +48,158 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     final searchResults = ref.watch(searchResultsProvider);
     final query = ref.watch(searchQueryProvider);
+    final showModal = ref.watch(showAddWordModalProvider);
+    final initialTerm = ref.watch(addWordInitialTermProvider);
+    final vocabList = ref.watch(userVocabularyListProvider);
 
     return Scaffold(
       backgroundColor: VocaboColors.surface,
-      body: Row(
+      body: Stack(
         children: [
-          DashboardSidebar(
-            selectedIndex: _selectedNavIndex,
-            onNavTap: (i) => setState(() => _selectedNavIndex = i),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(VocaboSpacing.xl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'My Library',
-                              style: VocaboTypography.headlineSm,
-                            ),
-                            const SizedBox(height: VocaboSpacing.xs),
-                            Text(
-                              'Curating your intellectual vocabulary.',
-                              style: VocaboTypography.bodyMd.copyWith(
-                                color: VocaboColors.neutral,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 320,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            VocaboSearchField(
-                              controller: _searchController,
-                              focusNode: _searchFocusNode,
-                              hint: 'Quick search words...',
-                              onChanged: (v) => ref
-                                  .read(searchQueryProvider.notifier)
-                                  .state = v,
-                              suffixActions: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.tune,
-                                      size: 20,
-                                      color: VocaboColors.neutral,
-                                    ),
-                                    onPressed: () {},
+          Row(
+            children: [
+              DashboardSidebar(
+                selectedIndex: _selectedNavIndex,
+                onNavTap: (i) => setState(() => _selectedNavIndex = i),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.all(VocaboSpacing.xl)
+                          .copyWith(bottom: 0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'My Library',
+                                  style: VocaboTypography.headlineSm,
+                                ),
+                                const SizedBox(height: VocaboSpacing.xs),
+                                Text(
+                                  'Curating your intellectual vocabulary.',
+                                  style: VocaboTypography.bodyMd.copyWith(
+                                    color: VocaboColors.neutral,
                                   ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.more_vert,
-                                      size: 20,
-                                      color: VocaboColors.neutral,
-                                    ),
-                                    onPressed: () {},
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 320,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                VocaboSearchField(
+                                  controller: _searchController,
+                                  focusNode: _searchFocusNode,
+                                  hint: 'Quick search words...',
+                                  onChanged: (v) => ref
+                                      .read(searchQueryProvider.notifier)
+                                      .state = v,
+                                  suffixActions: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.tune,
+                                          size: 20,
+                                          color: VocaboColors.neutral,
+                                        ),
+                                        onPressed: () {},
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.more_vert,
+                                          size: 20,
+                                          color: VocaboColors.neutral,
+                                        ),
+                                        onPressed: () {},
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (_showDropdown &&
+                                    query.isNotEmpty &&
+                                    searchResults.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  SearchAutocompleteDropdown(
+                                    results: searchResults.take(8).toList(),
+                                    onSelected: (result) {
+                                      _searchController.text = result.word;
+                                      ref
+                                          .read(searchQueryProvider.notifier)
+                                          .state = result.word;
+                                    },
                                   ),
                                 ],
-                              ),
+                              ],
                             ),
-                            if (_showDropdown &&
-                                query.isNotEmpty &&
-                                searchResults.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              SearchAutocompleteDropdown(
-                                results: searchResults.take(8).toList(),
-                                onSelected: (result) {
-                                  _searchController.text = result.word;
-                                  ref
-                                      .read(searchQueryProvider.notifier)
-                                      .state = result.word;
-                                },
-                              ),
-                            ],
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: VocaboSpacing.xl),
+
+                    // Stats
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: VocaboSpacing.xl,
+                      ),
+                      child: StatsSection(),
+                    ),
+                    const SizedBox(height: VocaboSpacing.xl),
+
+                    // Vocabulary list with infinite scroll
+                    Expanded(
+                      child: vocabList.when(
+                        data: (vocabularies) => VocabularyList(
+                          userVocabularies: vocabularies,
+                          onLoadMore: () => ref
+                              .read(userVocabularyListProvider.notifier)
+                              .loadMore(),
+                          hasMore: ref
+                              .read(userVocabularyListProvider.notifier)
+                              .hasMore,
+                        ),
+                        loading: () => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        error: (e, _) => Center(
+                          child: Text(
+                            'Failed to load vocabulary',
+                            style: VocaboTypography.bodyMd.copyWith(
+                              color: VocaboColors.neutral,
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: VocaboSpacing.xl),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
 
-                  // Stats
-                  const StatsSection(),
-                  const SizedBox(height: VocaboSpacing.xl),
-
-                  // Vocabulary list
-                  VocabularyList(
-                    vocabularies: MockDashboardData.vocabularies,
-                  ),
-                ],
+          // Modal overlay
+          if (showModal) ...[
+            GestureDetector(
+              onTap: () {
+                ref.read(addWordNotifierProvider.notifier).reset();
+                ref.read(showAddWordModalProvider.notifier).state = false;
+              },
+              child: Container(
+                color: Colors.black54,
               ),
             ),
-          ),
+            AddWordModal(
+              initialTerm: initialTerm.isNotEmpty ? initialTerm : null,
+            ),
+          ],
         ],
       ),
     );

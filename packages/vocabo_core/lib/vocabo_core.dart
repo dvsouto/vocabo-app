@@ -4,3 +4,4 @@ export 'src/enums/enums.dart';
 export 'src/exceptions/exceptions.dart';
 export 'src/models/models.dart';
 export 'src/search/search.dart';
+export 'src/utils/utils.dart';

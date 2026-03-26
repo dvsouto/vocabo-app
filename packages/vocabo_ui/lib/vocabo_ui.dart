@@ -20,11 +20,14 @@ export 'src/widgets/buttons/vocabo_social_auth_button.dart';
 
 // Widgets - Inputs
 export 'src/widgets/inputs/vocabo_text_field.dart';
+export 'src/widgets/inputs/vocabo_text_area.dart';
 export 'src/widgets/inputs/vocabo_search_field.dart';
+export 'src/widgets/inputs/vocabo_toggle_switch.dart';
 
 // Widgets - Chips
 export 'src/widgets/chips/vocabo_language_chip.dart';
 export 'src/widgets/chips/vocabo_tag_chip.dart';
+export 'src/widgets/chips/vocabo_selectable_chip.dart';
 
 // Widgets - Navigation
 export 'src/widgets/navigation/vocabo_nav_item.dart';

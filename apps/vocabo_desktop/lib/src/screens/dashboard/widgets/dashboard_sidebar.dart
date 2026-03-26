@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 
-class DashboardSidebar extends StatelessWidget {
+class DashboardSidebar extends ConsumerWidget {
   const DashboardSidebar({
     super.key,
     required this.selectedIndex,
@@ -21,7 +23,7 @@ class DashboardSidebar extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: 240,
       color: _sidebarBackground,
@@ -58,7 +60,10 @@ class DashboardSidebar extends StatelessWidget {
           VocaboPrimaryButton(
             label: '+ Add New Word',
             isExpanded: true,
-            onPressed: () {},
+            onPressed: () {
+              ref.read(addWordInitialTermProvider.notifier).state = '';
+              ref.read(showAddWordModalProvider.notifier).state = true;
+            },
           ),
         ],
       ),

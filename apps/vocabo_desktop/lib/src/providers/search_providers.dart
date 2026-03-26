@@ -10,12 +10,12 @@ final userWordsEngineProvider = FutureProvider<FuzzySearchEngine?>((ref) async {
   final api = ref.watch(apiClientProvider);
 
   try {
-    final userVocabs = await api.userVocabulary.getAll();
-    if (userVocabs.isEmpty) return null;
+    final response = await api.userVocabulary.getAll(limit: 100);
+    if (response.items.isEmpty) return null;
 
     final engine = FuzzySearchEngine();
     engine.load(
-      userVocabs
+      response.items
           .where((uv) => uv.vocabulary != null)
           .map((uv) => DictionaryWord(
                 word: uv.vocabulary!.term,
@@ -27,6 +27,17 @@ final userWordsEngineProvider = FutureProvider<FuzzySearchEngine?>((ref) async {
   } catch (_) {
     return null;
   }
+});
+
+final isTermInVocabularyProvider =
+    Provider.family<bool, String>((ref, term) {
+  if (term.isEmpty) return false;
+  final userEngine = ref.watch(userWordsEngineProvider).valueOrNull;
+  if (userEngine == null) return false;
+  final results = userEngine.search(term, limit: 1);
+  return results.isNotEmpty &&
+      results.first.word.toLowerCase() == term.toLowerCase() &&
+      results.first.score >= 1.0;
 });
 
 final searchServiceProvider = Provider<SearchService>((ref) {

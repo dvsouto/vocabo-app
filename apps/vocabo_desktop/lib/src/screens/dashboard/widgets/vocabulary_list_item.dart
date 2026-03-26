@@ -5,17 +5,24 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 class VocabularyListItem extends StatelessWidget {
   const VocabularyListItem({
     super.key,
-    required this.vocabulary,
-    required this.tags,
-    required this.lastPracticed,
+    required this.userVocabulary,
   });
 
-  final Vocabulary vocabulary;
-  final List<({String label, String variant})> tags;
-  final String lastPracticed;
+  final UserVocabulary userVocabulary;
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inDays == 0) return 'Today';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${date.day}/${date.month}/${date.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final vocabulary = userVocabulary.vocabulary!;
+
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
       decoration: BoxDecoration(
@@ -29,7 +36,6 @@ class VocabularyListItem extends StatelessWidget {
           // Audio button
           GestureDetector(
             onTap: () {
-              // TODO: play TTS pronunciation
               debugPrint('Play audio: ${vocabulary.term}');
             },
             child: Container(
@@ -88,24 +94,24 @@ class VocabularyListItem extends StatelessWidget {
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
-                  children: tags.map((tag) {
-                    return VocaboTagChip(
-                      label: tag.label,
-                      variant: switch (tag.variant) {
-                        'mastered' => TagChipVariant.mastered,
-                        'learning' => TagChipVariant.learning,
-                        _ => TagChipVariant.outlined,
-                      },
-                    );
-                  }).toList(),
+                  children: [
+                    VocaboTagChip(
+                      label: userVocabulary.vocabularyType == VocabularyType.custom
+                          ? 'CUSTOM'
+                          : 'LIBRARY',
+                      variant: userVocabulary.vocabularyType == VocabularyType.custom
+                          ? TagChipVariant.learning
+                          : TagChipVariant.outlined,
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
 
-          // Last practiced
+          // Date added
           Text(
-            lastPracticed,
+            _formatDate(userVocabulary.createdAt),
             style: VocaboTypography.bodySm.copyWith(
               color: VocaboColors.neutral,
             ),

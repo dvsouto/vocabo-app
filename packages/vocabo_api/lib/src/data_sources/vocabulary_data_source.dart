@@ -10,6 +10,7 @@ class VocabularyDataSource {
     required String sourceLang,
     required String targetLang,
     required String term,
+    CancelToken? cancelToken,
   }) async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/vocabulary/search',
@@ -18,6 +19,7 @@ class VocabularyDataSource {
         'target_lang': targetLang,
         'term': term,
       },
+      cancelToken: cancelToken,
     );
 
     return Vocabulary.fromJson(response.data!['data'] as Map<String, dynamic>);

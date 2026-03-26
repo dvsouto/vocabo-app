@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
-import 'package:vocabo_desktop/src/data/mock_data.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
 
@@ -33,6 +33,11 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
     } else {
       _channel.invokeMethod('openApp');
     }
+  }
+
+  void _openAddWord() {
+    final term = _searchController.text.trim();
+    _channel.invokeMethod('openAddWord', {'term': term});
   }
 
   void _confirmQuit() {
@@ -65,7 +70,10 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
   Widget build(BuildContext context) {
     final searchResults = ref.watch(searchResultsProvider);
     final query = ref.watch(searchQueryProvider);
-    final allWords = MockDashboardData.trayWords;
+    final recentWords = ref.watch(recentUserVocabulariesProvider);
+    final isInVocabulary = ref.watch(isTermInVocabularyProvider(query));
+
+    final showAddButton = query.isNotEmpty && !isInVocabulary;
 
     return Padding(
       padding: const EdgeInsets.all(VocaboSpacing.md),
@@ -125,35 +133,39 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
           // Recent words
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: allWords
-                    .take(3)
-                    .map((vocab) => TrayWordItem(vocabulary: vocab))
-                    .toList(),
+            child: recentWords.when(
+              data: (words) => SingleChildScrollView(
+                child: Column(
+                  children: words
+                      .where((uv) => uv.vocabulary != null)
+                      .map((uv) => TrayWordItem(vocabulary: uv.vocabulary!))
+                      .toList(),
+                ),
               ),
+              loading: () => const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (_, _) => const SizedBox.shrink(),
             ),
           ),
           const SizedBox(height: VocaboSpacing.sm),
 
-          // View Vocabulary button
-          VocaboSecondaryButton(
-            label: 'View Vocabulary',
-            isExpanded: true,
-            onPressed: _openApp,
-          ),
-          const SizedBox(height: VocaboSpacing.sm),
-
-          // Add new word button
+          // Single conditional button
           VocaboPrimaryButton(
-            label: 'Add New Word',
+            label: showAddButton ? 'Add New Word' : 'Dashboard',
             isExpanded: true,
-            trailing: const Icon(
-              Icons.add_circle_outline,
-              color: VocaboColors.onPrimary,
-              size: 18,
-            ),
-            onPressed: _openApp,
+            trailing: showAddButton
+                ? const Icon(
+                    Icons.add_circle_outline,
+                    color: VocaboColors.onPrimary,
+                    size: 18,
+                  )
+                : null,
+            onPressed: showAddButton ? _openAddWord : _openApp,
           ),
         ],
       ),

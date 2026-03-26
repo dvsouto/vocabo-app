@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 
 class TrayShell extends ConsumerStatefulWidget {
   const TrayShell({super.key, required this.child});
@@ -18,6 +19,8 @@ class TrayShell extends ConsumerStatefulWidget {
 class _TrayShellState extends ConsumerState<TrayShell>
     with TrayListener, WindowListener {
   static const _trayPanelChannel = MethodChannel('vocabo/tray_panel');
+  static const _trayActionsChannel =
+      MethodChannel('vocabo/tray_panel_actions');
   DateTime _lastToggle = DateTime(2000);
 
   @override
@@ -26,6 +29,26 @@ class _TrayShellState extends ConsumerState<TrayShell>
     trayManager.addListener(this);
     windowManager.addListener(this);
     _initTray();
+    _initTrayActionsHandler();
+  }
+
+  void _initTrayActionsHandler() {
+    _trayActionsChannel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'openAddWord':
+          final term = call.arguments?['term'] as String? ?? '';
+          ref.read(addWordInitialTermProvider.notifier).state = term;
+          ref.read(showAddWordModalProvider.notifier).state = true;
+          await windowManager.show();
+          await windowManager.focus();
+        case 'openApp':
+          await windowManager.show();
+          await windowManager.focus();
+        case 'quitApp':
+          await windowManager.setPreventClose(false);
+          exit(0);
+      }
+    });
   }
 
   @override

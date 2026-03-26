@@ -33,6 +33,9 @@ class Vocabulary extends Equatable {
   @JsonKey(name: 'updated_at')
   final DateTime? updatedAt;
 
+  @JsonKey(name: 'content_hash')
+  final String? contentHash;
+
   const Vocabulary({
     required this.id,
     required this.term,
@@ -45,6 +48,7 @@ class Vocabulary extends Equatable {
     this.usageExamples,
     this.createdAt,
     this.updatedAt,
+    this.contentHash,
   });
 
   factory Vocabulary.fromJson(Map<String, dynamic> json) =>
@@ -65,5 +69,6 @@ class Vocabulary extends Equatable {
         usageExamples,
         createdAt,
         updatedAt,
+        contentHash,
       ];
 }
