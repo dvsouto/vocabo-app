@@ -58,19 +58,31 @@ melos:
 
     build:mobile:ios:
       description: Build mobile app for iOS
-      run: flutter build ios
+      run: flutter build ios --dart-define-from-file=.env
       packageFilters:
         scope: vocabo_mobile
 
     build:mobile:android:
       description: Build mobile app for Android
-      run: flutter build apk
+      run: flutter build apk --dart-define-from-file=.env
+      packageFilters:
+        scope: vocabo_mobile
+
+    run:desktop:
+      description: Run desktop app with env vars
+      run: flutter run --dart-define-from-file=.env
+      packageFilters:
+        scope: vocabo_desktop
+
+    run:mobile:
+      description: Run mobile app with env vars
+      run: flutter run --dart-define-from-file=.env
       packageFilters:
         scope: vocabo_mobile
 
     build:desktop:macos:
       description: Build desktop app for macOS
-      run: flutter build macos
+      run: flutter build macos --dart-define-from-file=.env
       packageFilters:
         scope: vocabo_desktop
 

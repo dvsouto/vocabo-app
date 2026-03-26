@@ -6,7 +6,7 @@ void main() {
 
   setUp(() {
     apiClient = VocaboApiClient(
-      baseUrl: 'http://localhost:3000',
+      baseUrl: 'http://localhost:3080',
       tokenStorage: InMemoryTokenStorage(),
     );
   });

@@ -6,6 +6,7 @@ class VocaboSearchField extends StatelessWidget {
   const VocaboSearchField({
     super.key,
     this.controller,
+    this.focusNode,
     this.hint,
     this.onChanged,
     this.suffixActions,
@@ -13,6 +14,7 @@ class VocaboSearchField extends StatelessWidget {
   });
 
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final String? hint;
   final ValueChanged<String>? onChanged;
   final Widget? suffixActions;
@@ -22,6 +24,7 @@ class VocaboSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       onChanged: onChanged,
       autofocus: autofocus,
       decoration: InputDecoration(

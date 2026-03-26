@@ -14,6 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^9.2.4
+  path_provider: ^2.1.0
   tray_manager: ^0.2.3
   window_manager: ^0.4.3
   vocabo_core:

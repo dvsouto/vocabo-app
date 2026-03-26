@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/data/mock_data.dart';
+import 'package:vocabo_desktop/src/providers/search_providers.dart';
+import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
 
-class TrayPanel extends StatefulWidget {
+class TrayPanel extends ConsumerStatefulWidget {
   const TrayPanel({super.key, this.onOpenDashboard});
 
   final VoidCallback? onOpenDashboard;
 
   @override
-  State<TrayPanel> createState() => _TrayPanelState();
+  ConsumerState<TrayPanel> createState() => _TrayPanelState();
 }
 
-class _TrayPanelState extends State<TrayPanel> {
+class _TrayPanelState extends ConsumerState<TrayPanel> {
   static const _channel = MethodChannel('vocabo/tray_panel_actions');
 
   final _searchController = TextEditingController();
-  String _searchText = '';
 
   @override
   void dispose() {
@@ -61,15 +63,9 @@ class _TrayPanelState extends State<TrayPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final searchResults = ref.watch(searchResultsProvider);
+    final query = ref.watch(searchQueryProvider);
     final allWords = MockDashboardData.trayWords;
-    final matchedWord = _searchText.isNotEmpty
-        ? allWords
-            .where(
-              (v) =>
-                  v.term.toLowerCase().startsWith(_searchText.toLowerCase()),
-            )
-            .firstOrNull
-        : null;
 
     return Padding(
       padding: const EdgeInsets.all(VocaboSpacing.md),
@@ -110,34 +106,19 @@ class _TrayPanelState extends State<TrayPanel> {
             controller: _searchController,
             hint: 'Search words...',
             autofocus: true,
-            onChanged: (v) => setState(() => _searchText = v),
+            onChanged: (v) =>
+                ref.read(searchQueryProvider.notifier).state = v,
           ),
 
-          // Autocomplete suggestion
-          if (matchedWord != null && _searchText.isNotEmpty) ...[
+          // Autocomplete suggestions
+          if (query.isNotEmpty && searchResults.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: VocaboColors.surfaceContainerLow,
-                borderRadius: VocaboRadius.sm,
-              ),
-              child: Row(
-                children: [
-                  Text(matchedWord.term, style: VocaboTypography.bodyMd),
-                  const Spacer(),
-                  Text(
-                    matchedWord.wordType.value.substring(0, 3).toUpperCase(),
-                    style: VocaboTypography.labelSm.copyWith(
-                      color: VocaboColors.neutral,
-                    ),
-                  ),
-                ],
-              ),
+            SearchAutocompleteDropdown(
+              results: searchResults.take(5).toList(),
+              onSelected: (result) {
+                _searchController.text = result.word;
+                ref.read(searchQueryProvider.notifier).state = result.word;
+              },
             ),
           ],
           const SizedBox(height: VocaboSpacing.sm),
@@ -147,8 +128,6 @@ class _TrayPanelState extends State<TrayPanel> {
             child: SingleChildScrollView(
               child: Column(
                 children: allWords
-                    .where(
-                        (v) => v.id != matchedWord?.id || _searchText.isEmpty)
                     .take(3)
                     .map((vocab) => TrayWordItem(vocabulary: vocab))
                     .toList(),
