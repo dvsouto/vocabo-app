@@ -3,9 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
-import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
-import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
 
 class TrayPanel extends ConsumerStatefulWidget {
   const TrayPanel({super.key, this.onOpenDashboard});
@@ -70,9 +68,9 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
   Widget build(BuildContext context) {
     final searchResults = ref.watch(searchResultsProvider);
     final query = ref.watch(searchQueryProvider);
-    final recentWords = ref.watch(recentUserVocabulariesProvider);
-    final isInVocabulary = ref.watch(isTermInVocabularyProvider(query));
 
+    // Check if term is in vocabulary using local search engine
+    final isInVocabulary = ref.watch(isTermInVocabularyProvider(query));
     final showAddButton = query.isNotEmpty && !isInVocabulary;
 
     return Padding(
@@ -131,26 +129,9 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
           ],
           const SizedBox(height: VocaboSpacing.sm),
 
-          // Recent words
-          Expanded(
-            child: recentWords.when(
-              data: (words) => SingleChildScrollView(
-                child: Column(
-                  children: words
-                      .where((uv) => uv.vocabulary != null)
-                      .map((uv) => TrayWordItem(vocabulary: uv.vocabulary!))
-                      .toList(),
-                ),
-              ),
-              loading: () => const Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-              error: (_, _) => const SizedBox.shrink(),
-            ),
+          // Recent words placeholder (tray runs in separate engine)
+          const Expanded(
+            child: SizedBox.shrink(),
           ),
           const SizedBox(height: VocaboSpacing.sm),
 

@@ -151,6 +151,16 @@ class TrayPanelController {
                     NSApp.activate(ignoringOtherApps: true)
                 }
                 result(nil)
+            case "openAddWord":
+                self?.hide()
+                // Forward to main engine via the tray_panel channel
+                let term = (call.arguments as? [String: Any])?["term"] as? String ?? ""
+                self?.methodChannel?.invokeMethod("openAddWord", arguments: ["term": term])
+                if let mainWindow = NSApp.windows.first(where: { $0 is MainFlutterWindow }) {
+                    mainWindow.makeKeyAndOrderFront(nil)
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                result(nil)
             case "quitApp":
                 NSApp.terminate(nil)
                 result(nil)
