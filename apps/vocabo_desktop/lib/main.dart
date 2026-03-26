@@ -30,12 +30,14 @@ void trayPanelMain() {
   WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: VocaboTheme.light(),
-      home: const Scaffold(
-        backgroundColor: VocaboColors.surfaceContainerLowest,
-        body: TrayPanel(),
+    ProviderScope(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: VocaboTheme.light(),
+        home: const Scaffold(
+          backgroundColor: VocaboColors.surfaceContainerLowest,
+          body: TrayPanel(),
+        ),
       ),
     ),
   );
