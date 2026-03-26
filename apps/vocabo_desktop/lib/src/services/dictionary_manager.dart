@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -20,8 +21,16 @@ class DictionaryManager {
     final versionFile = File('${cacheDir.path}/$lang.version');
 
     String? cachedVersion;
+    DateTime? cachedDate;
     if (versionFile.existsSync()) {
       cachedVersion = versionFile.readAsStringSync().trim();
+      cachedDate = versionFile.lastModifiedSync();
+    }
+
+    _log('Initializing dictionary for lang=$lang');
+    _log('Cached version: ${cachedVersion ?? "none"}');
+    if (cachedDate != null) {
+      _log('Last downloaded: $cachedDate');
     }
 
     // Check remote version
@@ -29,29 +38,42 @@ class DictionaryManager {
     try {
       final versionInfo = await _repository.getVersion(lang: lang);
       remoteVersion = versionInfo.version;
-    } catch (_) {
-      // If API is unreachable, fall back to cache
+      _log('Remote version: $remoteVersion (${versionInfo.wordCount} words)');
+    } catch (e) {
+      _log('API unreachable, falling back to cache: $e');
     }
 
     List<DictionaryWord> words;
 
     if (dataFile.existsSync() &&
         (remoteVersion == null || remoteVersion == cachedVersion)) {
-      // Load from cache
+      _log('Loading from cache (version matches or API unavailable)');
       words = await _loadFromCache(dataFile);
+      _log('Loaded ${words.length} words from cache');
     } else {
       // Download fresh data
       try {
+        _log('Starting download for lang=$lang...');
+        final stopwatch = Stopwatch()..start();
+
         words = await _repository.download(lang: lang);
+
+        stopwatch.stop();
+        _log('Download completed: ${words.length} words in ${stopwatch.elapsedMilliseconds}ms');
+
         await _saveToCache(dataFile, words);
         if (remoteVersion != null) {
           versionFile.writeAsStringSync(remoteVersion);
+          _log('Saved version: $remoteVersion');
         }
-      } catch (_) {
-        // If download fails and cache exists, use cache
+      } catch (e) {
+        _log('Download failed: $e');
         if (dataFile.existsSync()) {
+          _log('Falling back to cache');
           words = await _loadFromCache(dataFile);
+          _log('Loaded ${words.length} words from cache');
         } else {
+          _log('No cache available, dictionary not loaded');
           return;
         }
       }
@@ -59,6 +81,7 @@ class DictionaryManager {
 
     _searchEngine = FuzzySearchEngine();
     _searchEngine!.load(words);
+    _log('Search engine ready with ${words.length} words');
   }
 
   Future<Directory> _getCacheDirectory() async {
@@ -85,5 +108,9 @@ class DictionaryManager {
     final jsonStr = jsonEncode(words.map((w) => w.toJson()).toList());
     final compressed = gzip.encode(utf8.encode(jsonStr));
     file.writeAsBytesSync(compressed);
+  }
+
+  void _log(String message) {
+    dev.log(message, name: 'DictionaryManager');
   }
 }
