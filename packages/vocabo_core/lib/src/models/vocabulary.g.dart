@@ -23,6 +23,8 @@ Vocabulary _$VocabularyFromJson(Map<String, dynamic> json) => Vocabulary(
       ? null
       : DateTime.parse(json['updated_at'] as String),
   contentHash: json['content_hash'] as String?,
+  audioStatus: json['audio_status'] as String?,
+  audioPath: json['audio_path'] as String?,
 );
 
 Map<String, dynamic> _$VocabularyToJson(Vocabulary instance) =>
@@ -39,6 +41,8 @@ Map<String, dynamic> _$VocabularyToJson(Vocabulary instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
       'content_hash': instance.contentHash,
+      'audio_status': instance.audioStatus,
+      'audio_path': instance.audioPath,
     };
 
 const _$WordTypeEnumMap = {

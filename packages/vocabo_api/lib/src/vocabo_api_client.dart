@@ -4,11 +4,13 @@ import 'package:vocabo_api/src/data_sources/auth_data_source.dart';
 import 'package:vocabo_api/src/data_sources/dictionary_data_source.dart';
 import 'package:vocabo_api/src/data_sources/user_data_source.dart';
 import 'package:vocabo_api/src/data_sources/user_vocabulary_data_source.dart';
+import 'package:vocabo_api/src/data_sources/vocabulary_audio_data_source.dart';
 import 'package:vocabo_api/src/data_sources/vocabulary_data_source.dart';
 import 'package:vocabo_api/src/repositories/auth_repository.dart';
 import 'package:vocabo_api/src/repositories/dictionary_repository.dart';
 import 'package:vocabo_api/src/repositories/user_repository.dart';
 import 'package:vocabo_api/src/repositories/user_vocabulary_repository.dart';
+import 'package:vocabo_api/src/repositories/vocabulary_audio_repository.dart';
 import 'package:vocabo_api/src/repositories/vocabulary_repository.dart';
 
 class VocaboApiClient {
@@ -17,6 +19,7 @@ class VocaboApiClient {
   final VocabularyRepository vocabulary;
   final UserVocabularyRepository userVocabulary;
   final DictionaryRepository dictionary;
+  final VocabularyAudioRepository vocabularyAudio;
 
   VocaboApiClient._({
     required this.auth,
@@ -24,6 +27,7 @@ class VocaboApiClient {
     required this.vocabulary,
     required this.userVocabulary,
     required this.dictionary,
+    required this.vocabularyAudio,
   });
 
   factory VocaboApiClient({
@@ -41,6 +45,7 @@ class VocaboApiClient {
     final vocabularyDataSource = VocabularyDataSource(dio);
     final userVocabularyDataSource = UserVocabularyDataSource(dio);
     final dictionaryDataSource = DictionaryDataSource(dio);
+    final vocabularyAudioDataSource = VocabularyAudioDataSource(dio);
 
     return VocaboApiClient._(
       auth: AuthRepository(
@@ -53,6 +58,9 @@ class VocaboApiClient {
         dataSource: userVocabularyDataSource,
       ),
       dictionary: DictionaryRepository(dataSource: dictionaryDataSource),
+      vocabularyAudio: VocabularyAudioRepository(
+        dataSource: vocabularyAudioDataSource,
+      ),
     );
   }
 }

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
-class VocabularyListItem extends StatelessWidget {
+import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/services/audio_player_service.dart';
+
+class VocabularyListItem extends ConsumerWidget {
   const VocabularyListItem({
     super.key,
     required this.userVocabulary,
@@ -20,8 +24,13 @@ class VocabularyListItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final vocabulary = userVocabulary.vocabulary!;
+    final audioState = ref.watch(audioPlayerStateProvider);
+    final contentHash = vocabulary.contentHash ?? '';
+    final isThisPlaying = audioState.currentPlayingHash == contentHash;
+    final isBusy = audioState.status == AudioPlayerStatus.loading ||
+        audioState.status == AudioPlayerStatus.playing;
 
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
@@ -35,21 +44,49 @@ class VocabularyListItem extends StatelessWidget {
         children: [
           // Audio button
           GestureDetector(
-            onTap: () {
-              debugPrint('Play audio: ${vocabulary.term}');
-            },
+            onTap: contentHash.isEmpty
+                ? null
+                : () {
+                    final player = ref.read(audioPlayerServiceProvider);
+                    if (isThisPlaying && isBusy) {
+                      player.stop();
+                    } else if (!isBusy) {
+                      player.play(
+                        vocabularyId: vocabulary.id,
+                        type: userVocabulary.vocabularyType ==
+                                VocabularyType.custom
+                            ? 'custom'
+                            : 'system',
+                        contentHash: contentHash,
+                      );
+                    }
+                  },
             child: Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                color: VocaboColors.primary,
+              decoration: BoxDecoration(
+                color: contentHash.isEmpty
+                    ? VocaboColors.primary.withValues(alpha: 0.5)
+                    : VocaboColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.volume_up,
-                color: VocaboColors.onPrimary,
-                size: 20,
-              ),
+              child: isThisPlaying &&
+                      audioState.status == AudioPlayerStatus.loading
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: VocaboColors.onPrimary,
+                      ),
+                    )
+                  : Icon(
+                      isThisPlaying &&
+                              audioState.status == AudioPlayerStatus.playing
+                          ? Icons.stop
+                          : Icons.volume_up,
+                      color: VocaboColors.onPrimary,
+                      size: 20,
+                    ),
             ),
           ),
           const SizedBox(width: VocaboSpacing.md),
