@@ -15,6 +15,8 @@ class ErrorInterceptor extends Interceptor {
         400 => BadRequestException(message),
         401 => UnauthorizedException(message),
         404 => NotFoundException(message),
+        409 => ConflictException(message),
+        422 => UnprocessableException(message),
         >= 500 => ServerException(message),
         _ => null,
       };

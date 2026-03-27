@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
@@ -13,13 +14,20 @@ class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
 
   @override
   Future<List<UserVocabulary>> build() async {
-    final api = ref.watch(apiClientProvider);
-    final response = await api.userVocabulary.getAll(limit: 20);
+    try {
+      final api = ref.watch(apiClientProvider);
+      final response = await api.userVocabulary.getAll(limit: 20);
 
-    _nextCursor = response.nextCursor;
-    _hasMore = response.hasMore;
+      _nextCursor = response.nextCursor;
+      _hasMore = response.hasMore;
 
-    return response.items;
+      debugPrint('[UserVocabularyList] Loaded ${response.items.length} items, hasMore: $_hasMore');
+      return response.items;
+    } catch (e, st) {
+      debugPrint('[UserVocabularyList] build() ERROR: $e');
+      debugPrint('[UserVocabularyList] Stack: $st');
+      rethrow;
+    }
   }
 
   Future<void> loadMore() async {

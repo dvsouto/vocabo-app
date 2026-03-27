@@ -19,6 +19,14 @@ class NotFoundException extends AppException {
   const NotFoundException(super.message);
 }
 
+class ConflictException extends AppException {
+  const ConflictException(super.message);
+}
+
+class UnprocessableException extends AppException {
+  const UnprocessableException(super.message);
+}
+
 class ServerException extends AppException {
   const ServerException(super.message);
 }

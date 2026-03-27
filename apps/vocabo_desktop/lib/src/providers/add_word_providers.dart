@@ -198,22 +198,19 @@ class AddWordNotifier extends Notifier<AddWordState> {
       );
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) return;
-
-      if (e.response?.statusCode == 422) {
-        state = state.copyWith(
-          isSearching: false,
-          isValid: false,
-          errorMessage: () => 'Not a valid word or phrase',
-        );
-        return;
-      }
-
       state = state.copyWith(
         isSearching: false,
         isValid: false,
         errorMessage: () => 'Search failed. Please try again.',
       );
+    } on UnprocessableException {
+      state = state.copyWith(
+        isSearching: false,
+        isValid: false,
+        errorMessage: () => 'Not a valid word or phrase',
+      );
     } catch (e) {
+      debugPrint('[AddWord] search() - ERROR: $e');
       state = state.copyWith(
         isSearching: false,
         isValid: false,
@@ -275,18 +272,19 @@ class AddWordNotifier extends Notifier<AddWordState> {
 
       state = state.copyWith(isSaving: false);
       return true;
+    } on ConflictException catch (e) {
+      debugPrint('[AddWord] save() - CONFLICT: $e');
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: () => 'This word is already in your vocabulary',
+      );
+      return false;
     } catch (e, st) {
       debugPrint('[AddWord] save() - ERROR: $e');
       debugPrint('[AddWord] save() - Stack: $st');
-      if (e is DioException) {
-        debugPrint('[AddWord] save() - DioException status: ${e.response?.statusCode}');
-        debugPrint('[AddWord] save() - DioException body: ${e.response?.data}');
-      }
       state = state.copyWith(
         isSaving: false,
-        errorMessage: () => e is DioException && e.response?.statusCode == 409
-            ? 'This word is already in your vocabulary'
-            : 'Failed to save. Please try again.',
+        errorMessage: () => 'Failed to save. Please try again.',
       );
       return false;
     }
