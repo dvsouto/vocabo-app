@@ -33,18 +33,17 @@ class AudioPlayerState {
 class AudioPlayerService extends ChangeNotifier {
   final VocabularyAudioRepository _audioRepository;
   final AudioCacheService _cacheService;
-  final AudioPlayer _player = AudioPlayer();
+  AudioPlayer _player = AudioPlayer();
 
   AudioPlayerState _state = const AudioPlayerState();
   Timer? _failResetTimer;
+  int _playGeneration = 0;
 
   AudioPlayerService({
     required VocabularyAudioRepository audioRepository,
     required AudioCacheService cacheService,
   })  : _audioRepository = audioRepository,
-        _cacheService = cacheService {
-    _player.playerStateStream.listen(_onPlayerStateChanged);
-  }
+        _cacheService = cacheService;
 
   AudioPlayerState get state => _state;
 
@@ -58,12 +57,12 @@ class AudioPlayerService extends ChangeNotifier {
     required String type,
     required String contentHash,
   }) async {
-    if (_state.status == AudioPlayerStatus.loading ||
-        _state.status == AudioPlayerStatus.playing) {
-      await stop();
-    }
-
     _failResetTimer?.cancel();
+    _playGeneration++;
+    final generation = _playGeneration;
+
+    await _player.dispose();
+    _player = AudioPlayer();
 
     _updateState(AudioPlayerState(
       status: AudioPlayerStatus.loading,
@@ -85,33 +84,41 @@ class AudioPlayerService extends ChangeNotifier {
         audioPath = file.path;
       }
 
-      if (_state.currentPlayingHash != contentHash) return;
+      if (generation != _playGeneration) return;
 
-      await _player.stop();
       await _player.setFilePath(audioPath);
-      await _player.seek(Duration.zero);
-      await _player.play();
+
+      if (generation != _playGeneration) return;
 
       _updateState(_state.copyWith(status: AudioPlayerStatus.playing));
+
+      await _player.play();
+
+      await _player.processingStateStream
+          .firstWhere((s) => s == ProcessingState.completed)
+          .timeout(const Duration(seconds: 30));
+
+      if (generation == _playGeneration) {
+        _updateState(const AudioPlayerState());
+      }
     } catch (e) {
       debugPrint('[AudioPlayer] play() error: $e');
+      if (generation != _playGeneration) return;
+
       _updateState(_state.copyWith(status: AudioPlayerStatus.failed));
       _failResetTimer = Timer(const Duration(seconds: 2), () {
-        _updateState(const AudioPlayerState());
+        if (_playGeneration == generation) {
+          _updateState(const AudioPlayerState());
+        }
       });
     }
   }
 
   Future<void> stop() async {
     _failResetTimer?.cancel();
+    _playGeneration++;
     await _player.stop();
     _updateState(const AudioPlayerState());
-  }
-
-  void _onPlayerStateChanged(PlayerState playerState) {
-    if (playerState.processingState == ProcessingState.completed) {
-      _updateState(const AudioPlayerState());
-    }
   }
 
   @override
