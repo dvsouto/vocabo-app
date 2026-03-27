@@ -17,7 +17,6 @@ class DashboardSidebar extends ConsumerWidget {
 
   static const _navItems = [
     (icon: Icons.auto_stories, label: 'Library'),
-    (icon: Icons.category_outlined, label: 'Categories'),
     (icon: Icons.trending_up, label: 'Progress'),
     (icon: Icons.settings_outlined, label: 'Settings'),
   ];

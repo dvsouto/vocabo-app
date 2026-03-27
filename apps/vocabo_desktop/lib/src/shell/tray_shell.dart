@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
+import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 
 class TrayShell extends ConsumerStatefulWidget {
   const TrayShell({super.key, required this.child});
@@ -68,7 +69,14 @@ class _TrayShellState extends ConsumerState<TrayShell>
 
   @override
   void onTrayIconMouseDown() {
-    _toggleTrayPanel();
+    final authStatus = ref.read(authStatusProvider);
+    final isAuthenticated =
+        authStatus.valueOrNull == AuthStatus.authenticated;
+    if (isAuthenticated) {
+      _toggleTrayPanel();
+    } else {
+      trayManager.popUpContextMenu();
+    }
   }
 
   @override
