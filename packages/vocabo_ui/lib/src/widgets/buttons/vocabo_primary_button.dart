@@ -34,6 +34,9 @@ class VocaboPrimaryButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
+          mouseCursor: isLoading || onPressed == null
+              ? SystemMouseCursors.basic
+              : SystemMouseCursors.click,
           borderRadius: VocaboRadius.md,
           child: Container(
             constraints: const BoxConstraints(minHeight: 44),

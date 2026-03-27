@@ -30,6 +30,7 @@ class SearchAutocompleteDropdown extends StatelessWidget {
 
           return InkWell(
             onTap: () => onSelected(result),
+            mouseCursor: SystemMouseCursors.click,
             borderRadius: VocaboRadius.sm,
             child: Padding(
               padding: const EdgeInsets.symmetric(

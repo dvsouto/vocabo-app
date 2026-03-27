@@ -21,22 +21,29 @@ class VocaboSelectableChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveEnabled = enabled && onTap != null;
 
-    return GestureDetector(
-      onTap: effectiveEnabled ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? VocaboColors.primary
-              : VocaboColors.surfaceContainerLow,
-          borderRadius: VocaboRadius.sm,
-        ),
-        child: Text(
-          label.toUpperCase(),
-          style: VocaboTypography.labelSm.copyWith(
-            color: isSelected ? VocaboColors.onPrimary : VocaboColors.onSurface,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: effectiveEnabled ? onTap : null,
+        mouseCursor: effectiveEnabled
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        borderRadius: VocaboRadius.sm,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? VocaboColors.primary
+                : VocaboColors.surfaceContainerLow,
+            borderRadius: VocaboRadius.sm,
+          ),
+          child: Text(
+            label.toUpperCase(),
+            style: VocaboTypography.labelSm.copyWith(
+              color: isSelected ? VocaboColors.onPrimary : VocaboColors.onSurface,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
           ),
         ),
       ),

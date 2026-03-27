@@ -173,3 +173,22 @@ A compact, floating glass window (`surface` @ 80% opacity + blur) used for quick
 - **Don’t** use "Default" shadows. If the shadow is dark enough to be easily seen, it is too heavy.
 
 - **Don’t** use more than two levels of nesting. If you need a card inside a card inside a section, reconsider the layout density.
+
+
+
+---
+
+
+
+## 7. Interactivity & Cursor Behavior
+
+All clickable widgets **must** display `cursor: pointer` on hover to communicate interactivity on desktop platforms.
+
+### Implementation Rules
+
+- **Always** use `Material` + `InkWell` (or Material widgets like `IconButton`, `TextButton`, `ElevatedButton`) for interactive elements — **never** use a bare `GestureDetector` for visible interactive widgets.
+- **Always** set `mouseCursor` explicitly on `InkWell`:
+  - Enabled state: `mouseCursor: SystemMouseCursors.click`
+  - Disabled state: `mouseCursor: SystemMouseCursors.basic`
+- When the interactive element has a custom shape (e.g., circular button), use `customBorder: const CircleBorder()` on `InkWell` to match the ripple to the shape.
+- `GestureDetector` may still be used for invisible hit areas (e.g., modal backdrops for dismissal), but should be wrapped with `MouseRegion(cursor: SystemMouseCursors.basic)` to ensure the cursor resets properly.

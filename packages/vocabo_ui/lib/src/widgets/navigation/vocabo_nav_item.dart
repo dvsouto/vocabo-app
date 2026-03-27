@@ -25,6 +25,7 @@ class VocaboNavItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
         borderRadius: VocaboRadius.sm,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

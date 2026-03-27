@@ -43,56 +43,58 @@ class VocabularyListItem extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Audio button
-          MouseRegion(
-            cursor: contentHash.isEmpty
-                ? SystemMouseCursors.basic
-                : SystemMouseCursors.click,
-            child: GestureDetector(
-            onTap: contentHash.isEmpty
-                ? null
-                : () {
-                    final player = ref.read(audioPlayerServiceProvider);
-                    if (isThisPlaying && isBusy) {
-                      player.stop();
-                    } else if (!isBusy) {
-                      player.play(
-                        vocabularyId: vocabulary.id,
-                        type: userVocabulary.vocabularyType ==
-                                VocabularyType.custom
-                            ? 'custom'
-                            : 'system',
-                        contentHash: contentHash,
-                      );
-                    }
-                  },
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: contentHash.isEmpty
-                    ? VocaboColors.primary.withValues(alpha: 0.5)
-                    : VocaboColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child: isThisPlaying &&
-                      audioState.status == AudioPlayerStatus.loading
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              mouseCursor: contentHash.isEmpty
+                  ? SystemMouseCursors.basic
+                  : SystemMouseCursors.click,
+              onTap: contentHash.isEmpty
+                  ? null
+                  : () {
+                      final player = ref.read(audioPlayerServiceProvider);
+                      if (isThisPlaying && isBusy) {
+                        player.stop();
+                      } else if (!isBusy) {
+                        player.play(
+                          vocabularyId: vocabulary.id,
+                          type: userVocabulary.vocabularyType ==
+                                  VocabularyType.custom
+                              ? 'custom'
+                              : 'system',
+                          contentHash: contentHash,
+                        );
+                      }
+                    },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: contentHash.isEmpty
+                      ? VocaboColors.primary.withValues(alpha: 0.5)
+                      : VocaboColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: isThisPlaying &&
+                        audioState.status == AudioPlayerStatus.loading
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: VocaboColors.onPrimary,
+                        ),
+                      )
+                    : Icon(
+                        isThisPlaying &&
+                                audioState.status == AudioPlayerStatus.playing
+                            ? Icons.stop
+                            : Icons.volume_up,
                         color: VocaboColors.onPrimary,
+                        size: 20,
                       ),
-                    )
-                  : Icon(
-                      isThisPlaying &&
-                              audioState.status == AudioPlayerStatus.playing
-                          ? Icons.stop
-                          : Icons.volume_up,
-                      color: VocaboColors.onPrimary,
-                      size: 20,
-                    ),
+              ),
             ),
-          ),
           ),
           const SizedBox(width: VocaboSpacing.md),
 

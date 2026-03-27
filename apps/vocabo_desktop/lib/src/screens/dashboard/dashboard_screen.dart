@@ -48,13 +48,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
           // Modal overlay
           if (showModal) ...[
-            GestureDetector(
-              onTap: () {
-                ref.read(addWordNotifierProvider.notifier).reset();
-                ref.read(showAddWordModalProvider.notifier).state = false;
-              },
-              child: Container(
-                color: Colors.black54,
+            MouseRegion(
+              cursor: SystemMouseCursors.basic,
+              child: GestureDetector(
+                onTap: () {
+                  ref.read(addWordNotifierProvider.notifier).reset();
+                  ref.read(showAddWordModalProvider.notifier).state = false;
+                },
+                child: Container(
+                  color: Colors.black54,
+                ),
               ),
             ),
             AddWordModal(

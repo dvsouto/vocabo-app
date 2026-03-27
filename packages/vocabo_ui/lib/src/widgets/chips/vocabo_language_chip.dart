@@ -47,39 +47,44 @@ class VocaboLanguageChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        constraints: const BoxConstraints(minHeight: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? VocaboColors.primary
-              : VocaboColors.surfaceContainerLow,
-          borderRadius: VocaboRadius.sm,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isSelected) ...[
-              Icon(
-                Icons.check_circle,
-                size: 16,
-                color: VocaboColors.onPrimary,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: VocaboRadius.sm,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? VocaboColors.primary
+                : VocaboColors.surfaceContainerLow,
+            borderRadius: VocaboRadius.sm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                Icon(
+                  Icons.check_circle,
+                  size: 16,
+                  color: VocaboColors.onPrimary,
+                ),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: VocaboTypography.bodyMd.copyWith(
+                  color: isSelected
+                      ? VocaboColors.onPrimary
+                      : VocaboColors.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(width: 6),
             ],
-            Text(
-              label,
-              style: VocaboTypography.bodyMd.copyWith(
-                color: isSelected
-                    ? VocaboColors.onPrimary
-                    : VocaboColors.onSurface,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
