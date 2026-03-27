@@ -11,7 +11,7 @@ class SecureTokenStorage implements TokenStorage {
             const FlutterSecureStorage(
               mOptions: MacOsOptions(
                 accessibility: KeychainAccessibility.first_unlock,
-                useDataProtectionKeyChain: false,
+                useDataProtectionKeyChain: true,
               ),
             );
 
