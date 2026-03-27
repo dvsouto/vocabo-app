@@ -24,7 +24,7 @@ class Vocabulary extends Equatable {
   @JsonKey(name: 'tts_pronunciation')
   final String? ttsPronunciation;
 
-  @JsonKey(name: 'usage_examples')
+  @JsonKey(name: 'usage_examples', fromJson: _usageExamplesFromJson)
   final UsageExamples? usageExamples;
 
   @JsonKey(name: 'created_at')
@@ -53,6 +53,19 @@ class Vocabulary extends Equatable {
 
   factory Vocabulary.fromJson(Map<String, dynamic> json) =>
       _$VocabularyFromJson(json);
+
+  static UsageExamples? _usageExamplesFromJson(dynamic json) {
+    if (json == null) return null;
+    if (json is Map<String, dynamic>) {
+      return UsageExamples.fromJson(json);
+    }
+    if (json is List) {
+      return UsageExamples.fromJson({
+        'examples': json.map((e) => e.toString()).toList(),
+      });
+    }
+    return null;
+  }
 
   Map<String, dynamic> toJson() => _$VocabularyToJson(this);
 
