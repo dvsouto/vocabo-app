@@ -51,7 +51,7 @@ class _TrayShellState extends ConsumerState<TrayShell>
   }
 
   Future<void> _initTray() async {
-    await trayManager.setIcon('assets/tray_icon.png');
+    await trayManager.setIcon('assets/tray_icon.png', isTemplate: true);
     await trayManager.setToolTip('Vocabo');
 
     final menu = Menu(items: [
