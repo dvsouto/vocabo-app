@@ -43,7 +43,11 @@ class VocabularyListItem extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Audio button
-          GestureDetector(
+          MouseRegion(
+            cursor: contentHash.isEmpty
+                ? SystemMouseCursors.basic
+                : SystemMouseCursors.click,
+            child: GestureDetector(
             onTap: contentHash.isEmpty
                 ? null
                 : () {
@@ -88,6 +92,7 @@ class VocabularyListItem extends ConsumerWidget {
                       size: 20,
                     ),
             ),
+          ),
           ),
           const SizedBox(width: VocaboSpacing.md),
 
