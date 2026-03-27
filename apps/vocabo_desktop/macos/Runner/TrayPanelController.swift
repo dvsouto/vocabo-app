@@ -1,11 +1,22 @@
 import Cocoa
 import FlutterMacOS
 
+class TrayPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
 class TrayPanelController {
-    private var panel: NSPanel?
+    private var panel: TrayPanel?
     private var flutterEngine: FlutterEngine?
     private var flutterVC: FlutterViewController?
     private var methodChannel: FlutterMethodChannel?
+
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
+    private var deactivateObserver: NSObjectProtocol?
+
+    private var lastShowPoint: NSPoint?
 
     static let shared = TrayPanelController()
 
@@ -70,18 +81,13 @@ class TrayPanelController {
         let panelWidth: CGFloat = 340
         let panelHeight: CGFloat = 500
 
-        // Find the screen that contains the tray icon position
-        // Dart sends coordinates in top-left system; convert to macOS bottom-left
         let primaryScreen = NSScreen.screens.first
         let primaryHeight = primaryScreen?.frame.height ?? 900
         let menuBarHeight: CGFloat = NSStatusBar.system.thickness
 
-        // Convert Dart top-left coords to macOS bottom-left coords
-        // In macOS, all screens share a coordinate space with origin at bottom-left of primary screen
         let macOsX = point.x
         let macOsY = primaryHeight - point.y - menuBarHeight
 
-        // Ensure panel doesn't go off-screen to the right
         let screen = NSScreen.screens.first(where: { $0.frame.contains(NSPoint(x: macOsX, y: macOsY)) }) ?? primaryScreen
         let screenFrame = screen?.frame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let clampedX = min(macOsX, screenFrame.maxX - panelWidth)
@@ -98,22 +104,33 @@ class TrayPanelController {
         NSLog("[Vocabo] TrayPanelController: Setting panel frame to (%.1f, %.1f, %.1f, %.1f)",
               frame.origin.x, frame.origin.y, frame.size.width, frame.size.height)
 
+        lastShowPoint = point
         panel.setFrame(frame, display: true)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: false)
+
+        startMonitoring()
 
         NSLog("[Vocabo] TrayPanelController: Panel is now visible: %@", panel.isVisible ? "YES" : "NO")
     }
 
     func hide() {
         NSLog("[Vocabo] TrayPanelController: hide() called")
+        stopMonitoring()
         panel?.orderOut(nil)
     }
 
     func toggle(at point: NSPoint?) {
         if isVisible {
-            NSLog("[Vocabo] TrayPanelController: Panel is visible, hiding")
-            hide()
+            if let point = point, let lastPoint = lastShowPoint,
+               abs(point.x - lastPoint.x) > 50 {
+                NSLog("[Vocabo] TrayPanelController: Panel visible but position changed, repositioning")
+                hide()
+                show(at: point)
+            } else {
+                NSLog("[Vocabo] TrayPanelController: Panel is visible, hiding")
+                hide()
+            }
         } else if let point = point {
             NSLog("[Vocabo] TrayPanelController: Panel is hidden, showing")
             show(at: point)
@@ -121,6 +138,52 @@ class TrayPanelController {
             NSLog("[Vocabo] TrayPanelController: No position provided, cannot show")
         }
     }
+
+    // MARK: - Event Monitors
+
+    private func startMonitoring() {
+        stopMonitoring()
+
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            NSLog("[Vocabo] TrayPanelController: Global click detected, hiding panel")
+            self?.hide()
+        }
+
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            guard let self = self, let panel = self.panel else { return event }
+            if event.window !== panel {
+                NSLog("[Vocabo] TrayPanelController: Local click outside panel, hiding")
+                self.hide()
+            }
+            return event
+        }
+
+        deactivateObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            NSLog("[Vocabo] TrayPanelController: App deactivated, hiding panel")
+            self?.hide()
+        }
+    }
+
+    private func stopMonitoring() {
+        if let m = globalMonitor {
+            NSEvent.removeMonitor(m)
+            globalMonitor = nil
+        }
+        if let m = localMonitor {
+            NSEvent.removeMonitor(m)
+            localMonitor = nil
+        }
+        if let o = deactivateObserver {
+            NotificationCenter.default.removeObserver(o)
+            deactivateObserver = nil
+        }
+    }
+
+    // MARK: - Panel Creation
 
     private func createPanel() {
         NSLog("[Vocabo] TrayPanelController: Creating secondary Flutter engine")
@@ -136,7 +199,6 @@ class TrayPanelController {
         flutterEngine = engine
         flutterVC = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
 
-        // Setup actions channel on the secondary engine
         let actionsChannel = FlutterMethodChannel(
             name: "vocabo/tray_panel_actions",
             binaryMessenger: engine.binaryMessenger
@@ -153,7 +215,6 @@ class TrayPanelController {
                 result(nil)
             case "openAddWord":
                 self?.hide()
-                // Forward to main engine via the tray_panel channel
                 let term = (call.arguments as? [String: Any])?["term"] as? String ?? ""
                 self?.methodChannel?.invokeMethod("openAddWord", arguments: ["term": term])
                 if let mainWindow = NSApp.windows.first(where: { $0 is MainFlutterWindow }) {
@@ -169,7 +230,7 @@ class TrayPanelController {
             }
         }
 
-        let panel = NSPanel(
+        let panel = TrayPanel(
             contentRect: NSRect(x: 0, y: 0, width: 340, height: 500),
             styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
@@ -179,15 +240,15 @@ class TrayPanelController {
         panel.contentViewController = flutterVC
         panel.isFloatingPanel = true
         panel.level = .floating
-        panel.hidesOnDeactivate = true
+        panel.hidesOnDeactivate = false
         panel.titlebarAppearsTransparent = true
         panel.titleVisibility = .hidden
         panel.isMovableByWindowBackground = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
         panel.isOpaque = false
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        // Round corners
         panel.contentView?.wantsLayer = true
         panel.contentView?.layer?.cornerRadius = 16
         panel.contentView?.layer?.masksToBounds = true
