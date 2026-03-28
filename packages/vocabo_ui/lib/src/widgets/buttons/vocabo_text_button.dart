@@ -16,7 +16,11 @@ class VocaboTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return MouseRegion(
+      cursor: onPressed != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      child: TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
         foregroundColor: VocaboColors.primary,
@@ -26,6 +30,7 @@ class VocaboTextButton extends StatelessWidget {
             : VocaboTypography.bodyMd.copyWith(fontWeight: FontWeight.w600),
       ),
       child: Text(uppercase ? label.toUpperCase() : label),
+    ),
     );
   }
 }

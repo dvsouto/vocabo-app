@@ -126,17 +126,23 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         const SizedBox(width: 8),
         Text('Vocabo', style: VocaboTypography.titleLg),
         const Spacer(),
-        IconButton(
-          icon: const Icon(Icons.history, size: 20),
-          color: VocaboColors.neutral,
-          onPressed: () {},
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: IconButton(
+            icon: const Icon(Icons.history, size: 20),
+            color: VocaboColors.neutral,
+            onPressed: () {},
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.close, size: 20),
-          color: VocaboColors.neutral,
-          onPressed: _close,
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            color: VocaboColors.neutral,
+            onPressed: _close,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          ),
         ),
       ],
     );
@@ -205,13 +211,16 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
             ),
           ),
         ),
-        IconButton(
-          icon: Icon(
-            Icons.volume_up,
-            color: VocaboColors.primary,
-            size: 24,
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: IconButton(
+            icon: Icon(
+              Icons.volume_up,
+              color: VocaboColors.primary,
+              size: 24,
+            ),
+            onPressed: () {},
           ),
-          onPressed: () {},
         ),
       ],
     );

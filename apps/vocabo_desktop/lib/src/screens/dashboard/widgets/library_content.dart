@@ -86,21 +86,27 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                       suffixActions: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.tune,
-                              size: 20,
-                              color: VocaboColors.neutral,
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.tune,
+                                size: 20,
+                                color: VocaboColors.neutral,
+                              ),
+                              onPressed: () {},
                             ),
-                            onPressed: () {},
                           ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.more_vert,
-                              size: 20,
-                              color: VocaboColors.neutral,
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.more_vert,
+                                size: 20,
+                                color: VocaboColors.neutral,
+                              ),
+                              onPressed: () {},
                             ),
-                            onPressed: () {},
                           ),
                         ],
                       ),
