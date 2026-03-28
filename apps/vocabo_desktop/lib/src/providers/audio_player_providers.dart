@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/services/audio_cache_service.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
+import 'package:vocabo_desktop/src/services/audio_prefetch_service.dart';
 
 final audioCacheServiceProvider = Provider<AudioCacheService>((ref) {
-  return AudioCacheService();
+  final service = AudioCacheService();
+  service.init();
+  return service;
 });
 
 final audioPlayerServiceProvider =
@@ -21,4 +24,13 @@ final audioPlayerServiceProvider =
 
 final audioPlayerStateProvider = Provider<AudioPlayerState>((ref) {
   return ref.watch(audioPlayerServiceProvider).state;
+});
+
+final audioPrefetchServiceProvider = Provider<AudioPrefetchService>((ref) {
+  final api = ref.watch(apiClientProvider);
+  final cache = ref.watch(audioCacheServiceProvider);
+  return AudioPrefetchService(
+    audioRepository: api.vocabularyAudio,
+    cacheService: cache,
+  );
 });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
@@ -40,6 +41,12 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
   @override
   Widget build(BuildContext context) {
     ref.watch(dictionaryInitProvider);
+
+    ref.listen(userVocabularyListProvider, (prev, next) {
+      next.whenData((vocabularies) {
+        ref.read(audioPrefetchServiceProvider).prefetch(vocabularies);
+      });
+    });
 
     final searchResults = ref.watch(searchResultsProvider);
     final query = ref.watch(searchQueryProvider);

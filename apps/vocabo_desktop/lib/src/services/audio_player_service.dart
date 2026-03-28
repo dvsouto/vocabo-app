@@ -33,7 +33,7 @@ class AudioPlayerState {
 class AudioPlayerService extends ChangeNotifier {
   final VocabularyAudioRepository _audioRepository;
   final AudioCacheService _cacheService;
-  AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _player = AudioPlayer();
 
   AudioPlayerState _state = const AudioPlayerState();
   Timer? _failResetTimer;
@@ -61,8 +61,7 @@ class AudioPlayerService extends ChangeNotifier {
     _playGeneration++;
     final generation = _playGeneration;
 
-    await _player.dispose();
-    _player = AudioPlayer();
+    await _player.stop();
 
     _updateState(AudioPlayerState(
       status: AudioPlayerStatus.loading,
@@ -76,11 +75,15 @@ class AudioPlayerService extends ChangeNotifier {
       if (cached != null) {
         audioPath = cached.path;
       } else {
-        final bytes = await _audioRepository
+        final response = await _audioRepository
             .getAudio(vocabularyId: vocabularyId, type: type)
             .timeout(const Duration(seconds: 15));
 
-        final file = await _cacheService.cacheAudio(contentHash, bytes);
+        final file = await _cacheService.cacheAudio(
+          contentHash,
+          response.bytes,
+          contentType: response.contentType,
+        );
         audioPath = file.path;
       }
 

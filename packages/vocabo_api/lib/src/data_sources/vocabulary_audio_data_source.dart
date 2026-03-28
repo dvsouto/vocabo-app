@@ -2,12 +2,19 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
+class AudioResponse {
+  final Uint8List bytes;
+  final String? contentType;
+
+  AudioResponse({required this.bytes, this.contentType});
+}
+
 class VocabularyAudioDataSource {
   final Dio _dio;
 
   VocabularyAudioDataSource(this._dio);
 
-  Future<Uint8List> getAudio({
+  Future<AudioResponse> getAudio({
     required String vocabularyId,
     required String type,
   }) async {
@@ -17,6 +24,9 @@ class VocabularyAudioDataSource {
       options: Options(responseType: ResponseType.bytes),
     );
 
-    return Uint8List.fromList(response.data!);
+    return AudioResponse(
+      bytes: Uint8List.fromList(response.data!),
+      contentType: response.headers.value('content-type'),
+    );
   }
 }

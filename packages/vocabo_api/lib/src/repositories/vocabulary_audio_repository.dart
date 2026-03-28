@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:vocabo_api/src/client/api_call.dart';
 import 'package:vocabo_api/src/data_sources/vocabulary_audio_data_source.dart';
 
@@ -9,7 +7,7 @@ class VocabularyAudioRepository {
   VocabularyAudioRepository({required VocabularyAudioDataSource dataSource})
       : _dataSource = dataSource;
 
-  Future<Uint8List> getAudio({
+  Future<AudioResponse> getAudio({
     required String vocabularyId,
     required String type,
   }) =>

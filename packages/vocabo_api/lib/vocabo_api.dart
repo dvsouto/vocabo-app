@@ -8,6 +8,7 @@ export 'src/repositories/auth_repository.dart';
 export 'src/repositories/dictionary_repository.dart';
 export 'src/repositories/user_repository.dart';
 export 'src/repositories/user_vocabulary_repository.dart';
+export 'src/data_sources/vocabulary_audio_data_source.dart' show AudioResponse;
 export 'src/repositories/vocabulary_audio_repository.dart';
 export 'src/repositories/vocabulary_repository.dart';
 export 'src/vocabo_api_client.dart';
