@@ -20,6 +20,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
   final _meaningController = TextEditingController();
   final _translationController = TextEditingController();
   final _exampleController = TextEditingController();
+  final _termFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -33,6 +34,10 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
             );
       });
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _termFocusNode.requestFocus();
+    });
   }
 
   @override
@@ -41,6 +46,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     _meaningController.dispose();
     _translationController.dispose();
     _exampleController.dispose();
+    _termFocusNode.dispose();
     super.dispose();
   }
 
@@ -199,21 +205,44 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     final contentHash = state.backendResult?.contentHash ?? '';
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: TextField(
             controller: _termController,
+            focusNode: _termFocusNode,
             onChanged: notifier.setTerm,
             style: VocaboTypography.headlineSm.copyWith(
-              color: VocaboColors.primary.withValues(alpha: 0.5),
+              color: VocaboColors.primary,
             ),
             decoration: InputDecoration(
-              hintText: 'Enter word or phrase...',
-              hintStyle: VocaboTypography.headlineSm.copyWith(
+              labelText: 'Enter word or phrase...',
+              labelStyle: VocaboTypography.headlineSm.copyWith(
                 color: VocaboColors.primary.withValues(alpha: 0.3),
               ),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
+              floatingLabelStyle: VocaboTypography.labelSm.copyWith(
+                color: VocaboColors.neutral,
+              ),
+              floatingLabelBehavior: FloatingLabelBehavior.never,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              // Remove the background color
+              filled: false,
+              fillColor: Colors.transparent,
             ),
           ),
         ),
@@ -231,43 +260,50 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     final isPlaying = isThisPlaying &&
         audioState.status == AudioPlayerStatus.playing;
 
-    return InkWell(
-      onTap: canPlay
-          ? () {
-              final player = ref.read(audioPlayerServiceProvider);
-              if (isThisPlaying && (isLoading || isPlaying)) {
-                player.stop();
-              } else {
-                player.play(
-                  vocabularyId: wordState.backendResult!.id,
-                  type: 'system',
-                  contentHash: contentHash,
-                );
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: canPlay
+            ? () {
+                final player = ref.read(audioPlayerServiceProvider);
+                if (isThisPlaying && (isLoading || isPlaying)) {
+                  player.stop();
+                } else {
+                  player.play(
+                    vocabularyId: wordState.backendResult!.id,
+                    type: 'system',
+                    contentHash: contentHash,
+                  );
+                }
               }
-            }
-          : null,
-      mouseCursor: canPlay
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      customBorder: const CircleBorder(),
-      child: SizedBox(
-        width: 40,
-        height: 40,
-        child: isLoading
-            ? const Padding(
-                padding: EdgeInsets.all(8),
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: VocaboColors.primary,
+            : null,
+        mouseCursor: canPlay
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: canPlay
+                ? VocaboColors.primary
+                : VocaboColors.primary.withValues(alpha: 0.5),
+            shape: BoxShape.circle,
+          ),
+          child: isLoading
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: VocaboColors.onPrimary,
+                  ),
+                )
+              : Icon(
+                  isPlaying ? Icons.stop : Icons.volume_up,
+                  color: VocaboColors.onPrimary,
+                  size: 20,
                 ),
-              )
-            : Icon(
-                isPlaying ? Icons.stop : Icons.volume_up,
-                color: canPlay
-                    ? VocaboColors.primary
-                    : VocaboColors.primary.withValues(alpha: 0.3),
-                size: 24,
-              ),
+        ),
       ),
     );
   }
@@ -442,12 +478,10 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: VocaboColors.onPrimary,
                   ),
                 )
               : const Icon(
                   Icons.arrow_forward,
-                  color: VocaboColors.onPrimary,
                   size: 18,
                 ),
           onPressed: state.canSave

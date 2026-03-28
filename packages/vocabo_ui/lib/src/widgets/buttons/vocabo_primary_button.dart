@@ -19,6 +19,23 @@ class VocaboPrimaryButton extends StatelessWidget {
   final bool isLoading;
   final bool isExpanded;
 
+  Color _contentColor(bool isDisabled) =>
+      isDisabled ? VocaboColors.neutral : VocaboColors.onPrimary;
+
+  Widget _buildTrailing(BuildContext context, bool isDisabled) {
+    final color = _contentColor(isDisabled);
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: Theme.of(context).colorScheme.copyWith(primary: color),
+        iconTheme: IconThemeData(color: color),
+      ),
+      child: IconTheme(
+        data: IconThemeData(color: color),
+        child: trailing!,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDisabled = isLoading || onPressed == null;
@@ -72,14 +89,7 @@ class VocaboPrimaryButton extends StatelessWidget {
                   ),
                   if (trailing != null) ...[
                     const SizedBox(width: 8),
-                    IconTheme(
-                      data: IconThemeData(
-                        color: isDisabled
-                            ? VocaboColors.neutral
-                            : VocaboColors.onPrimary,
-                      ),
-                      child: trailing!,
-                    ),
+                    _buildTrailing(context, isDisabled),
                   ],
                 ],
               ],
