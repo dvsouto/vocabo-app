@@ -23,24 +23,25 @@ class VocaboPrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        onTap: isLoading ? null : onPressed,
-        mouseCursor: isLoading || onPressed == null
-            ? SystemMouseCursors.basic
-            : SystemMouseCursors.click,
-        borderRadius: VocaboRadius.md,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [VocaboColors.primary, VocaboColors.primaryContainer],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: VocaboRadius.md,
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [VocaboColors.primary, VocaboColors.primaryContainer],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          child: Row(
+          borderRadius: VocaboRadius.md,
+        ),
+        child: InkWell(
+          onTap: isLoading ? null : onPressed,
+          mouseCursor: isLoading || onPressed == null
+              ? SystemMouseCursors.basic
+              : SystemMouseCursors.click,
+          borderRadius: VocaboRadius.md,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Row(
             mainAxisSize:
                 isExpanded ? MainAxisSize.max : MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -70,6 +71,7 @@ class VocaboPrimaryButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
