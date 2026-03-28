@@ -120,6 +120,8 @@ Depth in this system is a gradient of focus, not a drop shadow from 2005.
 
 - **Tertiary:** Transparent background with `primary` text. No border.
 
+- **Disabled State (All Buttons):** `surface-container-high` (#ecebf0) background with `neutral` (#8e8e93) text. No gradient, no border. The muted tone communicates non-interactivity without visual noise.
+
 
 
 ### Input Fields (The Focus State)

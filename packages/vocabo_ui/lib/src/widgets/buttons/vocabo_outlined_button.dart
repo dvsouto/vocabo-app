@@ -20,6 +20,7 @@ class VocaboOutlinedButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         foregroundColor: VocaboColors.onSurface,
+        disabledForegroundColor: VocaboColors.neutral,
         minimumSize: isExpanded ? const Size(double.infinity, 44) : const Size(44, 44),
         shape: RoundedRectangleBorder(borderRadius: VocaboRadius.md),
         side: BorderSide(

@@ -21,20 +21,25 @@ class VocaboPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = isLoading || onPressed == null;
+
     return Material(
       color: Colors.transparent,
       child: Ink(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [VocaboColors.primary, VocaboColors.primaryContainer],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          gradient: isDisabled
+              ? null
+              : const LinearGradient(
+                  colors: [VocaboColors.primary, VocaboColors.primaryContainer],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+          color: isDisabled ? VocaboColors.surfaceContainerHigh : null,
           borderRadius: VocaboRadius.md,
         ),
         child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          mouseCursor: isLoading || onPressed == null
+          onTap: isDisabled ? null : onPressed,
+          mouseCursor: isDisabled
               ? SystemMouseCursors.basic
               : SystemMouseCursors.click,
           borderRadius: VocaboRadius.md,
@@ -42,36 +47,45 @@ class VocaboPrimaryButton extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Row(
-            mainAxisSize:
-                isExpanded ? MainAxisSize.max : MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isLoading)
-                const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: VocaboColors.onPrimary,
+              mainAxisSize:
+                  isExpanded ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isLoading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: VocaboColors.neutral,
+                    ),
+                  )
+                else ...[
+                  Text(
+                    label,
+                    style: VocaboTypography.bodyMd.copyWith(
+                      color: isDisabled
+                          ? VocaboColors.neutral
+                          : VocaboColors.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                )
-              else ...[
-                Text(
-                  label,
-                  style: VocaboTypography.bodyMd.copyWith(
-                    color: VocaboColors.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (trailing != null) ...[
-                  const SizedBox(width: 8),
-                  trailing!,
+                  if (trailing != null) ...[
+                    const SizedBox(width: 8),
+                    IconTheme(
+                      data: IconThemeData(
+                        color: isDisabled
+                            ? VocaboColors.neutral
+                            : VocaboColors.onPrimary,
+                      ),
+                      child: trailing!,
+                    ),
+                  ],
                 ],
               ],
-            ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
