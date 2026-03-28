@@ -21,12 +21,15 @@ class VocaboTextButton extends StatelessWidget {
       style: TextButton.styleFrom(
         foregroundColor: VocaboColors.primary,
         minimumSize: const Size(44, 44),
-        mouseCursor: onPressed != null
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.basic,
         textStyle: uppercase
             ? VocaboTypography.labelSm
             : VocaboTypography.bodyMd.copyWith(fontWeight: FontWeight.w600),
+      ).copyWith(
+        mouseCursor: WidgetStatePropertyAll(
+          onPressed != null
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+        ),
       ),
       child: Text(uppercase ? label.toUpperCase() : label),
     );
