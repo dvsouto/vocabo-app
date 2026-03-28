@@ -16,33 +16,40 @@ class VocaboToggleSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: onChanged != null
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 24,
-            width: 44,
-            child: Switch.adaptive(
-              value: value,
-              onChanged: onChanged,
-              activeTrackColor: VocaboColors.primary,
-              activeThumbColor: VocaboColors.onPrimary,
-            ),
-          ),
-          if (label != null) ...[
-            const SizedBox(width: 8),
-            Text(
-              label!,
-              style: VocaboTypography.bodySm.copyWith(
-                color: VocaboColors.onSurface,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onChanged != null ? () => onChanged!(!value) : null,
+        mouseCursor: onChanged != null
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 24,
+              width: 44,
+              child: IgnorePointer(
+                child: Switch.adaptive(
+                  value: value,
+                  onChanged: onChanged,
+                  activeTrackColor: VocaboColors.primary,
+                  activeThumbColor: VocaboColors.onPrimary,
+                ),
               ),
             ),
+            if (label != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                label!,
+                style: VocaboTypography.bodySm.copyWith(
+                  color: VocaboColors.onSurface,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
