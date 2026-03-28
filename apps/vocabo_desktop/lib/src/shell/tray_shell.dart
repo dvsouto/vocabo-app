@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tray_manager/tray_manager.dart';
+import 'package:vocabo_core/vocabo_core.dart' show appLogger;
 import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
@@ -107,13 +108,13 @@ class _TrayShellState extends ConsumerState<TrayShell>
       final bounds = await trayManager.getBounds();
       final x = bounds?.left ?? 0.0;
       final y = bounds?.top ?? 0.0;
-      debugPrint('TrayPanel toggle: bounds=$bounds, sending x=$x, y=$y');
+      appLogger.debug('TrayPanel toggle: bounds=$bounds, sending x=$x, y=$y');
       await _trayPanelChannel.invokeMethod('toggle', {
         'x': x,
         'y': y,
       });
     } catch (e) {
-      debugPrint('TrayPanel toggle error: $e');
+      appLogger.error('TrayPanel toggle error', e);
     }
   }
 

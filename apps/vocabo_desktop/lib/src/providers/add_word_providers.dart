@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
@@ -210,7 +209,7 @@ class AddWordNotifier extends Notifier<AddWordState> {
         errorMessage: () => 'Not a valid word or phrase',
       );
     } catch (e) {
-      debugPrint('[AddWord] search() - ERROR: $e');
+      appLogger.error('AddWord search() error', e);
       state = state.copyWith(
         isSearching: false,
         isValid: false,
@@ -263,8 +262,8 @@ class AddWordNotifier extends Notifier<AddWordState> {
             : currentHash,
       };
 
-      debugPrint('[AddWord] save() - sending data: $data');
-      debugPrint('[AddWord] save() - autoDetect: ${state.autoDetect}, backendHash: ${state.backendHash}, currentHash: $currentHash');
+      appLogger.debug('AddWord save() - sending data: $data');
+      appLogger.debug('AddWord save() - autoDetect: ${state.autoDetect}, backendHash: ${state.backendHash}, currentHash: $currentHash');
 
       await ref
           .read(userVocabularyListProvider.notifier)
@@ -273,15 +272,14 @@ class AddWordNotifier extends Notifier<AddWordState> {
       state = state.copyWith(isSaving: false);
       return true;
     } on ConflictException catch (e) {
-      debugPrint('[AddWord] save() - CONFLICT: $e');
+      appLogger.warning('AddWord save() conflict: $e');
       state = state.copyWith(
         isSaving: false,
         errorMessage: () => 'This word is already in your vocabulary',
       );
       return false;
     } catch (e, st) {
-      debugPrint('[AddWord] save() - ERROR: $e');
-      debugPrint('[AddWord] save() - Stack: $st');
+      appLogger.handle(e, st, 'AddWord save() error');
       state = state.copyWith(
         isSaving: false,
         errorMessage: () => 'Failed to save. Please try again.',

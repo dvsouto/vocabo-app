@@ -13,6 +13,7 @@ dependencies:
     path: ../vocabo_core
   dio: ^5.7.0
   json_annotation: ^4.9.0
+  talker_dio_logger: ^5.1.16
 
 dev_dependencies:
   test: ^1.25.0

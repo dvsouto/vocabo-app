@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 
 import 'package:vocabo_desktop/src/services/audio_cache_service.dart';
@@ -45,9 +44,9 @@ class AudioPrefetchService {
         response.bytes,
         contentType: response.contentType,
       );
-      debugPrint('[AudioPrefetch] Cached audio for: ${vocab.term}');
+      appLogger.debug('AudioPrefetch: cached audio for ${vocab.term}');
     } catch (e) {
-      debugPrint('[AudioPrefetch] Failed for ${vocab.term}: $e');
+      appLogger.error('AudioPrefetch failed for ${vocab.term}', e);
     } finally {
       _prefetching.remove(contentHash);
     }

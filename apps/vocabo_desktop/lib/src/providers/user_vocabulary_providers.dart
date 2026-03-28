@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
@@ -32,14 +31,13 @@ class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
       _nextCursor = response.nextCursor;
       _hasMore = response.hasMore;
 
-      debugPrint('[UserVocabularyList] Loaded ${response.items.length} items, hasMore: $_hasMore');
+      appLogger.debug('UserVocabularyList: loaded ${response.items.length} items, hasMore: $_hasMore');
 
       _saveToCache(response.items);
 
       return response.items;
     } catch (e, st) {
-      debugPrint('[UserVocabularyList] build() ERROR: $e');
-      debugPrint('[UserVocabularyList] Stack: $st');
+      appLogger.handle(e, st, 'UserVocabularyList build() error');
       rethrow;
     }
   }

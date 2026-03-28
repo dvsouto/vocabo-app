@@ -25,6 +25,8 @@ dependencies:
     path: ../../packages/vocabo_api
   vocabo_ui:
     path: ../../packages/vocabo_ui
+  talker_flutter: ^5.1.16
+  talker_riverpod_logger: ^5.0.1
 
 dev_dependencies:
   flutter_test:

@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
+import 'package:vocabo_core/vocabo_core.dart';
 
 import 'package:vocabo_api/src/auth/token_storage.dart';
 import 'package:vocabo_api/src/client/interceptors/auth_interceptor.dart';
 import 'package:vocabo_api/src/client/interceptors/error_interceptor.dart';
-import 'package:vocabo_api/src/client/interceptors/logging_interceptor.dart';
 
 class ApiClient {
   final Dio dio;
@@ -23,7 +24,13 @@ class ApiClient {
           ),
         ) {
     dio.interceptors.addAll([
-      LoggingInterceptor(),
+      TalkerDioLogger(
+        talker: appLogger,
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: false,
+        ),
+      ),
       AuthInterceptor(tokenStorage),
       ErrorInterceptor(),
     ]);

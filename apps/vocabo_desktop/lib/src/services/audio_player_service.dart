@@ -105,7 +105,7 @@ class AudioPlayerService extends ChangeNotifier {
         _updateState(const AudioPlayerState());
       }
     } catch (e) {
-      debugPrint('[AudioPlayer] play() error: $e');
+      appLogger.error('AudioPlayer play() error', e);
       if (generation != _playGeneration) return;
 
       _updateState(_state.copyWith(status: AudioPlayerStatus.failed));
