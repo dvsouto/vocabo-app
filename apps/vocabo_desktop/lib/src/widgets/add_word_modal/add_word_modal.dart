@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
+import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 import 'package:vocabo_desktop/src/widgets/add_word_modal/part_of_speech_selector.dart';
 
 class AddWordModal extends ConsumerStatefulWidget {
@@ -96,7 +98,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                   _buildLanguageRow(wordState),
                   const SizedBox(height: VocaboSpacing.md),
 
-                  _buildTermInput(notifier),
+                  _buildTermInput(wordState, notifier),
                   const SizedBox(height: VocaboSpacing.md),
 
                   _buildFieldsSection(wordState, notifier, fieldsEnabled),
@@ -126,22 +128,22 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         const SizedBox(width: 8),
         Text('Vocabo', style: VocaboTypography.titleLg),
         const Spacer(),
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: IconButton(
-            icon: const Icon(Icons.history, size: 20),
-            color: VocaboColors.neutral,
-            onPressed: () {},
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        IconButton(
+          icon: const Icon(Icons.history, size: 20),
+          color: VocaboColors.neutral,
+          onPressed: () {},
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          style: const ButtonStyle(
+            mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
           ),
         ),
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: IconButton(
-            icon: const Icon(Icons.close, size: 20),
-            color: VocaboColors.neutral,
-            onPressed: _close,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        IconButton(
+          icon: const Icon(Icons.close, size: 20),
+          color: VocaboColors.neutral,
+          onPressed: _close,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          style: const ButtonStyle(
+            mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
           ),
         ),
       ],
@@ -191,7 +193,11 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     );
   }
 
-  Widget _buildTermInput(AddWordNotifier notifier) {
+  Widget _buildTermInput(AddWordState state, AddWordNotifier notifier) {
+    final showPlayButton = state.autoDetect;
+    final canPlay = state.isValid && state.backendResult != null;
+    final contentHash = state.backendResult?.contentHash ?? '';
+
     return Row(
       children: [
         Expanded(
@@ -211,18 +217,58 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
             ),
           ),
         ),
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: IconButton(
-            icon: Icon(
-              Icons.volume_up,
-              color: VocaboColors.primary,
-              size: 24,
-            ),
-            onPressed: () {},
-          ),
-        ),
+        if (showPlayButton) _buildPlayButton(canPlay, contentHash, state),
       ],
+    );
+  }
+
+  Widget _buildPlayButton(bool canPlay, String contentHash, AddWordState wordState) {
+    final audioState = ref.watch(audioPlayerStateProvider);
+    final isThisPlaying = contentHash.isNotEmpty &&
+        audioState.currentPlayingHash == contentHash;
+    final isLoading = isThisPlaying &&
+        audioState.status == AudioPlayerStatus.loading;
+    final isPlaying = isThisPlaying &&
+        audioState.status == AudioPlayerStatus.playing;
+
+    return InkWell(
+      onTap: canPlay
+          ? () {
+              final player = ref.read(audioPlayerServiceProvider);
+              if (isThisPlaying && (isLoading || isPlaying)) {
+                player.stop();
+              } else {
+                player.play(
+                  vocabularyId: wordState.backendResult!.id,
+                  type: 'system',
+                  contentHash: contentHash,
+                );
+              }
+            }
+          : null,
+      mouseCursor: canPlay
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      customBorder: const CircleBorder(),
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: isLoading
+            ? const Padding(
+                padding: EdgeInsets.all(8),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: VocaboColors.primary,
+                ),
+              )
+            : Icon(
+                isPlaying ? Icons.stop : Icons.volume_up,
+                color: canPlay
+                    ? VocaboColors.primary
+                    : VocaboColors.primary.withValues(alpha: 0.3),
+                size: 24,
+              ),
+      ),
     );
   }
 

@@ -86,26 +86,26 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                       suffixActions: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.tune,
-                                size: 20,
-                                color: VocaboColors.neutral,
-                              ),
-                              onPressed: () {},
+                          IconButton(
+                            icon: const Icon(
+                              Icons.tune,
+                              size: 20,
+                              color: VocaboColors.neutral,
+                            ),
+                            onPressed: () {},
+                            style: const ButtonStyle(
+                              mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
                             ),
                           ),
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.more_vert,
-                                size: 20,
-                                color: VocaboColors.neutral,
-                              ),
-                              onPressed: () {},
+                          IconButton(
+                            icon: const Icon(
+                              Icons.more_vert,
+                              size: 20,
+                              color: VocaboColors.neutral,
+                            ),
+                            onPressed: () {},
+                            style: const ButtonStyle(
+                              mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
                             ),
                           ),
                         ],
