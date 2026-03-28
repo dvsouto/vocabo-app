@@ -4,6 +4,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
+import 'package:vocabo_desktop/src/services/user_vocabulary_cache_service.dart';
+
+final userVocabularyCacheServiceProvider =
+    Provider<UserVocabularyCacheService>((ref) => UserVocabularyCacheService());
+
+final cachedUserVocabularyProvider =
+    FutureProvider<List<UserVocabulary>>((ref) async {
+  final cacheService = ref.watch(userVocabularyCacheServiceProvider);
+  final items = await cacheService.load();
+  return items ?? [];
+});
 
 class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
   String? _nextCursor;
@@ -22,6 +33,9 @@ class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
       _hasMore = response.hasMore;
 
       debugPrint('[UserVocabularyList] Loaded ${response.items.length} items, hasMore: $_hasMore');
+
+      _saveToCache(response.items);
+
       return response.items;
     } catch (e, st) {
       debugPrint('[UserVocabularyList] build() ERROR: $e');
@@ -60,13 +74,22 @@ class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
     final newEntry = await api.userVocabulary.add(data: data);
 
     final current = state.valueOrNull ?? [];
-    state = AsyncData([newEntry, ...current]);
+    final updated = [newEntry, ...current];
+    state = AsyncData(updated);
+
+    _saveToCache(updated);
   }
 
   void refresh() {
     _nextCursor = null;
     _hasMore = false;
     ref.invalidateSelf();
+  }
+
+  void _saveToCache(List<UserVocabulary> items) {
+    final cacheService = ref.read(userVocabularyCacheServiceProvider);
+    final toCache = items.take(100).toList();
+    cacheService.save(toCache);
   }
 }
 

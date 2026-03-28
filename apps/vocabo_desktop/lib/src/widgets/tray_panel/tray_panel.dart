@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
+import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
 
 class TrayPanel extends ConsumerStatefulWidget {
   const TrayPanel({super.key, this.onOpenDashboard});
@@ -66,11 +68,13 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final searchResults = ref.watch(searchResultsProvider);
-    final query = ref.watch(searchQueryProvider);
+    ref.watch(dictionaryInitProvider);
 
-    // Check if term is in vocabulary using local search engine
-    final isInVocabulary = ref.watch(isTermInVocabularyProvider(query));
+    final searchResults = ref.watch(localSearchResultsProvider);
+    final query = ref.watch(searchQueryProvider);
+    final recentWords = ref.watch(recentCachedVocabularyProvider(query));
+
+    final isInVocabulary = ref.watch(localIsTermInVocabularyProvider(query));
     final showAddButton = query.isNotEmpty && !isInVocabulary;
 
     return Padding(
@@ -129,9 +133,61 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
           ],
           const SizedBox(height: VocaboSpacing.sm),
 
-          // Recent words placeholder (tray runs in separate engine)
-          const Expanded(
-            child: SizedBox.shrink(),
+          // Recent words list
+          Expanded(
+            child: recentWords.when(
+              data: (words) {
+                if (words.isEmpty) {
+                  return Center(
+                    child: Text(
+                      query.isEmpty
+                          ? 'No words yet'
+                          : 'No matching words',
+                      style: VocaboTypography.bodySm.copyWith(
+                        color: VocaboColors.neutral,
+                      ),
+                    ),
+                  );
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Recent Words',
+                      style: VocaboTypography.labelSm.copyWith(
+                        color: VocaboColors.neutral,
+                      ),
+                    ),
+                    const Divider(height: 12),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: words.length,
+                        itemBuilder: (context, index) =>
+                            TrayWordItem(
+                              vocabulary: words[index].vocabulary!,
+                            ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (_, _) => Center(
+                child: Text(
+                  'Failed to load words',
+                  style: VocaboTypography.bodySm.copyWith(
+                    color: VocaboColors.neutral,
+                  ),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: VocaboSpacing.sm),
 
