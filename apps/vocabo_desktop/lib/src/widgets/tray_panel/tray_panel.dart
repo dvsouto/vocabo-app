@@ -165,7 +165,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
                         itemCount: words.length,
                         itemBuilder: (context, index) =>
                             TrayWordItem(
-                              vocabulary: words[index].vocabulary!,
+                              userVocabulary: words[index],
                             ),
                       ),
                     ),
