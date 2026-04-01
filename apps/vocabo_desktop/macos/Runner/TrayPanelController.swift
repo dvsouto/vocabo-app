@@ -232,17 +232,18 @@ class TrayPanelController {
 
         let panel = TrayPanel(
             contentRect: NSRect(x: 0, y: 0, width: 340, height: 500),
-            styleMask: [.titled, .fullSizeContentView],
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
+
+        flutterVC?.view.wantsLayer = true
+        flutterVC?.view.layer?.backgroundColor = NSColor.clear.cgColor
 
         panel.contentViewController = flutterVC
         panel.isFloatingPanel = true
         panel.level = .floating
         panel.hidesOnDeactivate = false
-        panel.titlebarAppearsTransparent = true
-        panel.titleVisibility = .hidden
         panel.isMovableByWindowBackground = false
         panel.backgroundColor = .clear
         panel.hasShadow = true

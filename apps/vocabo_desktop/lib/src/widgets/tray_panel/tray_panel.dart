@@ -5,6 +5,7 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
+import 'package:vocabo_desktop/src/widgets/tray_panel/tray_translate_tab.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
 
 class TrayPanel extends ConsumerStatefulWidget {
@@ -20,6 +21,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
   static const _channel = MethodChannel('vocabo/tray_panel_actions');
 
   final _searchController = TextEditingController();
+  int _selectedTabIndex = 0;
 
   @override
   void dispose() {
@@ -68,19 +70,9 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(dictionaryInitProvider);
-
-    final searchResults = ref.watch(localSearchResultsProvider);
-    final query = ref.watch(searchQueryProvider);
-    final recentWords = ref.watch(recentCachedVocabularyProvider(query));
-
-    final isInVocabulary = ref.watch(localIsTermInVocabularyProvider(query));
-    final showAddButton = query.isNotEmpty && !isInVocabulary;
-
     return Padding(
       padding: const EdgeInsets.all(VocaboSpacing.md),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           // Header
           Row(
@@ -109,103 +101,138 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
               ),
             ],
           ),
-          const SizedBox(height: VocaboSpacing.sm),
+          const SizedBox(height: VocaboSpacing.xs),
 
-          // Search
-          VocaboSearchField(
-            controller: _searchController,
-            hint: 'Search words...',
-            autofocus: true,
-            onChanged: (v) =>
-                ref.read(searchQueryProvider.notifier).state = v,
+          // Tab bar
+          VocaboTabBar(
+            tabs: const ['Add Word', 'Translate'],
+            selectedIndex: _selectedTabIndex,
+            onTabChanged: (index) =>
+                setState(() => _selectedTabIndex = index),
           ),
-
-          // Autocomplete suggestions
-          if (query.isNotEmpty && searchResults.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            SearchAutocompleteDropdown(
-              results: searchResults.take(5).toList(),
-              onSelected: (result) {
-                _searchController.text = result.word;
-                ref.read(searchQueryProvider.notifier).state = result.word;
-              },
-            ),
-          ],
           const SizedBox(height: VocaboSpacing.sm),
 
-          // Recent words list
+          // Tab content
           Expanded(
-            child: recentWords.when(
-              data: (words) {
-                if (words.isEmpty) {
-                  return Center(
-                    child: Text(
-                      query.isEmpty
-                          ? 'No words yet'
-                          : 'No matching words',
-                      style: VocaboTypography.bodySm.copyWith(
-                        color: VocaboColors.neutral,
-                      ),
-                    ),
-                  );
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Recent Words',
-                      style: VocaboTypography.labelSm.copyWith(
-                        color: VocaboColors.neutral,
-                      ),
-                    ),
-                    const Divider(height: 12),
-                    Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: words.length,
-                        itemBuilder: (context, index) =>
-                            TrayWordItem(
-                              userVocabulary: words[index],
-                            ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-              loading: () => const Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-              error: (_, _) => Center(
-                child: Text(
-                  'Failed to load words',
-                  style: VocaboTypography.bodySm.copyWith(
-                    color: VocaboColors.neutral,
-                  ),
-                ),
-              ),
+            child: IndexedStack(
+              index: _selectedTabIndex,
+              children: [
+                _buildAddWordTab(),
+                const TrayTranslateTab(),
+              ],
             ),
-          ),
-          const SizedBox(height: VocaboSpacing.sm),
-
-          // Single conditional button
-          VocaboPrimaryButton(
-            label: showAddButton ? 'Add New Word' : 'Dashboard',
-            isExpanded: true,
-            trailing: showAddButton
-                ? const Icon(
-                    Icons.add_circle_outline,
-                    color: VocaboColors.onPrimary,
-                    size: 18,
-                  )
-                : null,
-            onPressed: showAddButton ? _openAddWord : _openApp,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAddWordTab() {
+    ref.watch(dictionaryInitProvider);
+
+    final searchResults = ref.watch(localSearchResultsProvider);
+    final query = ref.watch(searchQueryProvider);
+    final recentWords = ref.watch(recentCachedVocabularyProvider(query));
+
+    final isInVocabulary = ref.watch(localIsTermInVocabularyProvider(query));
+    final showAddButton = query.isNotEmpty && !isInVocabulary;
+
+    return Column(
+      children: [
+        // Search
+        VocaboSearchField(
+          controller: _searchController,
+          hint: 'Search words...',
+          autofocus: true,
+          onChanged: (v) =>
+              ref.read(searchQueryProvider.notifier).state = v,
+        ),
+
+        // Autocomplete suggestions
+        if (query.isNotEmpty && searchResults.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          SearchAutocompleteDropdown(
+            results: searchResults.take(5).toList(),
+            onSelected: (result) {
+              _searchController.text = result.word;
+              ref.read(searchQueryProvider.notifier).state = result.word;
+            },
+          ),
+        ],
+        const SizedBox(height: VocaboSpacing.sm),
+
+        // Recent words list
+        Expanded(
+          child: recentWords.when(
+            data: (words) {
+              if (words.isEmpty) {
+                return Center(
+                  child: Text(
+                    query.isEmpty
+                        ? 'No words yet'
+                        : 'No matching words',
+                    style: VocaboTypography.bodySm.copyWith(
+                      color: VocaboColors.neutral,
+                    ),
+                  ),
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Recent Words',
+                    style: VocaboTypography.labelSm.copyWith(
+                      color: VocaboColors.neutral,
+                    ),
+                  ),
+                  const Divider(height: 12),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: words.length,
+                      itemBuilder: (context, index) =>
+                          TrayWordItem(
+                            userVocabulary: words[index],
+                          ),
+                    ),
+                  ),
+                ],
+              );
+            },
+            loading: () => const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+            error: (_, _) => Center(
+              child: Text(
+                'Failed to load words',
+                style: VocaboTypography.bodySm.copyWith(
+                  color: VocaboColors.neutral,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: VocaboSpacing.sm),
+
+        // Single conditional button
+        VocaboPrimaryButton(
+          label: showAddButton ? 'Add New Word' : 'Dashboard',
+          isExpanded: true,
+          trailing: showAddButton
+              ? const Icon(
+                  Icons.add_circle_outline,
+                  color: VocaboColors.onPrimary,
+                  size: 18,
+                )
+              : null,
+          onPressed: showAddButton ? _openAddWord : _openApp,
+        ),
+      ],
     );
   }
 }
