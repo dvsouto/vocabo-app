@@ -18,6 +18,12 @@ class TrayPanelController {
 
     private var lastShowPoint: NSPoint?
 
+    private let shadowInset: CGFloat = 12
+    private let contentWidth: CGFloat = 340
+    private let contentHeight: CGFloat = 500
+    private var panelWidth: CGFloat { contentWidth + shadowInset * 2 }
+    private var panelHeight: CGFloat { contentHeight + shadowInset * 2 }
+
     static let shared = TrayPanelController()
 
     var isVisible: Bool {
@@ -77,9 +83,6 @@ class TrayPanelController {
             NSLog("[Vocabo] TrayPanelController: ERROR - Panel is nil after creation")
             return
         }
-
-        let panelWidth: CGFloat = 340
-        let panelHeight: CGFloat = 500
 
         let primaryScreen = NSScreen.screens.first
         let primaryHeight = primaryScreen?.frame.height ?? 900
@@ -198,6 +201,7 @@ class TrayPanelController {
 
         flutterEngine = engine
         flutterVC = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
+        flutterVC?.backgroundColor = .clear
 
         let actionsChannel = FlutterMethodChannel(
             name: "vocabo/tray_panel_actions",
@@ -231,8 +235,8 @@ class TrayPanelController {
         }
 
         let panel = TrayPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 500),
-            styleMask: [.titled, .fullSizeContentView],
+            contentRect: NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight),
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
@@ -241,17 +245,11 @@ class TrayPanelController {
         panel.isFloatingPanel = true
         panel.level = .floating
         panel.hidesOnDeactivate = false
-        panel.titlebarAppearsTransparent = true
-        panel.titleVisibility = .hidden
         panel.isMovableByWindowBackground = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
         panel.isOpaque = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-
-        panel.contentView?.wantsLayer = true
-        panel.contentView?.layer?.cornerRadius = 16
-        panel.contentView?.layer?.masksToBounds = true
 
         self.panel = panel
         NSLog("[Vocabo] TrayPanelController: Panel created successfully")

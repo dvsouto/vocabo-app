@@ -43,9 +43,29 @@ void trayPanelMain() {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: VocaboTheme.light(),
-        home: const Scaffold(
-          backgroundColor: VocaboColors.surfaceContainerLowest,
-          body: TrayPanel(),
+        home: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Container(
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: VocaboColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 24,
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 6,
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: const TrayPanel(),
+          ),
         ),
       ),
     ),
