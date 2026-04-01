@@ -112,12 +112,33 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
                   maxLines: 3,
                   minLines: 2,
                   style: VocaboTypography.bodyMd,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Enter text to translate...',
-                    border: InputBorder.none,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(0),
+                      borderSide: const BorderSide(
+                        color: Colors.transparent,
+                      ),
+                    ),
                     isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                    filled: false,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: VocaboSpacing.md,
+                      horizontal: VocaboSpacing.sm,
+                    ),
+                    filled: true,
+                    fillColor: VocaboColors.surfaceContainerLow,
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.transparent,
+                      ),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.transparent,
+                      ),
+                    ),
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                   ),
                   onChanged: (value) {
                     ref
