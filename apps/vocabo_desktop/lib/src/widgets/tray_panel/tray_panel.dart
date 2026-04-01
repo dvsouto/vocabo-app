@@ -80,16 +80,6 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
               Text('Vocabo', style: VocaboTypography.titleLg),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.open_in_new, size: 18),
-                color: VocaboColors.neutral,
-                tooltip: 'Open Dashboard',
-                onPressed: _openApp,
-                constraints: const BoxConstraints(
-                  minWidth: 32,
-                  minHeight: 32,
-                ),
-              ),
-              IconButton(
                 icon: const Icon(Icons.power_settings_new, size: 20),
                 color: VocaboColors.neutral,
                 tooltip: 'Quit Vocabo',
