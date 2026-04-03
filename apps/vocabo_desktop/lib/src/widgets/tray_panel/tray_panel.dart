@@ -115,11 +115,13 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
             selectedIndex: _selectedTabIndex,
             onTabChanged: (index) {
                 setState(() => _selectedTabIndex = index);
-                if (index == 0) {
-                  _searchFocusNode.requestFocus();
-                } else if (index == 1) {
-                  _translateFocusNode.requestFocus();
-                }
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (index == 0) {
+                    _searchFocusNode.requestFocus();
+                  } else if (index == 1) {
+                    _translateFocusNode.requestFocus();
+                  }
+                });
             },
           ),
           const SizedBox(height: VocaboSpacing.sm),
