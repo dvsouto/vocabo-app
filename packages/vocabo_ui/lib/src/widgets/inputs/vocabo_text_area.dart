@@ -9,6 +9,7 @@ class VocaboTextArea extends StatelessWidget {
     this.hint,
     this.onChanged,
     this.enabled = true,
+    this.readOnly = false,
     this.minLines = 2,
     this.maxLines = 3,
   });
@@ -17,6 +18,7 @@ class VocaboTextArea extends StatelessWidget {
   final String? hint;
   final ValueChanged<String>? onChanged;
   final bool enabled;
+  final bool readOnly;
   final int minLines;
   final int maxLines;
 
@@ -26,6 +28,7 @@ class VocaboTextArea extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       enabled: enabled,
+      readOnly: readOnly,
       minLines: minLines,
       maxLines: maxLines,
       decoration: InputDecoration(

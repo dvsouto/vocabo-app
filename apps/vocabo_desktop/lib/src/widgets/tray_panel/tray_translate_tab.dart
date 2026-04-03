@@ -6,7 +6,9 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/translation_providers.dart';
 
 class TrayTranslateTab extends ConsumerStatefulWidget {
-  const TrayTranslateTab({super.key});
+  const TrayTranslateTab({super.key, this.inputFocusNode});
+
+  final FocusNode? inputFocusNode;
 
   @override
   ConsumerState<TrayTranslateTab> createState() => _TrayTranslateTabState();
@@ -190,6 +192,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
                 ),
                 child: TextField(
                   controller: _inputController,
+                  focusNode: widget.inputFocusNode,
                   autofocus: false,
                   maxLines: 3,
                   minLines: 2,

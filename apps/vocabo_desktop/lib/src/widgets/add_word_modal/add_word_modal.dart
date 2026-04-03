@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/providers/search_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 import 'package:vocabo_desktop/src/widgets/add_word_modal/part_of_speech_selector.dart';
 
@@ -71,6 +72,9 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
   Widget build(BuildContext context) {
     final wordState = ref.watch(addWordNotifierProvider);
     final notifier = ref.read(addWordNotifierProvider.notifier);
+    final isAlreadyInVocabulary = ref.watch(
+      isTermInVocabularyProvider(wordState.term.trim()),
+    );
 
     final fieldsEnabled = !wordState.autoDetect;
 
@@ -82,22 +86,18 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 560,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.9,
-          ),
+          width: 680,
           decoration: BoxDecoration(
             color: VocaboColors.surface,
             borderRadius: VocaboRadius.lg,
             boxShadow: [VocaboShadows.whisper],
           ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(VocaboSpacing.lg),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          child: Padding(
+            padding: const EdgeInsets.all(VocaboSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                   _buildHeader(),
                   const SizedBox(height: VocaboSpacing.md),
 
@@ -113,36 +113,20 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                   _buildAutoDetectToggle(wordState, notifier),
                   const SizedBox(height: VocaboSpacing.lg),
 
-                  _buildActions(wordState, notifier),
+                  _buildActions(wordState, notifier, isAlreadyInVocabulary),
                 ],
               ),
             ),
           ),
         ),
-      ),
     );
   }
 
   Widget _buildHeader() {
     return Row(
       children: [
-        Icon(
-          Icons.add_circle,
-          color: VocaboColors.primary,
-          size: 22,
-        ),
-        const SizedBox(width: 8),
-        Text('Vocabo', style: VocaboTypography.titleLg),
+        Text('Add New Word', style: VocaboTypography.titleLg),
         const Spacer(),
-        IconButton(
-          icon: const Icon(Icons.history, size: 20),
-          color: VocaboColors.neutral,
-          onPressed: () {},
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-          style: const ButtonStyle(
-            mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
-          ),
-        ),
         IconButton(
           icon: const Icon(Icons.close, size: 20),
           color: VocaboColors.neutral,
@@ -339,7 +323,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                       VocaboTextArea(
                         controller: _meaningController,
                         hint: 'What does this mean?',
-                        enabled: fieldsEnabled,
+                        readOnly: !fieldsEnabled,
                         onChanged: notifier.setMeaning,
                       ),
                       if (state.isSearching)
@@ -389,7 +373,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
             VocaboTextField(
               controller: _translationController,
               hint: 'Translation in your language...',
-              enabled: fieldsEnabled,
+              readOnly: !fieldsEnabled,
             ),
             if (state.isSearching)
               Positioned.fill(
@@ -399,9 +383,9 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         ),
         const SizedBox(height: VocaboSpacing.md),
 
-        // Example sentence
+        // Example sentences
         Text(
-          'EXAMPLE SENTENCE',
+          'EXAMPLE SENTENCES',
           style: VocaboTypography.labelSm.copyWith(
             color: VocaboColors.neutral,
           ),
@@ -412,8 +396,10 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
             VocaboTextArea(
               controller: _exampleController,
               hint: 'Use it in a sentence to provide context...',
-              enabled: fieldsEnabled,
+              readOnly: !fieldsEnabled,
               onChanged: notifier.setExampleSentence,
+              minLines: 3,
+              maxLines: 3,
             ),
             if (state.isSearching)
               Positioned.fill(
@@ -463,37 +449,57 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     );
   }
 
-  Widget _buildActions(AddWordState state, AddWordNotifier notifier) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+  Widget _buildActions(
+    AddWordState state,
+    AddWordNotifier notifier,
+    bool isAlreadyInVocabulary,
+  ) {
+    final canSave = state.canSave && !isAlreadyInVocabulary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        VocaboTextButton(
-          label: 'Cancel',
-          onPressed: _close,
-        ),
-        const SizedBox(width: VocaboSpacing.sm),
-        VocaboPrimaryButton(
-          label: state.isSaving ? 'Saving...' : 'Save to Library',
-          trailing: state.isSaving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
-              : const Icon(
-                  Icons.arrow_forward,
-                  size: 18,
-                ),
-          onPressed: state.canSave
-              ? () async {
-                  final success = await notifier.save();
-                  if (success && mounted) {
-                    _close();
-                  }
-                }
-              : null,
+        if (isAlreadyInVocabulary && state.term.trim().isNotEmpty) ...[
+          Text(
+            'This word is already in your vocabulary',
+            style: VocaboTypography.bodySm.copyWith(
+              color: VocaboColors.neutral600,
+            ),
+          ),
+          const SizedBox(height: VocaboSpacing.sm),
+        ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            VocaboTextButton(
+              label: 'Cancel',
+              onPressed: _close,
+            ),
+            const SizedBox(width: VocaboSpacing.sm),
+            VocaboPrimaryButton(
+              label: state.isSaving ? 'Saving...' : 'Save to Library',
+              trailing: state.isSaving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.arrow_forward,
+                      size: 18,
+                    ),
+              onPressed: canSave
+                  ? () async {
+                      final success = await notifier.save();
+                      if (success && mounted) {
+                        _close();
+                      }
+                    }
+                  : null,
+            ),
+          ],
         ),
       ],
     );

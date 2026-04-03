@@ -23,6 +23,8 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
   static const _eventsChannel = MethodChannel('vocabo/tray_events');
 
   final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
+  final _translateFocusNode = FocusNode();
   int _selectedTabIndex = 0;
 
   @override
@@ -38,6 +40,8 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
+    _translateFocusNode.dispose();
     super.dispose();
   }
 
@@ -109,8 +113,14 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
           VocaboTabBar(
             tabs: const ['Add Word', 'Translate'],
             selectedIndex: _selectedTabIndex,
-            onTabChanged: (index) =>
-                setState(() => _selectedTabIndex = index),
+            onTabChanged: (index) {
+                setState(() => _selectedTabIndex = index);
+                if (index == 0) {
+                  _searchFocusNode.requestFocus();
+                } else if (index == 1) {
+                  _translateFocusNode.requestFocus();
+                }
+            },
           ),
           const SizedBox(height: VocaboSpacing.sm),
 
@@ -120,7 +130,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
               index: _selectedTabIndex,
               children: [
                 _buildAddWordTab(),
-                const TrayTranslateTab(),
+                TrayTranslateTab(inputFocusNode: _translateFocusNode),
               ],
             ),
           ),
@@ -144,6 +154,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
         // Search
         VocaboSearchField(
           controller: _searchController,
+          focusNode: _searchFocusNode,
           hint: 'Search words...',
           autofocus: true,
           onChanged: (v) =>

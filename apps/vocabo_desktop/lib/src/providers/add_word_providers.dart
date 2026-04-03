@@ -220,13 +220,9 @@ class AddWordNotifier extends Notifier<AddWordState> {
 
   String? _extractExampleSentence(UsageExamples? examples) {
     if (examples == null) return null;
-    final entries = examples.toJson().values;
-    for (final value in entries) {
-      if (value is List && value.isNotEmpty) {
-        return value.first.toString();
-      }
-    }
-    return null;
+    final sourceLang = examples.sourceLang;
+    if (sourceLang.isEmpty) return null;
+    return sourceLang.join('\n');
   }
 
   Future<bool> save() async {

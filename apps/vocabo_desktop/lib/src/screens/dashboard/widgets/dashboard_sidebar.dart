@@ -57,7 +57,7 @@ class DashboardSidebar extends ConsumerWidget {
           }),
           const Spacer(),
           VocaboPrimaryButton(
-            label: '+ Add New Word',
+            label: 'Add New Word',
             isExpanded: true,
             onPressed: () {
               ref.read(addWordInitialTermProvider.notifier).state = '';

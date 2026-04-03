@@ -12,6 +12,7 @@ class VocaboTextField extends StatelessWidget {
     this.onSubmitted,
     this.autofocus = false,
     this.enabled = true,
+    this.readOnly = false,
   });
 
   final TextEditingController? controller;
@@ -21,6 +22,7 @@ class VocaboTextField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final bool autofocus;
   final bool enabled;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,7 @@ class VocaboTextField extends StatelessWidget {
       onSubmitted: onSubmitted,
       autofocus: autofocus,
       enabled: enabled,
+      readOnly: readOnly,
       decoration: InputDecoration(
         hintText: hint,
         filled: true,

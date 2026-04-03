@@ -25,6 +25,7 @@ class PartOfSpeechSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
+      runSpacing: 8,
       children: WordType.values.map((type) {
         return VocaboSelectableChip(
           label: _labels[type] ?? type.value,
