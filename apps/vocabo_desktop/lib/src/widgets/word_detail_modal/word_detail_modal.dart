@@ -315,9 +315,23 @@ class WordDetailModal extends ConsumerWidget {
     final lowerTerm = term.toLowerCase();
     final index = lowerExample.indexOf(lowerTerm);
 
-    final baseStyle = VocaboTypography.bodyMd.copyWith(
+    final fontFamily = VocaboTypography.bodyMd.fontFamily;
+    final baseStyle = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
       fontStyle: FontStyle.italic,
       color: VocaboColors.onSurface,
+      height: 1.5,
+    );
+
+    final boldStyle = TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 14,
+      fontWeight: FontWeight.w700,
+      fontStyle: FontStyle.italic,
+      color: VocaboColors.onSurface,
+      height: 1.5,
     );
 
     if (index == -1) {
@@ -332,10 +346,7 @@ class WordDetailModal extends ConsumerWidget {
       TextSpan(
         children: [
           TextSpan(text: before, style: baseStyle),
-          TextSpan(
-            text: match,
-            style: baseStyle.copyWith(fontWeight: FontWeight.w700),
-          ),
+          TextSpan(text: match, style: boldStyle),
           TextSpan(text: after, style: baseStyle),
         ],
       ),
