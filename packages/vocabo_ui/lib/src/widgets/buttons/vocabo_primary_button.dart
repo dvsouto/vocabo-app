@@ -47,7 +47,7 @@ class VocaboPrimaryButton extends StatelessWidget {
           gradient: isDisabled
               ? null
               : const LinearGradient(
-                  colors: [VocaboColors.primary, VocaboColors.primaryContainer],
+                  colors: [VocaboColors.primary700, VocaboColors.primary600],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),

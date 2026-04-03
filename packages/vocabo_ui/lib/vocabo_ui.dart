@@ -16,6 +16,7 @@ export 'src/widgets/buttons/vocabo_primary_button.dart';
 export 'src/widgets/buttons/vocabo_secondary_button.dart';
 export 'src/widgets/buttons/vocabo_outlined_button.dart';
 export 'src/widgets/buttons/vocabo_text_button.dart';
+export 'src/widgets/buttons/vocabo_neutral_button.dart';
 export 'src/widgets/buttons/vocabo_social_auth_button.dart';
 
 // Widgets - Inputs

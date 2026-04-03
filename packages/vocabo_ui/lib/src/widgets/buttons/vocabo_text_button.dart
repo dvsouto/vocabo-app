@@ -8,11 +8,13 @@ class VocaboTextButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.uppercase = false,
+    this.leading,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool uppercase;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +23,9 @@ class VocaboTextButton extends StatelessWidget {
       style: TextButton.styleFrom(
         foregroundColor: VocaboColors.primary,
         minimumSize: const Size(44, 44),
-        textStyle: uppercase
-            ? VocaboTypography.labelSm
-            : VocaboTypography.bodyMd.copyWith(fontWeight: FontWeight.w600),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        textStyle: VocaboTypography.bodyMd.copyWith(fontWeight: FontWeight.w600),
+        overlayColor: Colors.transparent,
       ).copyWith(
         mouseCursor: WidgetStatePropertyAll(
           onPressed != null
@@ -31,7 +33,22 @@ class VocaboTextButton extends StatelessWidget {
               : SystemMouseCursors.basic,
         ),
       ),
-      child: Text(uppercase ? label.toUpperCase() : label),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (leading != null) ...[
+            IconTheme(
+              data: const IconThemeData(
+                color: VocaboColors.primary,
+                size: 16,
+              ),
+              child: leading!,
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(uppercase ? label.toUpperCase() : label),
+        ],
+      ),
     );
   }
 }
