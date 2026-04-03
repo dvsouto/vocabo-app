@@ -23,6 +23,8 @@ dependencies:
     path: ../../packages/vocabo_core
   vocabo_api:
     path: ../../packages/vocabo_api
+  vocabo_translation:
+    path: ../../packages/vocabo_translation
   vocabo_ui:
     path: ../../packages/vocabo_ui
   talker_flutter: ^5.1.16

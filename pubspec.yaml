@@ -9,6 +9,7 @@ workspace:
   - apps/vocabo_desktop
   - packages/vocabo_core
   - packages/vocabo_api
+  - packages/vocabo_translation
   - packages/vocabo_ui
 
 dev_dependencies:

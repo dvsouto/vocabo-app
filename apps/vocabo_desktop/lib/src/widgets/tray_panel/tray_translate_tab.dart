@@ -39,13 +39,37 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
     _channel.invokeMethod('openAddWord', {'term': state.inputText});
   }
 
+  void _onOpenTranslationSettings() {
+    final service = ref.read(translationServiceProvider);
+    service.openTranslationSettings();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final availabilityAsync = ref.watch(translationAvailabilityProvider);
     final directionAsync = ref.watch(translationDirectionProvider);
     final translationState = ref.watch(translationNotifierProvider);
 
-    return directionAsync.when(
-      data: (direction) => _buildContent(direction, translationState),
+    return availabilityAsync.when(
+      data: (isAvailable) {
+        if (!isAvailable) {
+          return _buildSetupRequired();
+        }
+        return directionAsync.when(
+          data: (direction) => _buildContent(direction, translationState),
+          loading: () => const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+          error: (_, _) => _buildContent(
+            const TranslationDirection(),
+            translationState,
+          ),
+        );
+      },
       loading: () => const Center(
         child: SizedBox(
           width: 20,
@@ -53,10 +77,57 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
-      error: (_, _) => _buildContent(
-        const TranslationDirection(),
-        translationState,
-      ),
+      error: (_, _) => _buildSetupRequired(),
+    );
+  }
+
+  Widget _buildSetupRequired() {
+    return Center(
+      child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: VocaboColors.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.translate,
+            size: 28,
+            color: VocaboColors.primary,
+          ),
+        ),
+        const SizedBox(height: VocaboSpacing.md),
+        Text(
+          'Translation Setup Required',
+          style: VocaboTypography.bodyMd.copyWith(
+            fontWeight: FontWeight.w600,
+            color: VocaboColors.onSurface,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: VocaboSpacing.xs),
+        Text(
+          'Download translation languages in\nSystem Settings to enable offline translation.',
+          style: VocaboTypography.bodySm.copyWith(
+            color: VocaboColors.neutral,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: VocaboSpacing.lg),
+        VocaboPrimaryButton(
+          label: 'Open Settings',
+          trailing: const Icon(
+            Icons.open_in_new,
+            size: 16,
+            color: VocaboColors.onPrimary,
+          ),
+          onPressed: _onOpenTranslationSettings,
+        ),
+      ],
+    ),
     );
   }
 

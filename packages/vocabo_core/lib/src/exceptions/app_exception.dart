@@ -34,3 +34,15 @@ class ServerException extends AppException {
 class NetworkException extends AppException {
   const NetworkException(super.message);
 }
+
+class TranslationException extends AppException {
+  const TranslationException(super.message);
+}
+
+class TranslationUnavailableException extends AppException {
+  const TranslationUnavailableException(super.message);
+}
+
+class TranslationLanguageNotSupportedException extends AppException {
+  const TranslationLanguageNotSupportedException(super.message);
+}

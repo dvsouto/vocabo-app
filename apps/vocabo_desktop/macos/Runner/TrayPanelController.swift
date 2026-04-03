@@ -12,6 +12,8 @@ class TrayPanelController {
     private var flutterVC: FlutterViewController?
     private var methodChannel: FlutterMethodChannel?
 
+    private var translationPlugin: TranslationPlugin?
+
     private var globalMonitor: Any?
     private var localMonitor: Any?
     private var deactivateObserver: NSObjectProtocol?
@@ -197,6 +199,10 @@ class TrayPanelController {
               started ? "YES" : "NO")
 
         RegisterGeneratedPlugins(registry: engine)
+
+        translationPlugin = TranslationPlugin()
+        translationPlugin?.register(with: engine.binaryMessenger)
+
         NSLog("[Vocabo] TrayPanelController: Plugins registered for secondary engine")
 
         flutterEngine = engine

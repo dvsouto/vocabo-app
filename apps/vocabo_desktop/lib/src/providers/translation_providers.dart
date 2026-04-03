@@ -1,12 +1,43 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_translation/vocabo_translation.dart';
+
 import 'package:vocabo_desktop/src/services/translation_preferences_service.dart';
 
-// Service provider
+// Service providers
 final translationPreferencesServiceProvider =
     Provider<TranslationPreferencesService>(
         (ref) => TranslationPreferencesService());
+
+final translationServiceProvider = Provider<TranslationService>((ref) {
+  final service = TranslationServiceFactory.create();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
+// --- Translation Availability ---
+
+final translationAvailabilityProvider = FutureProvider<bool>((ref) async {
+  final service = ref.watch(translationServiceProvider);
+
+  final isAvailable = await service.isAvailable();
+  if (!isAvailable) return false;
+
+  final direction = await ref.watch(translationDirectionProvider.future);
+  final sourceLang =
+      TranslationLanguage.fromDisplayName(direction.sourceLanguage);
+  final targetLang =
+      TranslationLanguage.fromDisplayName(direction.targetLanguage);
+
+  if (sourceLang == null || targetLang == null) return false;
+
+  return service.isLanguagePairInstalled(
+    source: sourceLang,
+    target: targetLang,
+  );
+});
 
 // --- Translation Direction ---
 
@@ -67,6 +98,7 @@ class TranslationState {
   final String? pronunciation;
   final bool isTranslating;
   final String? errorMessage;
+  final bool needsLanguageInstall;
 
   const TranslationState({
     this.inputText = '',
@@ -74,6 +106,7 @@ class TranslationState {
     this.pronunciation,
     this.isTranslating = false,
     this.errorMessage,
+    this.needsLanguageInstall = false,
   });
 
   bool get hasTranslation =>
@@ -85,6 +118,7 @@ class TranslationState {
     String? Function()? pronunciation,
     bool? isTranslating,
     String? Function()? errorMessage,
+    bool? needsLanguageInstall,
   }) {
     return TranslationState(
       inputText: inputText ?? this.inputText,
@@ -94,6 +128,8 @@ class TranslationState {
           pronunciation != null ? pronunciation() : this.pronunciation,
       isTranslating: isTranslating ?? this.isTranslating,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
+      needsLanguageInstall:
+          needsLanguageInstall ?? this.needsLanguageInstall,
     );
   }
 }
@@ -147,14 +183,56 @@ class TranslationNotifier extends Notifier<TranslationState> {
       errorMessage: () => null,
     );
 
-    // TODO: Replace with actual API call when translation endpoint exists
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      final service = ref.read(translationServiceProvider);
+      final direction = ref.read(translationDirectionProvider).valueOrNull;
+      if (direction == null) {
+        state = state.copyWith(isTranslating: false);
+        return;
+      }
 
-    state = state.copyWith(
-      isTranslating: false,
-      translatedText: () => null,
-      pronunciation: () => null,
-    );
+      final sourceLang =
+          TranslationLanguage.fromDisplayName(direction.sourceLanguage);
+      final targetLang =
+          TranslationLanguage.fromDisplayName(direction.targetLanguage);
+
+      if (sourceLang == null || targetLang == null) {
+        state = state.copyWith(
+          isTranslating: false,
+          errorMessage: () => 'Unsupported language pair',
+        );
+        return;
+      }
+
+      final result = await service.translate(
+        text: input,
+        sourceLanguage: sourceLang,
+        targetLanguage: targetLang,
+      );
+
+      if (state.inputText.trim() != input) return;
+
+      state = state.copyWith(
+        isTranslating: false,
+        translatedText: () => result.translatedText,
+        pronunciation: () => result.pronunciation,
+      );
+    } on TranslationUnavailableException {
+      state = state.copyWith(
+        isTranslating: false,
+        needsLanguageInstall: true,
+      );
+    } on AppException catch (e) {
+      state = state.copyWith(
+        isTranslating: false,
+        errorMessage: () => e.message,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isTranslating: false,
+        errorMessage: () => 'Translation failed: $e',
+      );
+    }
   }
 
   void clear() {
