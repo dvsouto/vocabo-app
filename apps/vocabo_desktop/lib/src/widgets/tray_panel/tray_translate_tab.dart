@@ -36,7 +36,18 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
 
   void _onSaveToVocabulary() {
     final state = ref.read(translationNotifierProvider);
-    _channel.invokeMethod('openAddWord', {'term': state.inputText});
+    final direction = ref.read(translationDirectionProvider).valueOrNull;
+
+    // Always use the English text as the term
+    final String englishTerm;
+    if (direction != null &&
+        direction.sourceLanguage.toLowerCase() == 'english') {
+      englishTerm = state.inputText;
+    } else {
+      englishTerm = state.translatedText ?? state.inputText;
+    }
+
+    _channel.invokeMethod('openAddWord', {'term': englishTerm}).ignore();
   }
 
   void _onOpenTranslationSettings() {
@@ -182,6 +193,8 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
                   autofocus: false,
                   maxLines: 3,
                   minLines: 2,
+                  maxLength: 255,
+                  buildCounter: (_, {required currentLength, required isFocused, required maxLength}) => null,
                   style: VocaboTypography.bodyMd,
                   decoration: InputDecoration(
                     hintText: 'Enter text to translate...',

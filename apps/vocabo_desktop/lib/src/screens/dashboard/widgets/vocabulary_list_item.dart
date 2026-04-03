@@ -4,7 +4,9 @@ import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
+
 
 class VocabularyListItem extends ConsumerWidget {
   const VocabularyListItem({
@@ -27,12 +29,23 @@ class VocabularyListItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final vocabulary = userVocabulary.vocabulary!;
     final audioState = ref.watch(audioPlayerStateProvider);
+    final isModalOpen = ref.watch(showWordDetailModalProvider);
     final contentHash = vocabulary.contentHash ?? '';
-    final isThisPlaying = audioState.currentPlayingHash == contentHash;
+    final isThisPlaying = !isModalOpen &&
+        audioState.currentPlayingHash == contentHash;
     final isBusy = audioState.status == AudioPlayerStatus.loading ||
         audioState.status == AudioPlayerStatus.playing;
 
-    return Container(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          ref.read(selectedWordProvider.notifier).state = userVocabulary;
+          ref.read(showWordDetailModalProvider.notifier).state = true;
+        },
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: VocaboRadius.lg,
+        child: Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
       decoration: BoxDecoration(
         color: VocaboColors.surfaceContainerLowest,
@@ -162,6 +175,8 @@ class VocabularyListItem extends ConsumerWidget {
           ),
         ],
       ),
+    ),
+    ),
     );
   }
 }

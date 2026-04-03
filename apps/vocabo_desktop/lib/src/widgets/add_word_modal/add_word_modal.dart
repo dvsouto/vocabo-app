@@ -212,6 +212,8 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
             controller: _termController,
             focusNode: _termFocusNode,
             onChanged: notifier.setTerm,
+            maxLength: 255,
+            buildCounter: (_, {required currentLength, required isFocused, required maxLength}) => null,
             style: VocaboTypography.headlineSm.copyWith(
               color: VocaboColors.primary,
             ),

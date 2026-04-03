@@ -33,13 +33,13 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
     if (widget.onOpenDashboard != null) {
       widget.onOpenDashboard!();
     } else {
-      _channel.invokeMethod('openApp');
+      _channel.invokeMethod('openApp').ignore();
     }
   }
 
   void _openAddWord() {
     final term = _searchController.text.trim();
-    _channel.invokeMethod('openAddWord', {'term': term});
+    _channel.invokeMethod('openAddWord', {'term': term}).ignore();
   }
 
   void _confirmQuit() {

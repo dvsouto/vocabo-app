@@ -217,13 +217,14 @@ class TrayPanelController {
             NSLog("[Vocabo] TrayPanelController: Action received: %@", call.method)
             switch call.method {
             case "openApp":
+                result(nil)
                 self?.hide()
                 if let mainWindow = NSApp.windows.first(where: { $0 is MainFlutterWindow }) {
                     mainWindow.makeKeyAndOrderFront(nil)
                     NSApp.activate(ignoringOtherApps: true)
                 }
-                result(nil)
             case "openAddWord":
+                result(nil)
                 self?.hide()
                 let term = (call.arguments as? [String: Any])?["term"] as? String ?? ""
                 self?.methodChannel?.invokeMethod("openAddWord", arguments: ["term": term])
@@ -231,10 +232,9 @@ class TrayPanelController {
                     mainWindow.makeKeyAndOrderFront(nil)
                     NSApp.activate(ignoringOtherApps: true)
                 }
-                result(nil)
             case "quitApp":
-                NSApp.terminate(nil)
                 result(nil)
+                NSApp.terminate(nil)
             default:
                 result(FlutterMethodNotImplemented)
             }
