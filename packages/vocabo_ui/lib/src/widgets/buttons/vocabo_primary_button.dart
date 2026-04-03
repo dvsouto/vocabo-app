@@ -44,14 +44,9 @@ class VocaboPrimaryButton extends StatelessWidget {
       color: Colors.transparent,
       child: Ink(
         decoration: BoxDecoration(
-          gradient: isDisabled
-              ? null
-              : const LinearGradient(
-                  colors: [VocaboColors.primary700, VocaboColors.primary600],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-          color: isDisabled ? VocaboColors.surfaceContainerHigh : null,
+          color: isDisabled
+              ? VocaboColors.surfaceContainerHigh
+              : VocaboColors.primary700,
           borderRadius: VocaboRadius.md,
         ),
         child: InkWell(

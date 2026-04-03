@@ -25,39 +25,40 @@ class VocaboNeutralButton extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        mouseCursor:
-            isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
-        borderRadius: VocaboRadius.md,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: isDisabled
-                ? VocaboColors.neutral100
-                : VocaboColors.neutral100,
-            borderRadius: VocaboRadius.md,
-          ),
-          child: Row(
-            mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (leading != null) ...[
-                IconTheme(
-                  data: IconThemeData(color: contentColor, size: 16),
-                  child: leading!,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: isDisabled ? VocaboColors.neutral50 : VocaboColors.neutral100,
+          borderRadius: VocaboRadius.md,
+        ),
+        child: InkWell(
+          onTap: onPressed,
+          mouseCursor:
+              isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+          borderRadius: VocaboRadius.md,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisSize:
+                  isExpanded ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (leading != null) ...[
+                  IconTheme(
+                    data: IconThemeData(color: contentColor, size: 16),
+                    child: leading!,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  label,
+                  style: VocaboTypography.bodyMd.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: contentColor,
+                  ),
                 ),
-                const SizedBox(width: 6),
               ],
-              Text(
-                label,
-                style: VocaboTypography.bodyMd.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: contentColor,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

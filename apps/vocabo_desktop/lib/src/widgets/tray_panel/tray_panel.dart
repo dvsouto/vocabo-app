@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_translate_tab.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
@@ -19,9 +20,20 @@ class TrayPanel extends ConsumerStatefulWidget {
 
 class _TrayPanelState extends ConsumerState<TrayPanel> {
   static const _channel = MethodChannel('vocabo/tray_panel_actions');
+  static const _eventsChannel = MethodChannel('vocabo/tray_events');
 
   final _searchController = TextEditingController();
   int _selectedTabIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventsChannel.setMethodCallHandler((call) async {
+      if (call.method == 'vocabularyUpdated') {
+        ref.invalidate(cachedUserVocabularyProvider);
+      }
+    });
+  }
 
   @override
   void dispose() {

@@ -11,6 +11,7 @@ class TrayPanelController {
     private var flutterEngine: FlutterEngine?
     private var flutterVC: FlutterViewController?
     private var methodChannel: FlutterMethodChannel?
+    private var trayEventsChannel: FlutterMethodChannel?
 
     private var translationPlugin: TranslationPlugin?
 
@@ -114,6 +115,8 @@ class TrayPanelController {
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: false)
 
+        trayEventsChannel?.invokeMethod("vocabularyUpdated", arguments: nil)
+
         startMonitoring()
 
         NSLog("[Vocabo] TrayPanelController: Panel is now visible: %@", panel.isVisible ? "YES" : "NO")
@@ -208,6 +211,11 @@ class TrayPanelController {
         flutterEngine = engine
         flutterVC = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
         flutterVC?.backgroundColor = .clear
+
+        trayEventsChannel = FlutterMethodChannel(
+            name: "vocabo/tray_events",
+            binaryMessenger: engine.binaryMessenger
+        )
 
         let actionsChannel = FlutterMethodChannel(
             name: "vocabo/tray_panel_actions",
