@@ -33,9 +33,20 @@ class DashboardSidebar extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Vocabo',
-            style: VocaboTypography.headlineSm.copyWith(color: Colors.white),
+          Row(
+            children: [
+              Image.asset(
+                'assets/tray_icon@2x.png',
+                width: 24,
+                height: 24,
+                color: Colors.white,
+              ),
+              const SizedBox(width: VocaboSpacing.sm),
+              Text(
+                'Vocabo',
+                style: VocaboTypography.headlineSm.copyWith(color: Colors.white),
+              ),
+            ],
           ),
           const SizedBox(height: VocaboSpacing.xl),
           Text(
