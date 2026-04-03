@@ -350,7 +350,7 @@ class WordDetailModal extends ConsumerWidget {
           label: 'DATE ADDED',
           value: _formatFullDate(userVocabulary.createdAt),
         ),
-        const SizedBox(width: VocaboSpacing.xxl),
+        const Spacer(),
         _buildDateItem(
           icon: Icons.bolt_outlined,
           label: 'LAST PRACTICED',
