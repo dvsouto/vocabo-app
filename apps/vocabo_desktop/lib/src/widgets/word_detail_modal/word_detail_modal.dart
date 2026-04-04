@@ -242,7 +242,7 @@ class WordDetailModal extends ConsumerWidget {
           vocabulary.translation!,
           style: VocaboTypography.bodyMd.copyWith(
             fontWeight: FontWeight.w800,
-            fontSize: 16,
+            fontSize: 18,
           ),
         ),
       ],
