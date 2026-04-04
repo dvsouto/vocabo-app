@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
+import 'package:vocabo_desktop/src/providers/translation_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_translate_tab.dart';
@@ -33,6 +34,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
     _eventsChannel.setMethodCallHandler((call) async {
       if (call.method == 'vocabularyUpdated') {
         ref.invalidate(cachedUserVocabularyProvider);
+        ref.invalidate(translationAvailabilityProvider);
       }
     });
   }
