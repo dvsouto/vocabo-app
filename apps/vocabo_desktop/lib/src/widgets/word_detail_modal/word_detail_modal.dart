@@ -315,20 +315,9 @@ class WordDetailModal extends ConsumerWidget {
     final lowerTerm = term.toLowerCase();
     final index = lowerExample.indexOf(lowerTerm);
 
-    final fontFamily = VocaboTypography.bodyMd.fontFamily;
-    final baseStyle = TextStyle(
-      fontFamily: fontFamily,
+    const baseStyle = TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w400,
-      fontStyle: FontStyle.italic,
-      color: VocaboColors.onSurface,
-      height: 1.5,
-    );
-
-    final boldStyle = TextStyle(
-      fontFamily: fontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w700,
       fontStyle: FontStyle.italic,
       color: VocaboColors.onSurface,
       height: 1.5,
@@ -344,10 +333,14 @@ class WordDetailModal extends ConsumerWidget {
 
     return Text.rich(
       TextSpan(
+        style: baseStyle,
         children: [
-          TextSpan(text: before, style: baseStyle),
-          TextSpan(text: match, style: boldStyle),
-          TextSpan(text: after, style: baseStyle),
+          TextSpan(text: before),
+          TextSpan(
+            text: match,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          TextSpan(text: after),
         ],
       ),
     );
