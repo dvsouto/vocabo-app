@@ -202,12 +202,8 @@ class WordDetailModal extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    if (!hasTranslation && examples.isNotEmpty) {
-      return _buildExamplesSection(examples, vocabulary);
-    }
-
-    if (hasTranslation && examples.isEmpty) {
-      return _buildTranslationColumn(vocabulary);
+    if (examples.isEmpty) {
+      return _buildTranslationColumn(vocabulary, hasTranslation);
     }
 
     return Row(
@@ -215,7 +211,7 @@ class WordDetailModal extends ConsumerWidget {
       children: [
         Expanded(
           flex: 2,
-          child: _buildTranslationColumn(vocabulary),
+          child: _buildTranslationColumn(vocabulary, hasTranslation),
         ),
         const SizedBox(width: VocaboSpacing.xxl),
         Expanded(
@@ -226,7 +222,7 @@ class WordDetailModal extends ConsumerWidget {
     );
   }
 
-  Widget _buildTranslationColumn(Vocabulary vocabulary) {
+  Widget _buildTranslationColumn(Vocabulary vocabulary, bool hasTranslation) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -239,10 +235,11 @@ class WordDetailModal extends ConsumerWidget {
         ),
         const SizedBox(height: VocaboSpacing.sm),
         Text(
-          vocabulary.translation!,
+          hasTranslation ? vocabulary.translation! : '—',
           style: VocaboTypography.bodyMd.copyWith(
             fontWeight: FontWeight.w800,
             fontSize: 18,
+            color: hasTranslation ? null : VocaboColors.neutral,
           ),
         ),
       ],
