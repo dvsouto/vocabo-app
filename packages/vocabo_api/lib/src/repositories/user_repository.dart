@@ -14,10 +14,16 @@ class UserRepository {
   Future<UserPreferences> getPreferences() =>
       apiCall(() => _dataSource.getPreferences());
 
-  Future<UserPreferences> updatePreferences({bool? showTranslations}) =>
-      apiCall(
-        () => _dataSource.updatePreferences({
-          if (showTranslations != null) 'show_translations': showTranslations,
-        }),
-      );
+  Future<UserPreferences> updatePreferences({
+    bool? showTranslations,
+    bool? dailyReminderEnabled,
+    String? dailyReminderTime,
+  }) => apiCall(
+    () => _dataSource.updatePreferences({
+      if (showTranslations != null) 'show_translations': showTranslations,
+      if (dailyReminderEnabled != null)
+        'daily_reminder_enabled': dailyReminderEnabled,
+      if (dailyReminderTime != null) 'daily_reminder_time': dailyReminderTime,
+    }),
+  );
 }

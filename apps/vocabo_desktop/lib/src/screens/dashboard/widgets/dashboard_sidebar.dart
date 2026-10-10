@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
+import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
-
-enum DashboardSection { library, flashcards, progress, settings }
 
 class DashboardSidebar extends ConsumerWidget {
   const DashboardSidebar({

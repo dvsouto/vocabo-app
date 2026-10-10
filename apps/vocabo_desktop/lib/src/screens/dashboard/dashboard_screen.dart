@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
+import 'package:vocabo_desktop/src/providers/daily_reminder_provider.dart';
+import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/dashboard_sidebar.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/flashcards_content.dart';
@@ -19,16 +21,12 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  int _selectedNavIndex = 0;
-
-  Widget _buildContent() {
-    final section = DashboardSection.values.elementAtOrNull(_selectedNavIndex);
-
+  Widget _buildContent(DashboardSection section) {
     return switch (section) {
       DashboardSection.flashcards => const FlashcardsContent(),
       DashboardSection.progress => const ProgressContent(),
       DashboardSection.settings => const SettingsContent(),
-      DashboardSection.library || null => const LibraryContent(),
+      DashboardSection.library => const LibraryContent(),
     };
   }
 
@@ -48,6 +46,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(dailyReminderServiceProvider);
+    final section = ref.watch(dashboardSectionProvider);
     final showAddWordModal = ref.watch(showAddWordModalProvider);
     final initialTerm = ref.watch(addWordInitialTermProvider);
     final showWordDetail = ref.watch(showWordDetailModalProvider);
@@ -60,10 +60,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           Row(
             children: [
               DashboardSidebar(
-                selectedIndex: _selectedNavIndex,
-                onNavTap: (i) => setState(() => _selectedNavIndex = i),
+                selectedIndex: section.index,
+                onNavTap: (i) =>
+                    ref.read(dashboardSectionProvider.notifier).state =
+                        DashboardSection.values[i],
               ),
-              Expanded(child: _buildContent()),
+              Expanded(child: _buildContent(section)),
             ],
           ),
 

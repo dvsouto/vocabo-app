@@ -26,9 +26,10 @@ class FlashcardsDataSource {
     );
   }
 
-  Future<FlashcardSession?> getSession() async {
+  Future<FlashcardSession?> getSession({int? size}) async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/flashcards/session',
+      queryParameters: {if (size != null) 'size': size},
     );
 
     final data = response.data!['data'] as Map<String, dynamic>;

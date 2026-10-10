@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:vocabo_core/src/enums/flashcard_evaluation.dart';
 import 'package:vocabo_core/src/enums/flashcard_status.dart';
 import 'package:vocabo_core/src/enums/vocabulary_type.dart';
 import 'package:vocabo_core/src/models/vocabulary.dart';
@@ -51,6 +52,7 @@ class Flashcard extends Equatable {
   final FlashcardStatus status;
   final int currentStageIndex;
   final String stageLabel;
+  final FlashcardDirection direction;
   final DateTime? nextReviewAt;
   final bool hasRegressed;
   final List<FlashcardStageHistory> stagesHistory;
@@ -69,6 +71,7 @@ class Flashcard extends Equatable {
     required this.hasRegressed,
     required this.createdAt,
     required this.updatedAt,
+    this.direction = FlashcardDirection.forward,
     this.nextReviewAt,
     this.stagesHistory = const [],
     this.lastEvaluatedAt,
@@ -86,6 +89,7 @@ class Flashcard extends Equatable {
       currentStageIndex: json['current_stage_index'] as int,
       stageLabel:
           json['stage_label'] as String? ?? 'D+${json['current_stage_index']}',
+      direction: FlashcardDirection.fromValue(json['direction'] as String?),
       nextReviewAt: json['next_review_at'] == null
           ? null
           : DateTime.parse(json['next_review_at'] as String),
@@ -127,6 +131,7 @@ class Flashcard extends Equatable {
       status: status ?? this.status,
       currentStageIndex: currentStageIndex ?? this.currentStageIndex,
       stageLabel: stageLabel ?? this.stageLabel,
+      direction: direction,
       nextReviewAt: nextReviewAt != null ? nextReviewAt() : this.nextReviewAt,
       hasRegressed: hasRegressed ?? this.hasRegressed,
       stagesHistory: stagesHistory,
@@ -145,6 +150,7 @@ class Flashcard extends Equatable {
     status,
     currentStageIndex,
     stageLabel,
+    direction,
     nextReviewAt,
     hasRegressed,
     stagesHistory,

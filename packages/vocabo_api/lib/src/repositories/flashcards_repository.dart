@@ -14,8 +14,10 @@ class FlashcardsRepository {
   Future<FlashcardStatusSummary> getStatus() =>
       apiCall(() => _dataSource.getStatus());
 
-  Future<FlashcardSession?> getSession() =>
-      apiCall(() => _dataSource.getSession());
+  /// Pass [size] for a shorter deck; an in-progress session is always
+  /// resumed as is.
+  Future<FlashcardSession?> getSession({int? size}) =>
+      apiCall(() => _dataSource.getSession(size: size));
 
   Future<FlashcardEvaluationResult> startSession({
     required List<String> flashcardIds,

@@ -10,8 +10,6 @@ import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 
 const _flipDuration = Duration(milliseconds: 375);
 const _flipCurve = Cubic(0.3, 0.3, 0.24, 1);
-const _maxUsageExamples = 2;
-const _cardMinHeight = 360.0;
 
 class FlashcardCard extends ConsumerStatefulWidget {
   const FlashcardCard({
@@ -21,8 +19,9 @@ class FlashcardCard extends ConsumerStatefulWidget {
     required this.isExpanded,
     required this.onFlip,
     required this.onToggleMeaning,
-    required this.onArchive,
+    this.onSetAside,
     this.enabled = true,
+    this.compact = false,
   });
 
   final FlashcardSessionCard card;
@@ -30,8 +29,13 @@ class FlashcardCard extends ConsumerStatefulWidget {
   final bool isExpanded;
   final VoidCallback onFlip;
   final VoidCallback onToggleMeaning;
-  final VoidCallback onArchive;
+
+  /// Removes the word from reviews. Hidden when null.
+  final VoidCallback? onSetAside;
   final bool enabled;
+
+  /// Smaller layout used by the menu bar panel.
+  final bool compact;
 
   @override
   ConsumerState<FlashcardCard> createState() => _FlashcardCardState();
@@ -63,7 +67,19 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
     super.dispose();
   }
 
-  Vocabulary? get _vocabulary => widget.card.flashcard.vocabulary;
+  Flashcard get _flashcard => widget.card.flashcard;
+  Vocabulary? get _vocabulary => _flashcard.vocabulary;
+  bool get _isReverse => _flashcard.direction == FlashcardDirection.reverse;
+  bool get _compact => widget.compact;
+  int get _maxExamples => _compact ? 1 : 2;
+
+  /// What the reverse front asks about: the translation, or the meaning
+  /// when the term has no literal translation.
+  String get _reversePrompt {
+    final translation = _vocabulary?.translation;
+    if (translation != null && translation.isNotEmpty) return translation;
+    return _vocabulary?.meaning ?? '—';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +93,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
           ..setEntry(3, 2, 0.0015)
           ..rotateY(angle);
 
-        Widget face = showBack ? _buildBack(context) : _buildFront(context);
+        Widget face = showBack ? _buildBack() : _buildFront();
 
         if (showBack) {
           face = Transform(
@@ -99,12 +115,12 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
   Widget _buildSurface({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: VocaboRadius.xl,
+        borderRadius: _compact ? VocaboRadius.lg : VocaboRadius.xl,
         boxShadow: [VocaboShadows.whisper],
       ),
       child: Material(
         color: VocaboColors.surfaceContainerLowest,
-        borderRadius: VocaboRadius.xl,
+        borderRadius: _compact ? VocaboRadius.lg : VocaboRadius.xl,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: widget.enabled ? widget.onFlip : null,
@@ -117,8 +133,10 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
             curve: Curves.easeOutCubic,
             alignment: Alignment.topCenter,
             child: Container(
-              constraints: const BoxConstraints(minHeight: _cardMinHeight),
-              padding: const EdgeInsets.all(VocaboSpacing.lg),
+              constraints: BoxConstraints(minHeight: _compact ? 210 : 360),
+              padding: EdgeInsets.all(
+                _compact ? VocaboSpacing.md : VocaboSpacing.lg,
+              ),
               child: child,
             ),
           ),
@@ -128,128 +146,176 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
   }
 
   Widget _buildTopRow() {
-    final flashcard = widget.card.flashcard;
-
     return Row(
       children: [
-        VocaboTagChip(
-          label: flashcard.stageLabel,
-          variant: flashcard.hasRegressed
-              ? TagChipVariant.learning
-              : TagChipVariant.outlined,
+        MemoryStrengthDots(
+          strength: MemoryStrength.of(
+            stageIndex: _flashcard.currentStageIndex,
+            status: _flashcard.status,
+          ),
+          dotSize: _compact ? 5 : 6,
         ),
         const Spacer(),
-        IconButton(
-          tooltip: 'Archive from reviews',
-          icon: const Icon(Icons.archive_outlined, size: 20),
-          color: VocaboColors.neutral,
-          onPressed: widget.enabled ? widget.onArchive : null,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          style: const ButtonStyle(
-            mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
-          ),
-        ),
+        if (widget.onSetAside != null)
+          IconButton(
+            tooltip: 'Set aside',
+            icon: const Icon(Icons.archive_outlined, size: 20),
+            color: VocaboColors.neutral,
+            onPressed: widget.enabled ? widget.onSetAside : null,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            style: const ButtonStyle(
+              mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
+            ),
+          )
+        else
+          const SizedBox(height: 36),
       ],
     );
   }
 
-  Widget _buildBottomRow({required bool meaningActive}) {
+  Widget _buildBottomRow({required bool meaningActive, bool showAudio = true}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _AudioButton(
-          vocabulary: _vocabulary,
-          vocabularyType: widget.card.flashcard.vocabularyType,
-        ),
-        const SizedBox(width: VocaboSpacing.lg),
+        if (showAudio) ...[
+          _AudioButton(
+            vocabulary: _vocabulary,
+            vocabularyType: _flashcard.vocabularyType,
+            size: _compact ? 36 : 44,
+          ),
+          SizedBox(width: _compact ? VocaboSpacing.md : VocaboSpacing.lg),
+        ],
         _RoundIconButton(
           tooltip: meaningActive ? 'Hide meaning' : 'Show meaning',
           icon: Icons.translate,
           isActive: meaningActive,
+          size: _compact ? 36 : 44,
           onTap: widget.enabled ? widget.onToggleMeaning : null,
         ),
       ],
     );
   }
 
-  Widget _buildFront(BuildContext context) {
-    final vocabulary = _vocabulary;
-    final pronunciation = vocabulary?.pronunciation;
+  TextStyle get _termStyle =>
+      _compact ? VocaboTypography.headlineSm : VocaboTypography.displayMd;
 
+  Widget _buildFront() {
     return _buildSurface(
       child: Column(
         children: [
           _buildTopRow(),
-          const SizedBox(height: VocaboSpacing.xl),
-          Text(
-            vocabulary?.term ?? '—',
-            textAlign: TextAlign.center,
-            style: VocaboTypography.displayMd,
-          ),
-          if (pronunciation != null && pronunciation.isNotEmpty) ...[
-            const SizedBox(height: VocaboSpacing.sm),
-            Text(
-              pronunciation,
-              textAlign: TextAlign.center,
-              style: VocaboTypography.bodyMd.copyWith(
-                color: VocaboColors.neutral,
-              ),
-            ),
-          ],
-          if (vocabulary != null) ...[
-            const SizedBox(height: VocaboSpacing.sm),
-            Text(
-              vocabulary.wordType.value.toUpperCase(),
-              style: VocaboTypography.labelSm.copyWith(
-                color: VocaboColors.primary,
-              ),
-            ),
-          ],
-          const SizedBox(height: VocaboSpacing.xxl),
-          _buildBottomRow(meaningActive: false),
+          SizedBox(height: _compact ? VocaboSpacing.md : VocaboSpacing.xl),
+          if (_isReverse) ..._buildReversePrompt() else ..._buildTermHeader(),
+          SizedBox(height: _compact ? VocaboSpacing.lg : VocaboSpacing.xxl),
+          _buildBottomRow(meaningActive: false, showAudio: !_isReverse),
         ],
       ),
     );
   }
 
-  Widget _buildBack(BuildContext context) {
+  List<Widget> _buildTermHeader() {
+    final vocabulary = _vocabulary;
+    final pronunciation = vocabulary?.pronunciation;
+
+    return [
+      Text(
+        vocabulary?.term ?? '—',
+        textAlign: TextAlign.center,
+        style: _termStyle,
+      ),
+      if (pronunciation != null && pronunciation.isNotEmpty) ...[
+        const SizedBox(height: VocaboSpacing.sm),
+        Text(
+          pronunciation,
+          textAlign: TextAlign.center,
+          style: VocaboTypography.bodyMd.copyWith(color: VocaboColors.neutral),
+        ),
+      ],
+      if (vocabulary != null) ...[
+        const SizedBox(height: VocaboSpacing.sm),
+        Text(
+          vocabulary.wordType.value.toUpperCase(),
+          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.primary),
+        ),
+      ],
+    ];
+  }
+
+  List<Widget> _buildReversePrompt() {
+    return [
+      const _SectionLabel('WHICH ENGLISH WORD IS THIS?'),
+      const SizedBox(height: VocaboSpacing.sm),
+      Text(
+        _reversePrompt,
+        textAlign: TextAlign.center,
+        style: _compact
+            ? VocaboTypography.titleLg
+            : VocaboTypography.headlineSm,
+      ),
+      if (_vocabulary != null) ...[
+        const SizedBox(height: VocaboSpacing.sm),
+        Text(
+          _vocabulary!.wordType.value.toUpperCase(),
+          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.primary),
+        ),
+      ],
+    ];
+  }
+
+  Widget _buildBack() {
     final vocabulary = _vocabulary;
     final translation = vocabulary?.translation;
     final hasTranslation = translation != null && translation.isNotEmpty;
     final meaning = vocabulary?.meaning;
     final hasMeaning = meaning != null && meaning.isNotEmpty;
     final examples = (vocabulary?.usageExamples?.sourceLang ?? const [])
-        .take(_maxUsageExamples)
+        .take(_maxExamples)
         .toList();
 
     return _buildSurface(
       child: Column(
         children: [
           _buildTopRow(),
-          const SizedBox(height: VocaboSpacing.xl),
-          Text(
-            vocabulary?.term ?? '—',
-            textAlign: TextAlign.center,
-            style: VocaboTypography.titleLg.copyWith(
-              color: VocaboColors.neutral,
+          SizedBox(height: _compact ? VocaboSpacing.md : VocaboSpacing.xl),
+          if (_isReverse) ...[
+            ..._buildTermHeader(),
+            const SizedBox(height: VocaboSpacing.md),
+            Text(
+              _reversePrompt,
+              textAlign: TextAlign.center,
+              style: VocaboTypography.bodyMd.copyWith(
+                color: VocaboColors.neutral,
+              ),
             ),
-          ),
-          const SizedBox(height: VocaboSpacing.md),
-          _SectionLabel('TRANSLATION'),
-          const SizedBox(height: VocaboSpacing.xs),
-          Text(
-            hasTranslation ? translation : '—',
-            textAlign: TextAlign.center,
-            style: VocaboTypography.headlineSm.copyWith(
-              color: hasTranslation
-                  ? VocaboColors.onSurface
-                  : VocaboColors.neutral,
+          ] else ...[
+            Text(
+              vocabulary?.term ?? '—',
+              textAlign: TextAlign.center,
+              style: VocaboTypography.titleLg.copyWith(
+                color: VocaboColors.neutral,
+              ),
             ),
-          ),
+            const SizedBox(height: VocaboSpacing.md),
+            const _SectionLabel('TRANSLATION'),
+            const SizedBox(height: VocaboSpacing.xs),
+            Text(
+              hasTranslation ? translation : '—',
+              textAlign: TextAlign.center,
+              style:
+                  (_compact
+                          ? VocaboTypography.titleLg
+                          : VocaboTypography.headlineSm)
+                      .copyWith(
+                        color: hasTranslation
+                            ? VocaboColors.onSurface
+                            : VocaboColors.neutral,
+                      ),
+            ),
+          ],
           if (widget.isExpanded) ...[
-            if (hasMeaning) ...[
+            if (hasMeaning && !(_isReverse && !hasTranslation)) ...[
               const SizedBox(height: VocaboSpacing.lg),
-              _SectionLabel('MEANING'),
+              const _SectionLabel('MEANING'),
               const SizedBox(height: VocaboSpacing.xs),
               Text(
                 meaning,
@@ -259,7 +325,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
             ],
             if (examples.isNotEmpty) ...[
               const SizedBox(height: VocaboSpacing.lg),
-              _SectionLabel('EXAMPLES'),
+              const _SectionLabel('EXAMPLES'),
               const SizedBox(height: VocaboSpacing.sm),
               ...examples.map(
                 (example) => Padding(
@@ -268,12 +334,13 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
                     example: example,
                     term: vocabulary?.term ?? '',
                     textAlign: TextAlign.center,
+                    fontSize: _compact ? 13 : 14,
                   ),
                 ),
               ),
             ],
           ],
-          const SizedBox(height: VocaboSpacing.xxl),
+          SizedBox(height: _compact ? VocaboSpacing.lg : VocaboSpacing.xxl),
           _buildBottomRow(meaningActive: widget.isExpanded),
         ],
       ),
@@ -290,6 +357,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
+      textAlign: TextAlign.center,
       style: VocaboTypography.labelSm.copyWith(
         color: VocaboColors.neutral,
         fontWeight: FontWeight.w600,
@@ -304,12 +372,14 @@ class _RoundIconButton extends StatelessWidget {
     required this.icon,
     required this.isActive,
     required this.onTap,
+    required this.size,
   });
 
   final String tooltip;
   final IconData icon;
   final bool isActive;
   final VoidCallback? onTap;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -324,8 +394,8 @@ class _RoundIconButton extends StatelessWidget {
               : SystemMouseCursors.click,
           onTap: onTap,
           child: Container(
-            width: 44,
-            height: 44,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               color: isActive
                   ? VocaboColors.primary
@@ -334,7 +404,7 @@ class _RoundIconButton extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              size: 20,
+              size: size * 0.45,
               color: isActive ? VocaboColors.onPrimary : VocaboColors.onSurface,
             ),
           ),
@@ -345,10 +415,15 @@ class _RoundIconButton extends StatelessWidget {
 }
 
 class _AudioButton extends ConsumerWidget {
-  const _AudioButton({required this.vocabulary, required this.vocabularyType});
+  const _AudioButton({
+    required this.vocabulary,
+    required this.vocabularyType,
+    required this.size,
+  });
 
   final Vocabulary? vocabulary;
   final VocabularyType vocabularyType;
+  final double size;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -385,8 +460,8 @@ class _AudioButton extends ConsumerWidget {
                   }
                 },
           child: Container(
-            width: 44,
-            height: 44,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               color: canPlay
                   ? VocaboColors.primary
@@ -395,9 +470,9 @@ class _AudioButton extends ConsumerWidget {
             ),
             child:
                 isThisPlaying && audioState.status == AudioPlayerStatus.loading
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: CircularProgressIndicator(
+                ? Padding(
+                    padding: EdgeInsets.all(size * 0.27),
+                    child: const CircularProgressIndicator(
                       strokeWidth: 2,
                       color: VocaboColors.onPrimary,
                     ),
@@ -408,7 +483,7 @@ class _AudioButton extends ConsumerWidget {
                         ? Icons.stop
                         : Icons.volume_up,
                     color: VocaboColors.onPrimary,
-                    size: 20,
+                    size: size * 0.45,
                   ),
           ),
         ),

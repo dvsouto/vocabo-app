@@ -1,162 +1,212 @@
-import 'dart:async';
-
-import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/claim_focus.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_evaluation_bar.dart';
 
-const _autoReturnDelay = Duration(seconds: 4);
+/// Builds the one-line summary shown at the end of a session.
+String sessionSummary({required int reviewed, required int clear}) {
+  final words = reviewed == 1 ? '1 word' : '$reviewed words';
+  final clearPart = switch (clear) {
+    0 => 'None felt clear yet, and that is what practice is for.',
+    _ when clear == reviewed && reviewed > 1 => 'All of them felt clear.',
+    _ when clear == reviewed => 'It felt clear.',
+    _ => '$clear felt clear.',
+  };
+  return 'You recalled $words. $clearPart';
+}
 
-class FlashcardsCompletion extends ConsumerStatefulWidget {
+/// End of session note: what was reviewed, how clear it felt and which
+/// words come back later today.
+class FlashcardsCompletion extends ConsumerWidget {
   const FlashcardsCompletion({super.key});
 
   @override
-  ConsumerState<FlashcardsCompletion> createState() =>
-      _FlashcardsCompletionState();
-}
-
-class _FlashcardsCompletionState extends ConsumerState<FlashcardsCompletion> {
-  late final ConfettiController _confetti = ConfettiController(
-    duration: const Duration(seconds: 3),
-  );
-  Timer? _autoReturn;
-
-  @override
-  void initState() {
-    super.initState();
-    _confetti.play();
-    _autoReturn = Timer(_autoReturnDelay, () {
-      if (mounted) {
-        ref.read(flashcardSessionProvider.notifier).finishCompletion();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _autoReturn?.cancel();
-    _confetti.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(flashcardSessionProvider);
     final notifier = ref.read(flashcardSessionProvider.notifier);
-    final reviewed = state.evaluatedCount;
+    final cards = state.session?.cards ?? const <FlashcardSessionCard>[];
+    final blankTerms = cards
+        .where((card) => card.evaluation == FlashcardEvaluation.hard)
+        .map((card) => card.flashcard.vocabulary?.term)
+        .whereType<String>()
+        .toList();
 
-    return Stack(
-      children: [
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: _confetti,
-            blastDirectionality: BlastDirectionality.explosive,
-            numberOfParticles: 24,
-            emissionFrequency: 0.05,
-            gravity: 0.2,
-            maxBlastForce: 18,
-            minBlastForce: 6,
-            colors: const [
-              VocaboColors.primary,
-              VocaboColors.secondary,
-              VocaboColors.tertiary,
-              VocaboColors.tertiaryFixed,
-              VocaboColors.primary200,
-            ],
-          ),
-        ),
-        Center(
+    void seeProgress() {
+      ref.read(dashboardSectionProvider.notifier).state =
+          DashboardSection.progress;
+      notifier.finishCompletion();
+    }
+
+    return ClaimFocus(
+      debugLabel: 'flashcards-completion',
+      onKeyEvent: (node, event) {
+        final isEnter =
+            event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter;
+        if (event is KeyDownEvent && isEnter) {
+          notifier.finishCompletion();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Center(
+        child: SingleChildScrollView(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: VocaboColors.tertiary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    color: VocaboColors.tertiary,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: VocaboSpacing.lg),
-                Text('Review complete!', style: VocaboTypography.headlineSm),
-                const SizedBox(height: VocaboSpacing.xs),
-                Text(
-                  reviewed == 1
-                      ? '1 card reviewed'
-                      : '$reviewed cards reviewed',
-                  style: VocaboTypography.bodyMd.copyWith(
-                    color: VocaboColors.neutral,
-                  ),
-                ),
-                const SizedBox(height: VocaboSpacing.xl),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _Count(
-                      value: state.countOf(FlashcardEvaluation.hard),
-                      label: "DIDN'T RECALL",
-                      color: Theme.of(context).colorScheme.error,
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Container(
+              padding: const EdgeInsets.all(VocaboSpacing.xxl),
+              decoration: BoxDecoration(
+                color: VocaboColors.surfaceContainerLow,
+                borderRadius: VocaboRadius.lg,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'SESSION NOTE',
+                    style: VocaboTypography.labelSm.copyWith(
+                      color: VocaboColors.neutral,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(width: VocaboSpacing.xl),
-                    _Count(
-                      value: state.countOf(FlashcardEvaluation.medium),
-                      label: 'ALMOST',
-                      color: VocaboColors.onSurface,
+                  ),
+                  const SizedBox(height: VocaboSpacing.sm),
+                  Text('Session complete', style: VocaboTypography.headlineSm),
+                  const SizedBox(height: VocaboSpacing.sm),
+                  Text(
+                    sessionSummary(
+                      reviewed: state.evaluatedCount,
+                      clear: state.countOf(FlashcardEvaluation.easy),
                     ),
-                    const SizedBox(width: VocaboSpacing.xl),
-                    _Count(
-                      value: state.countOf(FlashcardEvaluation.easy),
-                      label: 'RECALLED',
-                      color: const Color(0xFF1E8E3E),
+                    style: VocaboTypography.bodyMd.copyWith(
+                      color: VocaboColors.neutral600,
+                    ),
+                  ),
+                  const SizedBox(height: VocaboSpacing.xl),
+                  Row(
+                    children: [
+                      for (final evaluation in FlashcardEvaluation.values) ...[
+                        if (evaluation != FlashcardEvaluation.hard)
+                          const SizedBox(width: VocaboSpacing.md),
+                        Expanded(
+                          child: _ClarityCount(
+                            evaluation: evaluation,
+                            value: state.countOf(evaluation),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (blankTerms.isNotEmpty) ...[
+                    const SizedBox(height: VocaboSpacing.xl),
+                    Text(
+                      'COMING BACK LATER TODAY',
+                      style: VocaboTypography.labelSm.copyWith(
+                        color: VocaboColors.neutral,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: VocaboSpacing.sm),
+                    Wrap(
+                      spacing: VocaboSpacing.sm,
+                      runSpacing: VocaboSpacing.sm,
+                      children: [
+                        for (final term in blankTerms)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: VocaboColors.surfaceContainerLowest,
+                              borderRadius: VocaboRadius.sm,
+                            ),
+                            child: Text(
+                              term,
+                              style: VocaboTypography.bodyMd.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
-                ),
-                const SizedBox(height: VocaboSpacing.xl),
-                VocaboPrimaryButton(
-                  label: 'Back to flashcards',
-                  onPressed: notifier.finishCompletion,
-                ),
-              ],
+                  const SizedBox(height: VocaboSpacing.xl),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: VocaboPrimaryButton(
+                          label: 'Back to flashcards',
+                          isExpanded: true,
+                          trailing: const VocaboKeyCap(
+                            'Enter',
+                            color: VocaboColors.onPrimary,
+                          ),
+                          onPressed: notifier.finishCompletion,
+                        ),
+                      ),
+                      const SizedBox(width: VocaboSpacing.md),
+                      VocaboTextButton(
+                        label: 'See progress',
+                        onPressed: seeProgress,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }
 
-class _Count extends StatelessWidget {
-  const _Count({required this.value, required this.label, required this.color});
+class _ClarityCount extends StatelessWidget {
+  const _ClarityCount({required this.evaluation, required this.value});
 
+  final FlashcardEvaluation evaluation;
   final int value;
-  final String label;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          '$value',
-          style: VocaboTypography.headlineSm.copyWith(color: color),
-        ),
-        const SizedBox(height: VocaboSpacing.xs),
-        Text(
-          label,
-          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
-        ),
-      ],
+    final palette = evaluationPalette(context, evaluation);
+
+    return Container(
+      padding: const EdgeInsets.all(VocaboSpacing.md),
+      decoration: BoxDecoration(
+        color: palette.background,
+        borderRadius: VocaboRadius.md,
+      ),
+      child: Row(
+        children: [
+          ClarityIcon(
+            clarity: clarityOf(evaluation),
+            color: palette.foreground,
+          ),
+          const SizedBox(width: VocaboSpacing.sm),
+          Text(
+            '$value',
+            style: VocaboTypography.titleLg.copyWith(color: palette.foreground),
+          ),
+          const SizedBox(width: VocaboSpacing.xs),
+          Flexible(
+            child: Text(
+              clarityLabelOf(evaluation),
+              overflow: TextOverflow.ellipsis,
+              style: VocaboTypography.bodySm.copyWith(
+                color: palette.foreground,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

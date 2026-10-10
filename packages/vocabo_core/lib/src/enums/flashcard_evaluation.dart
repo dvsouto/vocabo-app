@@ -17,3 +17,14 @@ enum FlashcardEvaluation {
     return null;
   }
 }
+
+/// Which side of the word is asked: forward shows the term and asks for its
+/// meaning, reverse shows the meaning and asks for the term.
+enum FlashcardDirection {
+  forward,
+  reverse;
+
+  static FlashcardDirection fromValue(String? value) => value == 'reverse'
+      ? FlashcardDirection.reverse
+      : FlashcardDirection.forward;
+}

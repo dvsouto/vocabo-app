@@ -7,6 +7,8 @@ set -euo pipefail
 
 EMAIL=${E2E_EMAIL:-e2e-flashcards@vocabo.test}
 PASSWORD=${E2E_PASSWORD:-e2epass01}
+# Unknown terms are translated by OpenAI and get audio generated on the fly.
+TERMS=${E2E_TERMS:-coffee,calendar,stitch}
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 APP_DIR=$(cd "$SCRIPT_DIR/../.." && pwd)
 PSQL=(docker exec -i vocabo-postgres psql -U postgres -d vocabo -v ON_ERROR_STOP=1 -tA)
@@ -31,6 +33,7 @@ FLUTTER_XCODE_CODE_SIGN_ENTITLEMENTS="$SCRIPT_DIR/adhoc.entitlements" \
   flutter test integration_test/flashcards_e2e_test.dart -d macos \
   --dart-define-from-file=.env \
   --dart-define=E2E_EMAIL="$EMAIL" \
-  --dart-define=E2E_PASSWORD="$PASSWORD"
+  --dart-define=E2E_PASSWORD="$PASSWORD" \
+  --dart-define=E2E_TERMS="$TERMS"
 
 echo "Screenshots: $HOME/Library/Containers/com.vocabo.vocaboDesktop/Data/tmp/vocabo_e2e"

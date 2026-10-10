@@ -110,18 +110,12 @@ class WordDetailModal extends ConsumerWidget {
           variant: TagChipVariant.outlined,
         ),
         if (flashcard != null) ...[
-          const SizedBox(width: VocaboSpacing.sm),
-          VocaboTagChip(
-            label: switch (flashcard.status) {
-              FlashcardStatus.completed => 'Mastered',
-              FlashcardStatus.archived => 'Archived',
-              FlashcardStatus.active => 'Review ${flashcard.stageLabel}',
-            },
-            variant: switch (flashcard.status) {
-              FlashcardStatus.completed => TagChipVariant.mastered,
-              FlashcardStatus.archived => TagChipVariant.outlined,
-              FlashcardStatus.active => TagChipVariant.learning,
-            },
+          const SizedBox(width: VocaboSpacing.md),
+          MemoryStrengthDots(
+            strength: MemoryStrength.of(
+              stageIndex: flashcard.currentStageIndex,
+              status: flashcard.status,
+            ),
           ),
         ],
         const Spacer(),

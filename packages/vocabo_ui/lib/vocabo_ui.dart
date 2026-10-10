@@ -34,5 +34,10 @@ export 'src/widgets/chips/vocabo_selectable_chip.dart';
 export 'src/widgets/navigation/vocabo_nav_item.dart';
 export 'src/widgets/navigation/vocabo_tab_bar.dart';
 
+// Widgets - Flashcards
+export 'src/widgets/flashcards/clarity_icon.dart';
+export 'src/widgets/flashcards/memory_strength_dots.dart';
+export 'src/widgets/flashcards/vocabo_key_cap.dart';
+
 // Widgets - Text
 export 'src/widgets/text/highlighted_example_text.dart';

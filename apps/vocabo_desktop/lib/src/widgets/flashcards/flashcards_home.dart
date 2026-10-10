@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/archived_flashcards_dialog.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/claim_focus.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_countdown.dart';
 
 class FlashcardsHome extends ConsumerWidget {
@@ -46,6 +48,23 @@ class _HomeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    return ClaimFocus(
+      debugLabel: 'flashcards-home',
+      onKeyEvent: (node, event) {
+        final isEnter =
+            event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter;
+        if (event is! KeyDownEvent || !isEnter || !summary.canStartSession) {
+          return KeyEventResult.ignored;
+        }
+        ref.read(flashcardSessionProvider.notifier).startSession();
+        return KeyEventResult.handled;
+      },
+      child: _buildBody(context, ref),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, WidgetRef ref) {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
@@ -73,20 +92,21 @@ class _HomeBody extends ConsumerWidget {
     if (!summary.hasCards && summary.completedCount == 0) {
       return const _HeroContent(
         icon: Icons.style_outlined,
-        title: 'Ready to grow your vocabulary? 🚀',
+        title: 'No flashcards yet',
         subtitle:
-            'Add words to your library and they will show up here as flashcards to review.',
+            "Words you save will return here, right before you'd forget them.",
       );
     }
 
     if (summary.canStartSession) {
       return _HeroContent(
         icon: Icons.style_outlined,
-        title: 'Ready for a challenge? 🎯',
-        subtitle: 'Every card you master is one more step toward fluency.',
+        title: _readyTitle(),
+        subtitle: _readySubtitle(),
         action: VocaboPrimaryButton(
-          label: summary.hasActiveSession ? 'Continue review' : 'Start review',
+          label: summary.hasActiveSession ? 'Continue reviewing' : 'Review now',
           isExpanded: true,
+          trailing: const VocaboKeyCap('Enter', color: VocaboColors.onPrimary),
           onPressed: () =>
               ref.read(flashcardSessionProvider.notifier).startSession(),
         ),
@@ -95,9 +115,9 @@ class _HomeBody extends ConsumerWidget {
 
     if (summary.isWaiting) {
       return _HeroContent(
-        icon: Icons.celebration_outlined,
-        title: 'Nice work, you are all caught up!',
-        subtitle: 'Your next review unlocks in',
+        icon: Icons.nights_stay_outlined,
+        title: 'Your memory is in good shape.',
+        subtitle: 'Your next words return in',
         action: FlashcardCountdown(
           target: summary.nextReviewAt!,
           onFinished: () => ref.invalidate(flashcardStatusProvider),
@@ -106,10 +126,31 @@ class _HomeBody extends ConsumerWidget {
     }
 
     return const _HeroContent(
-      icon: Icons.emoji_events_outlined,
-      title: 'Every card mastered 🏆',
-      subtitle: 'Add new words to your library to keep the momentum going.',
+      icon: Icons.workspace_premium_outlined,
+      title: 'Every word is mastered.',
+      subtitle: 'Save new words to your library to keep growing.',
     );
+  }
+
+  String _readyTitle() {
+    if (summary.dueCount == 0) return 'Your session is waiting for you';
+    return summary.dueCount == 1
+        ? '1 word is waiting to be recalled'
+        : '${summary.dueCount} words are waiting to be recalled';
+  }
+
+  String _readySubtitle() {
+    final minutes = summary.estimatedMinutes();
+    final parts = <String>[
+      if (summary.dueNew > 0) '${summary.dueNew} new',
+      if (summary.dueReturning > 0) '${summary.dueReturning} returning',
+      if (summary.dueLongTerm > 0) '${summary.dueLongTerm} long-term',
+    ];
+
+    if (minutes == 0) return 'Pick up right where you left off.';
+
+    final duration = minutes == 1 ? 'About 1 minute' : 'About $minutes minutes';
+    return parts.isEmpty ? duration : '$duration · ${parts.join(', ')}';
   }
 
   Widget _buildFooter(BuildContext context) {

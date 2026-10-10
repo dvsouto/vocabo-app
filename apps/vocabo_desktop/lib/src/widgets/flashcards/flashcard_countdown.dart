@@ -9,10 +9,14 @@ class FlashcardCountdown extends StatefulWidget {
     super.key,
     required this.target,
     required this.onFinished,
+    this.style,
   });
 
   final DateTime target;
   final VoidCallback onFinished;
+
+  /// Defaults to the large display style used on the dashboard.
+  final TextStyle? style;
 
   @override
   State<FlashcardCountdown> createState() => _FlashcardCountdownState();
@@ -59,7 +63,7 @@ class _FlashcardCountdownState extends State<FlashcardCountdown> {
   Widget build(BuildContext context) {
     return Text(
       _countdown.label,
-      style: VocaboTypography.displayMd.copyWith(
+      style: (widget.style ?? VocaboTypography.displayMd).copyWith(
         color: VocaboColors.primary,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),

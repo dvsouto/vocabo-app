@@ -240,6 +240,14 @@ class TrayPanelController {
                     mainWindow.makeKeyAndOrderFront(nil)
                     NSApp.activate(ignoringOtherApps: true)
                 }
+            case "openFlashcards":
+                result(nil)
+                self?.hide()
+                self?.methodChannel?.invokeMethod("openFlashcards", arguments: nil)
+                if let mainWindow = NSApp.windows.first(where: { $0 is MainFlutterWindow }) {
+                    mainWindow.makeKeyAndOrderFront(nil)
+                    NSApp.activate(ignoringOtherApps: true)
+                }
             case "quitApp":
                 result(nil)
                 NSApp.terminate(nil)

@@ -23,6 +23,25 @@ class UserPreferencesNotifier extends AsyncNotifier<UserPreferences> {
     }
   }
 
+  Future<void> setDailyReminder({bool? enabled, String? time}) async {
+    final previous = state.valueOrNull ?? const UserPreferences();
+    state = AsyncData(
+      previous.copyWith(dailyReminderEnabled: enabled, dailyReminderTime: time),
+    );
+
+    try {
+      final api = ref.read(apiClientProvider);
+      final saved = await api.user.updatePreferences(
+        dailyReminderEnabled: enabled,
+        dailyReminderTime: time,
+      );
+      state = AsyncData(saved);
+    } catch (e, st) {
+      appLogger.handle(e, st, 'UserPreferences setDailyReminder() error');
+      state = AsyncData(previous);
+    }
+  }
+
   Future<void> toggleShowTranslations() {
     final current = state.valueOrNull?.showTranslations ?? true;
     return setShowTranslations(!current);

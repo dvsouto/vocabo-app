@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Asks for confirmation only when the card already has review history,
-/// since archiving discards its progress. Returns true to proceed.
+/// since setting it aside discards its progress. Returns true to proceed.
 Future<bool> confirmArchiveFlashcard(
   BuildContext context, {
   required bool hasHistory,
@@ -11,10 +11,10 @@ Future<bool> confirmArchiveFlashcard(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Archive this flashcard?'),
+      title: const Text('Set this word aside?'),
       content: const Text(
-        'Its review progress will be lost. You can restore it later from '
-        'the archived cards list, starting again from D+0.',
+        'It leaves your reviews and its progress is reset. The word stays in '
+        'your library, and you can bring it back anytime from Archived.',
       ),
       actions: [
         TextButton(
@@ -26,7 +26,7 @@ Future<bool> confirmArchiveFlashcard(
           style: TextButton.styleFrom(
             foregroundColor: Theme.of(ctx).colorScheme.error,
           ),
-          child: const Text('Archive'),
+          child: const Text('Set aside'),
         ),
       ],
     ),

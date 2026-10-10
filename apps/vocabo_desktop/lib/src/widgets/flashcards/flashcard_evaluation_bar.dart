@@ -6,36 +6,67 @@ class _EvaluationOption {
   const _EvaluationOption({
     required this.evaluation,
     required this.label,
-    required this.icon,
+    required this.clarity,
     required this.shortcut,
   });
 
   final FlashcardEvaluation evaluation;
   final String label;
-  final IconData icon;
+  final Clarity clarity;
   final String shortcut;
 }
 
 const _options = [
   _EvaluationOption(
     evaluation: FlashcardEvaluation.hard,
-    label: "Didn't recall",
-    icon: Icons.thumb_down_outlined,
+    label: 'Blank',
+    clarity: Clarity.blank,
     shortcut: '1',
   ),
   _EvaluationOption(
     evaluation: FlashcardEvaluation.medium,
-    label: 'Almost',
-    icon: Icons.thumb_up_outlined,
+    label: 'Fuzzy',
+    clarity: Clarity.fuzzy,
     shortcut: '2',
   ),
   _EvaluationOption(
     evaluation: FlashcardEvaluation.easy,
-    label: 'Recalled',
-    icon: Icons.thumb_up_alt_rounded,
+    label: 'Clear',
+    clarity: Clarity.clear,
     shortcut: '3',
   ),
 ];
+
+const _clearGreen = Color(0xFF1E8E3E);
+
+/// Palette shared with the session note so each answer keeps one color.
+({Color foreground, Color background, Color selectedBackground})
+evaluationPalette(BuildContext context, FlashcardEvaluation evaluation) {
+  final error = Theme.of(context).colorScheme.error;
+  return switch (evaluation) {
+    FlashcardEvaluation.hard => (
+      foreground: error,
+      background: error.withValues(alpha: 0.08),
+      selectedBackground: error.withValues(alpha: 0.2),
+    ),
+    FlashcardEvaluation.medium => (
+      foreground: VocaboColors.onSurface,
+      background: VocaboColors.surfaceContainerHigh,
+      selectedBackground: VocaboColors.neutral200,
+    ),
+    FlashcardEvaluation.easy => (
+      foreground: _clearGreen,
+      background: VocaboColors.tertiary.withValues(alpha: 0.12),
+      selectedBackground: VocaboColors.tertiary.withValues(alpha: 0.28),
+    ),
+  };
+}
+
+Clarity clarityOf(FlashcardEvaluation evaluation) =>
+    _options.firstWhere((option) => option.evaluation == evaluation).clarity;
+
+String clarityLabelOf(FlashcardEvaluation evaluation) =>
+    _options.firstWhere((option) => option.evaluation == evaluation).label;
 
 class FlashcardEvaluationBar extends StatelessWidget {
   const FlashcardEvaluationBar({
@@ -43,22 +74,37 @@ class FlashcardEvaluationBar extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onEvaluate,
+    required this.stageIndex,
+    required this.stages,
+    this.compact = false,
   });
 
   final FlashcardEvaluation? selected;
   final bool enabled;
   final ValueChanged<FlashcardEvaluation> onEvaluate;
 
+  /// Current stage of the card, used to tell when each answer brings it back.
+  final int stageIndex;
+  final List<int> stages;
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         for (var i = 0; i < _options.length; i++) ...[
-          if (i > 0) const SizedBox(width: VocaboSpacing.md),
+          if (i > 0)
+            SizedBox(width: compact ? VocaboSpacing.sm : VocaboSpacing.md),
           Expanded(
             child: _EvaluationButton(
               index: i,
               option: _options[i],
+              caption: describeNextReview(
+                _options[i].evaluation,
+                stageIndex: stageIndex,
+                stages: stages,
+              ),
+              compact: compact,
               isSelected: selected == _options[i].evaluation,
               isDimmed: selected != null && selected != _options[i].evaluation,
               onTap: enabled ? () => onEvaluate(_options[i].evaluation) : null,
@@ -74,6 +120,8 @@ class _EvaluationButton extends StatelessWidget {
   const _EvaluationButton({
     required this.index,
     required this.option,
+    required this.caption,
+    required this.compact,
     required this.isSelected,
     required this.isDimmed,
     required this.onTap,
@@ -81,37 +129,15 @@ class _EvaluationButton extends StatelessWidget {
 
   final int index;
   final _EvaluationOption option;
+  final String caption;
+  final bool compact;
   final bool isSelected;
   final bool isDimmed;
   final VoidCallback? onTap;
 
-  ({Color foreground, Color background, Color selectedBackground}) _palette(
-    BuildContext context,
-  ) {
-    return switch (option.evaluation) {
-      FlashcardEvaluation.hard => (
-        foreground: Theme.of(context).colorScheme.error,
-        background: Theme.of(context).colorScheme.error.withValues(alpha: 0.08),
-        selectedBackground: Theme.of(
-          context,
-        ).colorScheme.error.withValues(alpha: 0.2),
-      ),
-      FlashcardEvaluation.medium => (
-        foreground: VocaboColors.onSurface,
-        background: VocaboColors.surfaceContainerHigh,
-        selectedBackground: VocaboColors.neutral200,
-      ),
-      FlashcardEvaluation.easy => (
-        foreground: const Color(0xFF1E8E3E),
-        background: VocaboColors.tertiary.withValues(alpha: 0.12),
-        selectedBackground: VocaboColors.tertiary.withValues(alpha: 0.28),
-      ),
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
-    final palette = _palette(context);
+    final palette = evaluationPalette(context, option.evaluation);
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -136,42 +162,48 @@ class _EvaluationButton extends StatelessWidget {
                   ? SystemMouseCursors.basic
                   : SystemMouseCursors.click,
               child: Container(
-                height: 56,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: VocaboSpacing.md,
+                height: compact ? 54 : 64,
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? VocaboSpacing.sm : VocaboSpacing.md,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(option.icon, size: 20, color: palette.foreground),
-                    const SizedBox(width: VocaboSpacing.sm),
+                    ClarityIcon(
+                      clarity: option.clarity,
+                      color: palette.foreground,
+                      size: compact ? 14 : 18,
+                    ),
+                    SizedBox(width: compact ? 6 : VocaboSpacing.sm),
                     Flexible(
-                      child: Text(
-                        option.label,
-                        overflow: TextOverflow.ellipsis,
-                        style: VocaboTypography.bodyMd.copyWith(
-                          color: palette.foreground,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            option.label,
+                            overflow: TextOverflow.ellipsis,
+                            style: VocaboTypography.bodyMd.copyWith(
+                              color: palette.foreground,
+                              fontWeight: FontWeight.w600,
+                              height: 1.2,
+                            ),
+                          ),
+                          Text(
+                            caption,
+                            overflow: TextOverflow.ellipsis,
+                            style: VocaboTypography.bodySm.copyWith(
+                              color: palette.foreground.withValues(alpha: 0.7),
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: VocaboSpacing.sm),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: palette.foreground.withValues(alpha: 0.1),
-                        borderRadius: VocaboRadius.sm,
-                      ),
-                      child: Text(
-                        option.shortcut,
-                        style: VocaboTypography.labelSm.copyWith(
-                          color: palette.foreground,
-                        ),
-                      ),
-                    ),
+                    if (!compact) ...[
+                      const SizedBox(width: VocaboSpacing.sm),
+                      VocaboKeyCap(option.shortcut, color: palette.foreground),
+                    ],
                   ],
                 ),
               ),

@@ -159,8 +159,9 @@ class VocabularyListItem extends ConsumerWidget {
                   ],
                 const SizedBox(height: VocaboSpacing.sm),
                 Wrap(
-                  spacing: 6,
+                  spacing: 12,
                   runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     VocaboTagChip(
                       label: userVocabulary.vocabularyType == VocabularyType.custom
@@ -169,6 +170,10 @@ class VocabularyListItem extends ConsumerWidget {
                       variant: userVocabulary.vocabularyType == VocabularyType.custom
                           ? TagChipVariant.learning
                           : TagChipVariant.outlined,
+                    ),
+                    MemoryStrengthDots(
+                      strength: userVocabulary.flashcard?.strength ??
+                          MemoryStrength.of(stageIndex: 0),
                     ),
                   ],
                 ),

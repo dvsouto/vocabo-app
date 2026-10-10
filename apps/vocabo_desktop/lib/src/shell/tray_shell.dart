@@ -8,6 +8,7 @@ import 'package:vocabo_core/vocabo_core.dart' show appLogger;
 import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
+import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 
 class TrayShell extends ConsumerStatefulWidget {
   const TrayShell({super.key, required this.child});
@@ -40,6 +41,9 @@ class _TrayShellState extends ConsumerState<TrayShell>
           final term = args?['term'] as String? ?? '';
           ref.read(addWordInitialTermProvider.notifier).state = term;
           ref.read(showAddWordModalProvider.notifier).state = true;
+        case 'openFlashcards':
+          ref.read(dashboardSectionProvider.notifier).state =
+              DashboardSection.flashcards;
       }
     });
   }

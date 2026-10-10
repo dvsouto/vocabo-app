@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
+import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
 import 'package:vocabo_desktop/src/providers/translation_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/widgets/search/search_autocomplete_dropdown.dart';
+import 'package:vocabo_desktop/src/widgets/tray_panel/tray_flashcards_tab.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_translate_tab.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_word_item.dart';
 
@@ -35,6 +37,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
       if (call.method == 'vocabularyUpdated') {
         ref.invalidate(cachedUserVocabularyProvider);
         ref.invalidate(translationAvailabilityProvider);
+        ref.invalidate(flashcardStatusProvider);
       }
     });
   }
@@ -53,6 +56,10 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
     } else {
       _channel.invokeMethod('openApp').ignore();
     }
+  }
+
+  void _openFlashcards() {
+    _channel.invokeMethod('openFlashcards').ignore();
   }
 
   void _openAddWord() {
@@ -113,7 +120,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
           // Tab bar
           VocaboTabBar(
-            tabs: const ['Add Word', 'Translate'],
+            tabs: const ['Add Word', 'Translate', 'Flashcards'],
             selectedIndex: _selectedTabIndex,
             onTabChanged: (index) {
                 setState(() => _selectedTabIndex = index);
@@ -135,6 +142,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
               children: [
                 _buildAddWordTab(),
                 TrayTranslateTab(inputFocusNode: _translateFocusNode),
+                TrayFlashcardsTab(onOpenFlashcards: _openFlashcards),
               ],
             ),
           ),

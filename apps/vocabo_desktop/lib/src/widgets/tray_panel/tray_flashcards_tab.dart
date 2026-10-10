@@ -1,0 +1,348 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_ui/vocabo_ui.dart';
+
+import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_card.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_countdown.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_evaluation_bar.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/flashcards_completion.dart';
+
+/// Cards per round in the menu bar panel. A session left open in the main
+/// window is resumed in full instead.
+const quickSessionSize = 3;
+
+/// Quick flashcards round from the menu bar panel, without opening the app.
+class TrayFlashcardsTab extends ConsumerWidget {
+  const TrayFlashcardsTab({super.key, required this.onOpenFlashcards});
+
+  /// Opens the main window on the Flashcards section.
+  final VoidCallback onOpenFlashcards;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final phase = ref.watch(flashcardSessionProvider.select((s) => s.phase));
+
+    return switch (phase) {
+      FlashcardsPhase.home => _TrayHome(onOpenFlashcards: onOpenFlashcards),
+      FlashcardsPhase.loading => const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      FlashcardsPhase.session => const _TraySession(),
+      FlashcardsPhase.completion => _TrayCompletion(
+        onOpenFlashcards: onOpenFlashcards,
+      ),
+    };
+  }
+}
+
+class _TrayHome extends ConsumerWidget {
+  const _TrayHome({required this.onOpenFlashcards});
+
+  final VoidCallback onOpenFlashcards;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(flashcardStatusProvider);
+    final notifier = ref.read(flashcardSessionProvider.notifier);
+
+    Widget body = status.when(
+      loading: () => const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      error: (_, _) => _TrayMessage(
+        title: 'Flashcards are unavailable',
+        subtitle: 'Check your connection and try again.',
+        action: VocaboTextButton(
+          label: 'Retry',
+          onPressed: () => ref.invalidate(flashcardStatusProvider),
+        ),
+      ),
+      data: (summary) {
+        if (summary.canStartSession) {
+          final words = summary.dueCount == 1
+              ? '1 word is waiting'
+              : '${summary.dueCount} words are waiting';
+          return _TrayMessage(
+            title: summary.hasActiveSession
+                ? 'You have a session in progress'
+                : words,
+            subtitle: summary.hasActiveSession
+                ? 'Pick up right where you left off.'
+                : 'A quick round of up to $quickSessionSize words.',
+            action: VocaboPrimaryButton(
+              label: summary.hasActiveSession
+                  ? 'Continue reviewing'
+                  : 'Quick session',
+              isExpanded: true,
+              onPressed: () => notifier.startSession(size: quickSessionSize),
+            ),
+          );
+        }
+
+        if (summary.isWaiting) {
+          return _TrayMessage(
+            title: 'Your memory is in good shape.',
+            subtitle: 'Your next words return in',
+            action: FlashcardCountdown(
+              target: summary.nextReviewAt!,
+              style: VocaboTypography.headlineSm,
+              onFinished: () => ref.invalidate(flashcardStatusProvider),
+            ),
+          );
+        }
+
+        return const _TrayMessage(
+          title: 'No flashcards yet',
+          subtitle:
+              "Words you save will return here, right before you'd forget them.",
+        );
+      },
+    );
+
+    return Column(
+      children: [
+        Expanded(child: body),
+        VocaboTextButton(label: 'Open Flashcards', onPressed: onOpenFlashcards),
+      ],
+    );
+  }
+}
+
+class _TrayMessage extends StatelessWidget {
+  const _TrayMessage({
+    required this.title,
+    required this.subtitle,
+    this.action,
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: VocaboSpacing.sm),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: VocaboColors.primary50,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.style_outlined,
+                color: VocaboColors.primary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(height: VocaboSpacing.md),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: VocaboTypography.titleLg,
+            ),
+            const SizedBox(height: VocaboSpacing.xs),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: VocaboTypography.bodySm.copyWith(
+                color: VocaboColors.neutral,
+              ),
+            ),
+            if (action != null) ...[
+              const SizedBox(height: VocaboSpacing.lg),
+              action!,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TraySession extends ConsumerStatefulWidget {
+  const _TraySession();
+
+  @override
+  ConsumerState<_TraySession> createState() => _TraySessionState();
+}
+
+class _TraySessionState extends ConsumerState<_TraySession> {
+  // The Add Word search field keeps focus across tabs, so the session claims
+  // it explicitly for its keyboard shortcuts.
+  final _focusNode = FocusNode(debugLabel: 'tray-flashcards-session');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  static final _evaluationKeys = <LogicalKeyboardKey, FlashcardEvaluation>{
+    LogicalKeyboardKey.digit1: FlashcardEvaluation.hard,
+    LogicalKeyboardKey.digit2: FlashcardEvaluation.medium,
+    LogicalKeyboardKey.digit3: FlashcardEvaluation.easy,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(flashcardSessionProvider);
+    final notifier = ref.read(flashcardSessionProvider.notifier);
+    final card = state.currentCard;
+    final stages =
+        ref.watch(flashcardConfigProvider).valueOrNull?.stages ??
+        FlashcardConfig.fallback.stages;
+
+    if (card == null) return const SizedBox.shrink();
+
+    final interactive = !state.isSubmitting;
+    final progress = state.totalCards == 0
+        ? 0.0
+        : state.evaluatedCount / state.totalCards;
+
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+        if (event.logicalKey == LogicalKeyboardKey.space && !state.isFlipped) {
+          notifier.flip();
+          return KeyEventResult.handled;
+        }
+        final evaluation = _evaluationKeys[event.logicalKey];
+        if (evaluation != null && state.isFlipped) {
+          notifier.evaluate(evaluation);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'Stop',
+                icon: const Icon(Icons.close, size: 18),
+                color: VocaboColors.neutral,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                onPressed: notifier.leaveSession,
+              ),
+              const SizedBox(width: VocaboSpacing.xs),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: VocaboRadius.sm,
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 4,
+                    color: VocaboColors.onSurface,
+                    backgroundColor: VocaboColors.neutral200,
+                  ),
+                ),
+              ),
+              const SizedBox(width: VocaboSpacing.sm),
+              Text(
+                '${state.evaluatedCount}/${state.totalCards}',
+                style: VocaboTypography.bodySm.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: VocaboSpacing.sm),
+          Expanded(
+            child: SingleChildScrollView(
+              child: FlashcardCard(
+                key: ValueKey(card.id),
+                card: card,
+                compact: true,
+                isFlipped: state.isFlipped,
+                isExpanded: state.isExpanded,
+                enabled: interactive,
+                onFlip: notifier.flip,
+                onToggleMeaning: notifier.toggleMeaning,
+              ),
+            ),
+          ),
+          const SizedBox(height: VocaboSpacing.sm),
+          state.isFlipped
+              ? FlashcardEvaluationBar(
+                  key: ValueKey('tray-evaluate-${card.id}'),
+                  selected: state.selectedEvaluation,
+                  enabled: interactive,
+                  onEvaluate: notifier.evaluate,
+                  stageIndex: card.flashcard.currentStageIndex,
+                  stages: stages,
+                  compact: true,
+                )
+              : VocaboPrimaryButton(
+                  key: ValueKey('tray-continue-${card.id}'),
+                  label: 'Continue',
+                  isExpanded: true,
+                  onPressed: interactive ? notifier.flip : null,
+                ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrayCompletion extends ConsumerWidget {
+  const _TrayCompletion({required this.onOpenFlashcards});
+
+  final VoidCallback onOpenFlashcards;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(flashcardSessionProvider);
+    final notifier = ref.read(flashcardSessionProvider.notifier);
+
+    return Column(
+      children: [
+        Expanded(
+          child: _TrayMessage(
+            title: 'Round complete',
+            subtitle: sessionSummary(
+              reviewed: state.evaluatedCount,
+              clear: state.countOf(FlashcardEvaluation.easy),
+            ),
+            action: VocaboPrimaryButton(
+              label: 'Done',
+              isExpanded: true,
+              onPressed: notifier.finishCompletion,
+            ),
+          ),
+        ),
+        VocaboTextButton(
+          label: 'Open Flashcards',
+          onPressed: () {
+            notifier.finishCompletion();
+            onOpenFlashcards();
+          },
+        ),
+      ],
+    );
+  }
+}

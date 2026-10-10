@@ -2,12 +2,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 
 final flashcardStatusProvider = FutureProvider<FlashcardStatusSummary>((
   ref,
 ) async {
   final api = ref.watch(apiClientProvider);
   return api.flashcards.getStatus();
+});
+
+/// Stage intervals and reverse stages shared by the API. Falls back to the
+/// API defaults while loading or offline so the UI never blocks on it.
+final flashcardConfigProvider = FutureProvider<FlashcardConfig>((ref) async {
+  try {
+    return await ref.watch(apiClientProvider).flashcards.getConfig();
+  } catch (e, st) {
+    appLogger.handle(e, st, 'FlashcardConfig load error');
+    return FlashcardConfig.fallback;
+  }
 });
 
 final archivedFlashcardsProvider = FutureProvider.autoDispose<List<Flashcard>>((
@@ -96,7 +108,9 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
   @override
   FlashcardSessionState build() => const FlashcardSessionState();
 
-  Future<void> startSession() async {
+  /// Loads the in-progress session or composes a new one. [size] limits a
+  /// new deck, which the menu bar panel uses for quick sessions.
+  Future<void> startSession({int? size}) async {
     state = state.copyWith(
       phase: FlashcardsPhase.loading,
       session: () => null,
@@ -109,7 +123,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
 
     try {
       final api = ref.read(apiClientProvider);
-      final session = await api.flashcards.getSession();
+      final session = await api.flashcards.getSession(size: size);
 
       if (session == null || session.isEmpty) {
         _goHome(notice: 'Nothing to review right now.');
@@ -250,12 +264,12 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
         return;
       }
 
-      _notify('Flashcard archived.');
+      _notify('Word set aside.');
       _advance(remaining, completed: false);
     } catch (e, st) {
       appLogger.handle(e, st, 'FlashcardSession archiveCurrent() error');
       state = state.copyWith(isSubmitting: false);
-      _notify('Could not archive this flashcard. Please try again.');
+      _notify('Could not set this word aside. Please try again.');
     }
   }
 
@@ -317,6 +331,8 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
 
   void _complete(FlashcardSession session) {
     ref.invalidate(flashcardStatusProvider);
+    // Library items show each word's memory strength, which just changed.
+    ref.invalidate(userVocabularyListProvider);
     state = state.copyWith(
       phase: FlashcardsPhase.completion,
       session: () => session,

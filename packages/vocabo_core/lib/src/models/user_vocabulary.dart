@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'package:vocabo_core/src/enums/vocabulary_type.dart';
+import 'package:vocabo_core/src/models/flashcard_summary.dart';
 import 'package:vocabo_core/src/models/vocabulary.dart';
 
 part 'user_vocabulary.g.dart';
@@ -27,6 +28,9 @@ class UserVocabulary extends Equatable {
 
   final Vocabulary? vocabulary;
 
+  @JsonKey(fromJson: _flashcardFromJson, toJson: _flashcardToJson)
+  final FlashcardSummary? flashcard;
+
   const UserVocabulary({
     required this.id,
     required this.userId,
@@ -35,6 +39,7 @@ class UserVocabulary extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.vocabulary,
+    this.flashcard,
   });
 
   factory UserVocabulary.fromJson(Map<String, dynamic> json) =>
@@ -42,14 +47,21 @@ class UserVocabulary extends Equatable {
 
   Map<String, dynamic> toJson() => _$UserVocabularyToJson(this);
 
+  static FlashcardSummary? _flashcardFromJson(dynamic json) =>
+      json is Map<String, dynamic> ? FlashcardSummary.fromJson(json) : null;
+
+  static Map<String, dynamic>? _flashcardToJson(FlashcardSummary? summary) =>
+      summary?.toJson();
+
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        vocabularyType,
-        vocabularyMongoId,
-        createdAt,
-        updatedAt,
-        vocabulary,
-      ];
+    id,
+    userId,
+    vocabularyType,
+    vocabularyMongoId,
+    createdAt,
+    updatedAt,
+    vocabulary,
+    flashcard,
+  ];
 }

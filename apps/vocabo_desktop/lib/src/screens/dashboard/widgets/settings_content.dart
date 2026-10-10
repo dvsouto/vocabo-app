@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
+import 'package:vocabo_desktop/src/providers/daily_reminder_provider.dart';
+import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 
 class SettingsContent extends ConsumerWidget {
@@ -42,18 +45,9 @@ class SettingsContent extends ConsumerWidget {
                     width: cardWidth,
                     child: _AccountInfoCard(userAsync: userAsync),
                   ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: const _NotificationsCard(),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: const _StudyLanguageCard(),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: const _SupportCard(),
-                  ),
+                  SizedBox(width: cardWidth, child: const _NotificationsCard()),
+                  SizedBox(width: cardWidth, child: const _StudyLanguageCard()),
+                  SizedBox(width: cardWidth, child: const _SupportCard()),
                 ],
               );
             },
@@ -113,24 +107,24 @@ class _ProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = userAsync.whenOrNull<String>(
-          data: (user) => user.name,
-        ) ??
-        '...';
+    final name =
+        userAsync.whenOrNull<String>(data: (user) => user.name) ?? '...';
 
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
       decoration: BoxDecoration(
         color: VocaboColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: VocaboColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: VocaboColors.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
           // Avatar
           CircleAvatar(
             radius: 32,
-            backgroundColor: VocaboColors.primary.withOpacity(0.1),
+            backgroundColor: VocaboColors.primary.withValues(alpha: 0.1),
             child: Text(
               name.isNotEmpty ? name[0].toUpperCase() : '?',
               style: VocaboTypography.headlineSm.copyWith(
@@ -150,10 +144,7 @@ class _ProfileSection extends StatelessWidget {
                 Wrap(
                   spacing: VocaboSpacing.sm,
                   children: [
-                    _Badge(
-                      label: 'BEGINNER',
-                      color: VocaboColors.tertiary,
-                    ),
+                    _Badge(label: 'BEGINNER', color: VocaboColors.tertiary),
                   ],
                 ),
               ],
@@ -181,7 +172,7 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -208,16 +199,12 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           label,
-          style: VocaboTypography.labelSm.copyWith(
-            color: VocaboColors.neutral,
-          ),
+          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: VocaboTypography.titleLg.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: VocaboTypography.titleLg.copyWith(fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -244,7 +231,9 @@ class _SettingsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: VocaboColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: VocaboColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: VocaboColors.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,10 +260,8 @@ class _AccountInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final email = userAsync.whenOrNull<String>(
-          data: (user) => user.email,
-        ) ??
-        '...';
+    final email =
+        userAsync.whenOrNull<String>(data: (user) => user.email) ?? '...';
 
     return _SettingsCard(
       icon: Icons.person_outline,
@@ -299,29 +286,72 @@ class _AccountInfoCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: VocaboSpacing.xs),
-          Text(
-            '\u2022' * 12,
-            style: VocaboTypography.bodyMd,
-          ),
+          Text('\u2022' * 12, style: VocaboTypography.bodyMd),
         ],
       ),
     );
   }
 }
 
-class _NotificationsCard extends StatefulWidget {
+class _NotificationsCard extends ConsumerStatefulWidget {
   const _NotificationsCard();
 
   @override
-  State<_NotificationsCard> createState() => _NotificationsCardState();
+  ConsumerState<_NotificationsCard> createState() => _NotificationsCardState();
 }
 
-class _NotificationsCardState extends State<_NotificationsCard> {
-  bool _dailyReminder = true;
+class _NotificationsCardState extends ConsumerState<_NotificationsCard> {
   bool _weeklyReport = false;
+
+  Future<void> _setDailyReminder(bool enabled) async {
+    if (enabled) {
+      final granted = await ref
+          .read(dailyReminderServiceProvider)
+          .requestPermission();
+      if (!granted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Allow notifications for Vocabo in System Settings to get '
+                'daily reminders.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    await ref
+        .read(userPreferencesProvider.notifier)
+        .setDailyReminder(enabled: enabled);
+  }
+
+  Future<void> _pickTime(String current) async {
+    final parsed = DailyReminderSchedule.reminderAt(current, DateTime.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+        hour: parsed?.hour ?? 8,
+        minute: parsed?.minute ?? 0,
+      ),
+    );
+    if (picked == null) return;
+
+    await ref
+        .read(userPreferencesProvider.notifier)
+        .setDailyReminder(
+          time: DailyReminderSchedule.format(picked.hour, picked.minute),
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final preferences =
+        ref.watch(userPreferencesProvider).valueOrNull ??
+        const UserPreferences();
+
     return _SettingsCard(
       icon: Icons.notifications_outlined,
       iconColor: VocaboColors.secondary,
@@ -330,9 +360,13 @@ class _NotificationsCardState extends State<_NotificationsCard> {
         children: [
           _NotificationRow(
             title: 'Daily Reminder',
-            subtitle: 'Get notified to study at 8:00 AM',
-            value: _dailyReminder,
-            onChanged: (v) => setState(() => _dailyReminder = v),
+            subtitle:
+                'Flashcards waiting, every day at '
+                '${preferences.dailyReminderTime}',
+            actionLabel: 'Change time',
+            onAction: () => _pickTime(preferences.dailyReminderTime),
+            value: preferences.dailyReminderEnabled,
+            onChanged: _setDailyReminder,
           ),
           const SizedBox(height: VocaboSpacing.md),
           _NotificationRow(
@@ -353,12 +387,16 @@ class _NotificationRow extends StatelessWidget {
     required this.subtitle,
     required this.value,
     required this.onChanged,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String title;
   final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -375,13 +413,22 @@ class _NotificationRow extends StatelessWidget {
                   color: VocaboColors.neutral,
                 ),
               ),
+              if (actionLabel != null && onAction != null)
+                InkWell(
+                  onTap: onAction,
+                  mouseCursor: SystemMouseCursors.click,
+                  child: Text(
+                    actionLabel!,
+                    style: VocaboTypography.bodySm.copyWith(
+                      color: VocaboColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
-        VocaboToggleSwitch(
-          value: value,
-          onChanged: onChanged,
-        ),
+        VocaboToggleSwitch(value: value, onChanged: onChanged),
       ],
     );
   }
@@ -415,9 +462,7 @@ class _StudyLanguageCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {},
-            style: TextButton.styleFrom(
-              foregroundColor: VocaboColors.primary,
-            ),
+            style: TextButton.styleFrom(foregroundColor: VocaboColors.primary),
             child: const Text('Switch'),
           ),
         ],
@@ -463,9 +508,7 @@ class _SupportRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
           children: [
-            Expanded(
-              child: Text(label, style: VocaboTypography.bodyMd),
-            ),
+            Expanded(child: Text(label, style: VocaboTypography.bodyMd)),
             const Icon(
               Icons.chevron_right,
               size: 20,

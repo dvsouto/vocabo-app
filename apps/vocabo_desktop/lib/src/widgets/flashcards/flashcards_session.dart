@@ -22,6 +22,16 @@ class FlashcardsSession extends ConsumerStatefulWidget {
 class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
   final _focusNode = FocusNode(debugLabel: 'flashcards-session');
 
+  @override
+  void initState() {
+    super.initState();
+    // The home screen keeps focus while it animates out, which would make
+    // `autofocus` a no-op and disable the shortcuts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
   static final _evaluationKeys = <LogicalKeyboardKey, FlashcardEvaluation>{
     LogicalKeyboardKey.digit1: FlashcardEvaluation.hard,
     LogicalKeyboardKey.numpad1: FlashcardEvaluation.hard,
@@ -77,6 +87,9 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
     final state = ref.watch(flashcardSessionProvider);
     final notifier = ref.read(flashcardSessionProvider.notifier);
     final card = state.currentCard;
+    final stages =
+        ref.watch(flashcardConfigProvider).valueOrNull?.stages ??
+        FlashcardConfig.fallback.stages;
 
     if (card == null) {
       return const Center(child: CircularProgressIndicator());
@@ -86,7 +99,6 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
 
     return Focus(
       focusNode: _focusNode,
-      autofocus: true,
       onKeyEvent: _handleKey,
       child: Column(
         children: [
@@ -118,8 +130,10 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
             duration: const Duration(milliseconds: 200),
             child: Text(
               state.isFlipped
-                  ? 'Did you remember?'
-                  : 'Try to recall the meaning before flipping',
+                  ? 'How clear was it?'
+                  : card.flashcard.direction == FlashcardDirection.reverse
+                  ? 'Which English word means this?'
+                  : 'What does it mean to you?',
               key: ValueKey(state.isFlipped),
               style: VocaboTypography.bodyMd.copyWith(
                 color: VocaboColors.neutral,
@@ -141,7 +155,7 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
                     enabled: interactive,
                     onFlip: notifier.flip,
                     onToggleMeaning: notifier.toggleMeaning,
-                    onArchive: () => _archiveCurrent(card),
+                    onSetAside: () => _archiveCurrent(card),
                   ),
                 ),
               ),
@@ -158,10 +172,16 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
                       selected: state.selectedEvaluation,
                       enabled: interactive,
                       onEvaluate: notifier.evaluate,
+                      stageIndex: card.flashcard.currentStageIndex,
+                      stages: stages,
                     )
                   : VocaboPrimaryButton(
                       key: ValueKey('continue-${card.id}'),
                       label: 'Continue',
+                      trailing: const VocaboKeyCap(
+                        'Space',
+                        color: VocaboColors.onPrimary,
+                      ),
                       isExpanded: true,
                       onPressed: interactive ? notifier.flip : null,
                     ),
