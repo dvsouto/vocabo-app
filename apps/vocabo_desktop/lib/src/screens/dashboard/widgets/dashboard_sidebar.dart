@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
+import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
+
+enum DashboardSection { library, flashcards, progress, settings }
 
 class DashboardSidebar extends ConsumerWidget {
   const DashboardSidebar({
@@ -17,12 +20,16 @@ class DashboardSidebar extends ConsumerWidget {
 
   static const _navItems = [
     (icon: Icons.auto_stories, label: 'Library'),
+    (icon: Icons.style_outlined, label: 'Flashcards'),
     (icon: Icons.trending_up, label: 'Progress'),
     (icon: Icons.settings_outlined, label: 'Settings'),
   ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final dueCount =
+        ref.watch(flashcardStatusProvider).valueOrNull?.dueCount ?? 0;
+
     return Container(
       width: 240,
       color: _sidebarBackground,
@@ -44,7 +51,9 @@ class DashboardSidebar extends ConsumerWidget {
               const SizedBox(width: VocaboSpacing.sm),
               Text(
                 'Vocabo',
-                style: VocaboTypography.headlineSm.copyWith(color: Colors.white),
+                style: VocaboTypography.headlineSm.copyWith(
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
@@ -56,12 +65,14 @@ class DashboardSidebar extends ConsumerWidget {
           const SizedBox(height: VocaboSpacing.md),
           ...List.generate(_navItems.length, (i) {
             final item = _navItems[i];
+            final isFlashcards = i == DashboardSection.flashcards.index;
             return Padding(
               padding: const EdgeInsets.only(bottom: 4),
               child: VocaboNavItem(
                 icon: item.icon,
                 label: item.label,
                 isActive: i == selectedIndex,
+                badge: isFlashcards && dueCount > 0 ? '$dueCount' : null,
                 onTap: () => onNavTap(i),
               ),
             );

@@ -33,3 +33,6 @@ export 'src/widgets/chips/vocabo_selectable_chip.dart';
 // Widgets - Navigation
 export 'src/widgets/navigation/vocabo_nav_item.dart';
 export 'src/widgets/navigation/vocabo_tab_bar.dart';
+
+// Widgets - Text
+export 'src/widgets/text/highlighted_example_text.dart';

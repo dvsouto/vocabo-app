@@ -7,7 +7,17 @@ class UserRepository {
   final UserDataSource _dataSource;
 
   UserRepository({required UserDataSource dataSource})
-      : _dataSource = dataSource;
+    : _dataSource = dataSource;
 
   Future<User> getProfile() => apiCall(() => _dataSource.getProfile());
+
+  Future<UserPreferences> getPreferences() =>
+      apiCall(() => _dataSource.getPreferences());
+
+  Future<UserPreferences> updatePreferences({bool? showTranslations}) =>
+      apiCall(
+        () => _dataSource.updatePreferences({
+          if (showTranslations != null) 'show_translations': showTranslations,
+        }),
+      );
 }

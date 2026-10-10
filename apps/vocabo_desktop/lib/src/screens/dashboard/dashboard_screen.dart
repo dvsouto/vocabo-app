@@ -4,6 +4,7 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/dashboard_sidebar.dart';
+import 'package:vocabo_desktop/src/screens/dashboard/widgets/flashcards_content.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/library_content.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/progress_content.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/settings_content.dart';
@@ -21,11 +22,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedNavIndex = 0;
 
   Widget _buildContent() {
-    return switch (_selectedNavIndex) {
-      0 => const LibraryContent(),
-      1 => const ProgressContent(),
-      2 => const SettingsContent(),
-      _ => const LibraryContent(),
+    final section = DashboardSection.values.elementAtOrNull(_selectedNavIndex);
+
+    return switch (section) {
+      DashboardSection.flashcards => const FlashcardsContent(),
+      DashboardSection.progress => const ProgressContent(),
+      DashboardSection.settings => const SettingsContent(),
+      DashboardSection.library || null => const LibraryContent(),
     };
   }
 

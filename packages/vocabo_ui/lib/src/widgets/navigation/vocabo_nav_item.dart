@@ -10,12 +10,16 @@ class VocaboNavItem extends StatelessWidget {
     required this.label,
     this.isActive = false,
     this.onTap,
+    this.badge,
   });
 
   final IconData icon;
   final String label;
   final bool isActive;
   final VoidCallback? onTap;
+
+  /// Short text shown in a pill at the end of the row (e.g. a due count).
+  final String? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -39,13 +43,35 @@ class VocaboNavItem extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 12),
-              Text(
-                label,
-                style: VocaboTypography.bodyMd.copyWith(
-                  color: color,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+              Expanded(
+                child: Text(
+                  label,
+                  style: VocaboTypography.bodyMd.copyWith(
+                    color: color,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  ),
                 ),
               ),
+              if (badge != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : VocaboColors.primary.withValues(alpha: 0.35),
+                    borderRadius: VocaboRadius.sm,
+                  ),
+                  child: Text(
+                    badge!,
+                    style: VocaboTypography.labelSm.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/stats_section.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/vocabulary_list.dart';
@@ -51,6 +52,7 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
     final searchResults = ref.watch(searchResultsProvider);
     final query = ref.watch(searchQueryProvider);
     final vocabList = ref.watch(userVocabularyListProvider);
+    final showTranslations = ref.watch(showTranslationsProvider);
 
     return Column(
       children: [
@@ -94,12 +96,21 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(
-                              Icons.tune,
+                            tooltip: showTranslations
+                                ? 'Hide meanings'
+                                : 'Show meanings',
+                            icon: Icon(
+                              showTranslations
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
                               size: 20,
-                              color: VocaboColors.neutral,
+                              color: showTranslations
+                                  ? VocaboColors.neutral
+                                  : VocaboColors.primary,
                             ),
-                            onPressed: () {},
+                            onPressed: () => ref
+                                .read(userPreferencesProvider.notifier)
+                                .toggleShowTranslations(),
                             style: const ButtonStyle(
                               mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
                             ),

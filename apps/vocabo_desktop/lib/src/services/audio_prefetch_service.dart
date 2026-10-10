@@ -15,21 +15,30 @@ class AudioPrefetchService {
 
   Future<void> prefetch(List<UserVocabulary> vocabularies) async {
     for (final uv in vocabularies) {
-      final vocab = uv.vocabulary;
-      if (vocab == null) continue;
-      if (vocab.contentHash == null || vocab.contentHash!.isEmpty) continue;
-      if (vocab.audioStatus != 'done') continue;
-
-      final contentHash = vocab.contentHash!;
-
-      final cached = await _cacheService.getCached(contentHash);
-      if (cached != null) continue;
-
-      if (_prefetching.contains(contentHash)) continue;
-      _prefetching.add(contentHash);
-
-      _fetchAndCache(vocab, uv.vocabularyType.value).ignore();
+      await _prefetchOne(uv.vocabulary, uv.vocabularyType);
     }
+  }
+
+  Future<void> prefetchFlashcards(List<Flashcard> flashcards) async {
+    for (final flashcard in flashcards) {
+      await _prefetchOne(flashcard.vocabulary, flashcard.vocabularyType);
+    }
+  }
+
+  Future<void> _prefetchOne(Vocabulary? vocab, VocabularyType type) async {
+    if (vocab == null) return;
+    if (vocab.contentHash == null || vocab.contentHash!.isEmpty) return;
+    if (vocab.audioStatus != 'done') return;
+
+    final contentHash = vocab.contentHash!;
+
+    final cached = await _cacheService.getCached(contentHash);
+    if (cached != null) return;
+
+    if (_prefetching.contains(contentHash)) return;
+    _prefetching.add(contentHash);
+
+    _fetchAndCache(vocab, type.value).ignore();
   }
 
   Future<void> _fetchAndCache(Vocabulary vocab, String type) async {

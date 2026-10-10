@@ -4,6 +4,7 @@ import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 
@@ -30,6 +31,7 @@ class VocabularyListItem extends ConsumerWidget {
     final vocabulary = userVocabulary.vocabulary!;
     final audioState = ref.watch(audioPlayerStateProvider);
     final isModalOpen = ref.watch(showWordDetailModalProvider);
+    final showTranslations = ref.watch(showTranslationsProvider);
     final contentHash = vocabulary.contentHash ?? '';
     final isThisPlaying = !isModalOpen &&
         audioState.currentPlayingHash == contentHash;
@@ -129,11 +131,19 @@ class VocabularyListItem extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: VocaboSpacing.xs),
-                if (vocabulary.meaning != null)
+                if (vocabulary.meaning != null && showTranslations)
                   Text(
                     vocabulary.meaning!,
                     style: VocaboTypography.bodyMd.copyWith(
                       color: VocaboColors.neutral,
+                    ),
+                  )
+                else if (vocabulary.meaning != null)
+                  Text(
+                    '••••••••••',
+                    style: VocaboTypography.bodyMd.copyWith(
+                      color: VocaboColors.neutral300,
+                      letterSpacing: 2,
                     ),
                   ),
                 if (vocabulary.usageExamples?.sourceLang.isNotEmpty ?? false)

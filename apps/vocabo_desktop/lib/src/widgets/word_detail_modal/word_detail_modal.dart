@@ -5,6 +5,7 @@ import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 
@@ -31,6 +32,8 @@ class WordDetailModal extends ConsumerWidget {
     final vocabulary = userVocabulary.vocabulary!;
     final showDetail = ref.watch(showWordDetailModalProvider);
     final audioState = ref.watch(audioPlayerStateProvider);
+    final flashcard =
+        ref.watch(flashcardByVocabularyProvider(userVocabulary.id)).valueOrNull;
     final contentHash = vocabulary.contentHash ?? '';
     final isThisPlaying =
         showDetail && audioState.currentPlayingHash == contentHash;
@@ -68,7 +71,7 @@ class WordDetailModal extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildHeader(ref, vocabulary),
+                  _buildHeader(ref, vocabulary, flashcard),
                   const SizedBox(height: VocaboSpacing.lg),
                   _buildTermRow(
                     ref, vocabulary, contentHash,
@@ -83,7 +86,7 @@ class WordDetailModal extends ConsumerWidget {
                     _buildMeaningSection(vocabulary),
                   ],
                   const SizedBox(height: VocaboSpacing.xl),
-                  _buildDateSection(),
+                  _buildDateSection(flashcard),
                   const SizedBox(height: VocaboSpacing.xl),
                   _buildActions(ref),
                 ],
@@ -95,13 +98,32 @@ class WordDetailModal extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(WidgetRef ref, Vocabulary vocabulary) {
+  Widget _buildHeader(
+    WidgetRef ref,
+    Vocabulary vocabulary,
+    Flashcard? flashcard,
+  ) {
     return Row(
       children: [
         VocaboTagChip(
           label: vocabulary.wordType.value.toUpperCase(),
           variant: TagChipVariant.outlined,
         ),
+        if (flashcard != null) ...[
+          const SizedBox(width: VocaboSpacing.sm),
+          VocaboTagChip(
+            label: switch (flashcard.status) {
+              FlashcardStatus.completed => 'Mastered',
+              FlashcardStatus.archived => 'Archived',
+              FlashcardStatus.active => 'Review ${flashcard.stageLabel}',
+            },
+            variant: switch (flashcard.status) {
+              FlashcardStatus.completed => TagChipVariant.mastered,
+              FlashcardStatus.archived => TagChipVariant.outlined,
+              FlashcardStatus.active => TagChipVariant.learning,
+            },
+          ),
+        ],
         const Spacer(),
         IconButton(
           icon: const Icon(Icons.close, size: 20),
@@ -348,7 +370,9 @@ class WordDetailModal extends ConsumerWidget {
     );
   }
 
-  Widget _buildDateSection() {
+  Widget _buildDateSection(Flashcard? flashcard) {
+    final lastPracticed = flashcard?.lastEvaluatedAt;
+
     return Row(
       children: [
         _buildDateItem(
@@ -360,7 +384,9 @@ class WordDetailModal extends ConsumerWidget {
         _buildDateItem(
           icon: Icons.bolt_outlined,
           label: 'LAST PRACTICED',
-          value: 'Not yet',
+          value: lastPracticed == null
+              ? 'Not yet'
+              : _formatFullDate(lastPracticed.toLocal()),
         ),
       ],
     );
