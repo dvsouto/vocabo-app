@@ -7,14 +7,19 @@ class UserVocabularyRepository {
   final UserVocabularyDataSource _dataSource;
 
   UserVocabularyRepository({required UserVocabularyDataSource dataSource})
-      : _dataSource = dataSource;
+    : _dataSource = dataSource;
 
   Future<PaginatedResponse<UserVocabulary>> getAll({
     String? cursor,
     int? limit,
-  }) =>
-      apiCall(() => _dataSource.getAll(cursor: cursor, limit: limit));
+  }) => apiCall(() => _dataSource.getAll(cursor: cursor, limit: limit));
 
   Future<UserVocabulary> add({required Map<String, dynamic> data}) =>
       apiCall(() => _dataSource.add(data: data));
+
+  Future<VocabularyStats> getStats({required int timezoneOffsetMinutes}) =>
+      apiCall(
+        () =>
+            _dataSource.getStats(timezoneOffsetMinutes: timezoneOffsetMinutes),
+      );
 }

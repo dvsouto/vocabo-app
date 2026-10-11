@@ -10,3 +10,4 @@ export 'usage_examples.dart';
 export 'user.dart';
 export 'user_vocabulary.dart';
 export 'vocabulary.dart';
+export 'vocabulary_stats.dart';

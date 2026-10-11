@@ -23,8 +23,7 @@ class UserVocabularyDataSource {
         response.data!['pagination'] as Map<String, dynamic>? ?? {};
 
     final items = data
-        .map(
-            (item) => UserVocabulary.fromJson(item as Map<String, dynamic>))
+        .map((item) => UserVocabulary.fromJson(item as Map<String, dynamic>))
         .toList();
 
     return PaginatedResponse(
@@ -34,9 +33,7 @@ class UserVocabularyDataSource {
     );
   }
 
-  Future<UserVocabulary> add({
-    required Map<String, dynamic> data,
-  }) async {
+  Future<UserVocabulary> add({required Map<String, dynamic> data}) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/user-vocabulary/add',
       data: data,
@@ -48,5 +45,16 @@ class UserVocabularyDataSource {
       ...result['user_vocabulary'] as Map<String, dynamic>,
       'vocabulary': result['vocabulary'],
     });
+  }
+
+  Future<VocabularyStats> getStats({required int timezoneOffsetMinutes}) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/user-vocabulary/stats',
+      queryParameters: {'timezone_offset_minutes': timezoneOffsetMinutes},
+    );
+
+    return VocabularyStats.fromJson(
+      response.data!['data'] as Map<String, dynamic>,
+    );
   }
 }

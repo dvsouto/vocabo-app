@@ -5,11 +5,13 @@ import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/services/user_vocabulary_cache_service.dart';
 
-final userVocabularyCacheServiceProvider =
-    Provider<UserVocabularyCacheService>((ref) => UserVocabularyCacheService());
+final userVocabularyCacheServiceProvider = Provider<UserVocabularyCacheService>(
+  (ref) => UserVocabularyCacheService(),
+);
 
-final cachedUserVocabularyProvider =
-    FutureProvider<List<UserVocabulary>>((ref) async {
+final cachedUserVocabularyProvider = FutureProvider<List<UserVocabulary>>((
+  ref,
+) async {
   final cacheService = ref.watch(userVocabularyCacheServiceProvider);
   final items = await cacheService.load();
   return items ?? [];
@@ -31,7 +33,9 @@ class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
       _nextCursor = response.nextCursor;
       _hasMore = response.hasMore;
 
-      appLogger.debug('UserVocabularyList: loaded ${response.items.length} items, hasMore: $_hasMore');
+      appLogger.debug(
+        'UserVocabularyList: loaded ${response.items.length} items, hasMore: $_hasMore',
+      );
 
       _saveToCache(response.items);
 
@@ -93,12 +97,20 @@ class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
 
 final userVocabularyListProvider =
     AsyncNotifierProvider<UserVocabularyListNotifier, List<UserVocabulary>>(
-  UserVocabularyListNotifier.new,
-);
+      UserVocabularyListNotifier.new,
+    );
 
 final recentUserVocabulariesProvider =
     Provider<AsyncValue<List<UserVocabulary>>>((ref) {
-  return ref.watch(userVocabularyListProvider).whenData(
-        (list) => list.take(5).toList(),
-      );
+      return ref
+          .watch(userVocabularyListProvider)
+          .whenData((list) => list.take(5).toList());
+    });
+
+final vocabularyStatsProvider = FutureProvider<VocabularyStats>((ref) async {
+  ref.watch(userVocabularyListProvider);
+  final api = ref.watch(apiClientProvider);
+  return api.userVocabulary.getStats(
+    timezoneOffsetMinutes: DateTime.now().timeZoneOffset.inMinutes,
+  );
 });
