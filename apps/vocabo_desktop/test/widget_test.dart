@@ -4,9 +4,7 @@ import 'package:vocabo_desktop/src/app.dart';
 
 void main() {
   testWidgets('App renders login screen', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: VocaboDesktopApp()),
-    );
+    await tester.pumpWidget(const ProviderScope(child: VocaboDesktopApp()));
     await tester.pumpAndSettle();
 
     expect(find.text('Vocabo'), findsOneWidget);

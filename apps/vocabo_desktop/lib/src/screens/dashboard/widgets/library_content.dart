@@ -58,18 +58,14 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
       children: [
         // Header
         Padding(
-          padding:
-              const EdgeInsets.all(VocaboSpacing.xl).copyWith(bottom: 0),
+          padding: const EdgeInsets.all(VocaboSpacing.xl).copyWith(bottom: 0),
           child: Row(
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'My Library',
-                      style: VocaboTypography.headlineSm,
-                    ),
+                    Text('My Library', style: VocaboTypography.headlineSm),
                     const SizedBox(height: VocaboSpacing.xs),
                     Text(
                       'Curating your intellectual vocabulary.',
@@ -89,9 +85,8 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                       controller: _searchController,
                       focusNode: _searchFocusNode,
                       hint: 'Quick search words...',
-                      onChanged: (v) => ref
-                          .read(searchQueryProvider.notifier)
-                          .state = v,
+                      onChanged: (v) =>
+                          ref.read(searchQueryProvider.notifier).state = v,
                       suffixActions: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -112,7 +107,9 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                                 .read(userPreferencesProvider.notifier)
                                 .toggleShowTranslations(),
                             style: const ButtonStyle(
-                              mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
+                              mouseCursor: WidgetStatePropertyAll(
+                                SystemMouseCursors.click,
+                              ),
                             ),
                           ),
                           IconButton(
@@ -123,7 +120,9 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                             ),
                             onPressed: () {},
                             style: const ButtonStyle(
-                              mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
+                              mouseCursor: WidgetStatePropertyAll(
+                                SystemMouseCursors.click,
+                              ),
                             ),
                           ),
                         ],
@@ -137,9 +136,8 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                         results: searchResults.take(8).toList(),
                         onSelected: (result) {
                           _searchController.text = result.word;
-                          ref
-                              .read(searchQueryProvider.notifier)
-                              .state = result.word;
+                          ref.read(searchQueryProvider.notifier).state =
+                              result.word;
                         },
                       ),
                     ],
@@ -153,9 +151,7 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
 
         // Stats
         const Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: VocaboSpacing.xl,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: VocaboSpacing.xl),
           child: StatsSection(),
         ),
         const SizedBox(height: VocaboSpacing.xl),
@@ -165,16 +161,11 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
           child: vocabList.when(
             data: (vocabularies) => VocabularyList(
               userVocabularies: vocabularies,
-              onLoadMore: () => ref
-                  .read(userVocabularyListProvider.notifier)
-                  .loadMore(),
-              hasMore: ref
-                  .read(userVocabularyListProvider.notifier)
-                  .hasMore,
+              onLoadMore: () =>
+                  ref.read(userVocabularyListProvider.notifier).loadMore(),
+              hasMore: ref.read(userVocabularyListProvider.notifier).hasMore,
             ),
-            loading: () => const Center(
-              child: CircularProgressIndicator(),
-            ),
+            loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(
               child: Text(
                 'Failed to load vocabulary',

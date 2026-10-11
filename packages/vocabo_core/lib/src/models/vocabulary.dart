@@ -79,19 +79,19 @@ class Vocabulary extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        term,
-        language,
-        translation,
-        meaning,
-        wordType,
-        pronunciation,
-        ttsPronunciation,
-        usageExamples,
-        createdAt,
-        updatedAt,
-        contentHash,
-        audioStatus,
-        audioPath,
-      ];
+    id,
+    term,
+    language,
+    translation,
+    meaning,
+    wordType,
+    pronunciation,
+    ttsPronunciation,
+    usageExamples,
+    createdAt,
+    updatedAt,
+    contentHash,
+    audioStatus,
+    audioPath,
+  ];
 }

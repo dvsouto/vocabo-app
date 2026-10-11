@@ -55,11 +55,9 @@ class Trie {
     if (results.length >= maxCollect) return;
 
     if (node.isEnd) {
-      results.add(SearchResult(
-        word: currentWord,
-        frequency: node.frequency,
-        score: 1.0,
-      ));
+      results.add(
+        SearchResult(word: currentWord, frequency: node.frequency, score: 1.0),
+      );
     }
 
     node.children.forEach((code, child) {

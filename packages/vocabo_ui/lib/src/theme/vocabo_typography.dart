@@ -18,20 +18,11 @@ abstract final class VocaboTypography {
     );
   }
 
-  static final displayMd = _inter(
-    fontSize: 44,
-    fontWeight: FontWeight.w700,
-  );
+  static final displayMd = _inter(fontSize: 44, fontWeight: FontWeight.w700);
 
-  static final headlineSm = _inter(
-    fontSize: 24,
-    fontWeight: FontWeight.w600,
-  );
+  static final headlineSm = _inter(fontSize: 24, fontWeight: FontWeight.w600);
 
-  static final titleLg = _inter(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-  );
+  static final titleLg = _inter(fontSize: 20, fontWeight: FontWeight.w600);
 
   static final bodyMd = _inter(
     fontSize: 14,
@@ -52,11 +43,11 @@ abstract final class VocaboTypography {
   );
 
   static TextTheme get textTheme => TextTheme(
-        displayMedium: displayMd,
-        headlineSmall: headlineSm,
-        titleLarge: titleLg,
-        bodyMedium: bodyMd,
-        bodySmall: bodySm,
-        labelSmall: labelSm,
-      );
+    displayMedium: displayMd,
+    headlineSmall: headlineSm,
+    titleLarge: titleLg,
+    bodyMedium: bodyMd,
+    bodySmall: bodySm,
+    labelSmall: labelSm,
+  );
 }

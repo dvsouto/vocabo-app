@@ -8,20 +8,19 @@ class VocabularyRepository {
   final VocabularyDataSource _dataSource;
 
   VocabularyRepository({required VocabularyDataSource dataSource})
-      : _dataSource = dataSource;
+    : _dataSource = dataSource;
 
   Future<Vocabulary> search({
     required String sourceLang,
     required String targetLang,
     required String term,
     CancelToken? cancelToken,
-  }) =>
-      apiCall(
-        () => _dataSource.search(
-          sourceLang: sourceLang,
-          targetLang: targetLang,
-          term: term,
-          cancelToken: cancelToken,
-        ),
-      );
+  }) => apiCall(
+    () => _dataSource.search(
+      sourceLang: sourceLang,
+      targetLang: targetLang,
+      term: term,
+      cancelToken: cancelToken,
+    ),
+  );
 }

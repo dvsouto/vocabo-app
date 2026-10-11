@@ -20,10 +20,7 @@ class VocaboTabBar extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: VocaboColors.outlineVariant,
-            width: 1,
-          ),
+          bottom: BorderSide(color: VocaboColors.outlineVariant, width: 1),
         ),
       ),
       child: Row(
@@ -60,9 +57,7 @@ class _VocaboTab extends StatelessWidget {
       mouseCursor: SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          vertical: VocaboSpacing.sm + 2,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: VocaboSpacing.sm + 2),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(

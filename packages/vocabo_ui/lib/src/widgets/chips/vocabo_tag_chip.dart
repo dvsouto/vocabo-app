@@ -22,7 +22,9 @@ class VocaboTagChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: switch (variant) {
           TagChipVariant.mastered => VocaboColors.tertiary,
-          TagChipVariant.learning => VocaboColors.primary.withValues(alpha: 0.1),
+          TagChipVariant.learning => VocaboColors.primary.withValues(
+            alpha: 0.1,
+          ),
           TagChipVariant.outlined => VocaboColors.surfaceContainerLow,
         },
         borderRadius: VocaboRadius.sm,

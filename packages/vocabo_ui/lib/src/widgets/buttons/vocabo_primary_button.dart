@@ -59,8 +59,7 @@ class VocaboPrimaryButton extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Row(
-              mainAxisSize:
-                  isExpanded ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (isLoading)

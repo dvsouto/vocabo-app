@@ -56,10 +56,7 @@ class VocaboSearchField extends StatelessWidget {
           horizontal: 16,
           vertical: 12,
         ),
-        hintStyle: TextStyle(
-          color: VocaboColors.neutral,
-          fontSize: 14,
-        ),
+        hintStyle: TextStyle(color: VocaboColors.neutral, fontSize: 14),
       ),
     );
   }

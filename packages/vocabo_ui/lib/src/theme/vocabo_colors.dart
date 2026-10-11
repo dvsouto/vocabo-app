@@ -7,10 +7,10 @@ abstract final class VocaboColors {
   static const primary200 = Color(0xFF99C7FF);
   static const primary300 = Color(0xFF66ABFF);
   static const primary400 = Color(0xFF339AFF);
-  static const primary = Color(0xFF007AFF);       // 500 — base accent
+  static const primary = Color(0xFF007AFF); // 500 — base accent
   static const primary500 = primary;
   static const primary600 = Color(0xFF0070EB);
-  static const primary700 = Color(0xFF0058BC);     // buttons
+  static const primary700 = Color(0xFF0058BC); // buttons
   static const primary800 = Color(0xFF00408A);
   static const primary900 = Color(0xFF002B5C);
 
@@ -29,7 +29,7 @@ abstract final class VocaboColors {
   static const neutral200 = Color(0xFFD1D1D4);
   static const neutral300 = Color(0xFFBABABE);
   static const neutral400 = Color(0xFFA4A4A8);
-  static const neutral = Color(0xFF8E8E93);        // 500 — base
+  static const neutral = Color(0xFF8E8E93); // 500 — base
   static const neutral500 = neutral;
   static const neutral600 = Color(0xFF6E6E73);
   static const neutral700 = Color(0xFF4E4E53);

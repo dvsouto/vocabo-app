@@ -5,16 +5,12 @@ class VocabularyAudioRepository {
   final VocabularyAudioDataSource _dataSource;
 
   VocabularyAudioRepository({required VocabularyAudioDataSource dataSource})
-      : _dataSource = dataSource;
+    : _dataSource = dataSource;
 
   Future<AudioResponse> getAudio({
     required String vocabularyId,
     required String type,
-  }) =>
-      apiCall(
-        () => _dataSource.getAudio(
-          vocabularyId: vocabularyId,
-          type: type,
-        ),
-      );
+  }) => apiCall(
+    () => _dataSource.getAudio(vocabularyId: vocabularyId, type: type),
+  );
 }

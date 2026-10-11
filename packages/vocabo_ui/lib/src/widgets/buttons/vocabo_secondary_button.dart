@@ -24,9 +24,13 @@ class VocaboSecondaryButton extends StatelessWidget {
         foregroundColor: VocaboColors.onSecondary,
         disabledBackgroundColor: VocaboColors.surfaceContainerHigh,
         disabledForegroundColor: VocaboColors.neutral,
-        minimumSize: isExpanded ? const Size(double.infinity, 44) : const Size(44, 44),
+        minimumSize: isExpanded
+            ? const Size(double.infinity, 44)
+            : const Size(44, 44),
         shape: RoundedRectangleBorder(borderRadius: VocaboRadius.md),
-        textStyle: VocaboTypography.bodyMd.copyWith(fontWeight: FontWeight.w600),
+        textStyle: VocaboTypography.bodyMd.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
       ),
       child: Text(label),
     );

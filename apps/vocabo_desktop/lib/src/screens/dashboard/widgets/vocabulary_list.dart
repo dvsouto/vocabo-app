@@ -86,9 +86,7 @@ class VocabularyList extends StatelessWidget {
 
           return Padding(
             padding: const EdgeInsets.only(bottom: VocaboSpacing.md),
-            child: VocabularyListItem(
-              userVocabulary: uv,
-            ),
+            child: VocabularyListItem(userVocabulary: uv),
           );
         },
       ),

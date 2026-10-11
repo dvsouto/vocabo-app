@@ -10,7 +10,8 @@ class SearchResult {
   });
 
   @override
-  String toString() => 'SearchResult(word: $word, freq: $frequency, score: $score)';
+  String toString() =>
+      'SearchResult(word: $word, freq: $frequency, score: $score)';
 
   @override
   bool operator ==(Object other) =>

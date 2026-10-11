@@ -49,8 +49,9 @@ dynamic _normalizeUsageExamples(dynamic examples) {
     for (final key in sortedKeys) {
       final values = examples[key];
       if (values is List) {
-        result[key.toLowerCase()] =
-            values.map((v) => v.toString().toLowerCase()).toList(growable: false);
+        result[key.toLowerCase()] = values
+            .map((v) => v.toString().toLowerCase())
+            .toList(growable: false);
       }
     }
 

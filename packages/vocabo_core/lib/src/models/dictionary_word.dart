@@ -8,10 +8,7 @@ class DictionaryWord extends Equatable {
   final String word;
   final int frequency;
 
-  const DictionaryWord({
-    required this.word,
-    required this.frequency,
-  });
+  const DictionaryWord({required this.word, required this.frequency});
 
   factory DictionaryWord.fromJson(Map<String, dynamic> json) =>
       _$DictionaryWordFromJson(json);

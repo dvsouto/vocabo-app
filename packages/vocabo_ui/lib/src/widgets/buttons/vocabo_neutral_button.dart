@@ -20,8 +20,9 @@ class VocaboNeutralButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDisabled = onPressed == null;
-    final contentColor =
-        isDisabled ? VocaboColors.neutral : VocaboColors.onSurface;
+    final contentColor = isDisabled
+        ? VocaboColors.neutral
+        : VocaboColors.onSurface;
 
     return Material(
       color: Colors.transparent,
@@ -32,15 +33,15 @@ class VocaboNeutralButton extends StatelessWidget {
         ),
         child: InkWell(
           onTap: onPressed,
-          mouseCursor:
-              isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+          mouseCursor: isDisabled
+              ? SystemMouseCursors.basic
+              : SystemMouseCursors.click,
           borderRadius: VocaboRadius.md,
           child: Container(
             constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Row(
-              mainAxisSize:
-                  isExpanded ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (leading != null) ...[

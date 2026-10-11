@@ -14,8 +14,7 @@ class DictionaryDataSource {
 
     final data = response.data!['data'] as List<dynamic>;
     return data
-        .map((item) =>
-            DictionaryWord.fromJson(item as Map<String, dynamic>))
+        .map((item) => DictionaryWord.fromJson(item as Map<String, dynamic>))
         .toList();
   }
 
@@ -26,6 +25,7 @@ class DictionaryDataSource {
     );
 
     return DictionaryVersion.fromJson(
-        response.data!['data'] as Map<String, dynamic>);
+      response.data!['data'] as Map<String, dynamic>,
+    );
   }
 }

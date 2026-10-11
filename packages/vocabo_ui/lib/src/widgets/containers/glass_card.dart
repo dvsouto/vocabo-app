@@ -7,12 +7,7 @@ import 'package:vocabo_ui/src/theme/vocabo_shadows.dart';
 import 'package:vocabo_ui/src/theme/vocabo_spacing.dart';
 
 class GlassCard extends StatelessWidget {
-  const GlassCard({
-    super.key,
-    required this.child,
-    this.width,
-    this.padding,
-  });
+  const GlassCard({super.key, required this.child, this.width, this.padding});
 
   final Widget child;
   final double? width;
@@ -26,7 +21,8 @@ class GlassCard extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
           width: width,
-          padding: padding ??
+          padding:
+              padding ??
               const EdgeInsets.symmetric(
                 horizontal: VocaboSpacing.xl,
                 vertical: VocaboSpacing.xxl,

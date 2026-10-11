@@ -60,9 +60,7 @@ abstract final class VocaboTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(44, 44),
-          shape: RoundedRectangleBorder(
-            borderRadius: VocaboRadius.md,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: VocaboRadius.md),
           textStyle: VocaboTypography.bodyMd.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -71,9 +69,7 @@ abstract final class VocaboTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(44, 44),
-          shape: RoundedRectangleBorder(
-            borderRadius: VocaboRadius.md,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: VocaboRadius.md),
           side: BorderSide(
             color: VocaboColors.outlineVariant.withValues(alpha: 0.5),
           ),

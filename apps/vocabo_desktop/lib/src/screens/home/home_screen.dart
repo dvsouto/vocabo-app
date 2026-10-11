@@ -8,9 +8,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: VocaboColors.surface,
-      body: const Center(
-        child: Text('Vocabo Library'),
-      ),
+      body: const Center(child: Text('Vocabo Library')),
     );
   }
 }

@@ -36,9 +36,7 @@ class FuzzySearchEngine {
     }
 
     // Phase 2: Fuzzy matching via Levenshtein (fallback)
-    final existingWords = <String>{
-      for (final r in prefixResults) r.word,
-    };
+    final existingWords = <String>{for (final r in prefixResults) r.word};
 
     final fuzzyResults = <SearchResult>[];
     final queryLen = normalizedQuery.length;
@@ -55,11 +53,13 @@ class FuzzySearchEngine {
       final distance = levenshteinDistance(normalizedQuery, word);
       if (distance <= maxDistance && distance > 0) {
         final similarity = normalizedSimilarity(normalizedQuery, word);
-        fuzzyResults.add(SearchResult(
-          word: word,
-          frequency: w.frequency,
-          score: similarity * 0.8, // Fuzzy results score lower than prefix
-        ));
+        fuzzyResults.add(
+          SearchResult(
+            word: word,
+            frequency: w.frequency,
+            score: similarity * 0.8, // Fuzzy results score lower than prefix
+          ),
+        );
       }
     }
 

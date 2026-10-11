@@ -8,12 +8,8 @@ import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 
-
 class VocabularyListItem extends ConsumerWidget {
-  const VocabularyListItem({
-    super.key,
-    required this.userVocabulary,
-  });
+  const VocabularyListItem({super.key, required this.userVocabulary});
 
   final UserVocabulary userVocabulary;
 
@@ -33,9 +29,10 @@ class VocabularyListItem extends ConsumerWidget {
     final isModalOpen = ref.watch(showWordDetailModalProvider);
     final showTranslations = ref.watch(showTranslationsProvider);
     final contentHash = vocabulary.contentHash ?? '';
-    final isThisPlaying = !isModalOpen &&
-        audioState.currentPlayingHash == contentHash;
-    final isBusy = audioState.status == AudioPlayerStatus.loading ||
+    final isThisPlaying =
+        !isModalOpen && audioState.currentPlayingHash == contentHash;
+    final isBusy =
+        audioState.status == AudioPlayerStatus.loading ||
         audioState.status == AudioPlayerStatus.playing;
 
     return Material(
@@ -48,150 +45,158 @@ class VocabularyListItem extends ConsumerWidget {
         mouseCursor: SystemMouseCursors.click,
         borderRadius: VocaboRadius.lg,
         child: Container(
-      padding: const EdgeInsets.all(VocaboSpacing.lg),
-      decoration: BoxDecoration(
-        color: VocaboColors.surfaceContainerLowest,
-        borderRadius: VocaboRadius.lg,
-        boxShadow: [VocaboShadows.whisper],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Audio button
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              mouseCursor: contentHash.isEmpty
-                  ? SystemMouseCursors.basic
-                  : SystemMouseCursors.click,
-              onTap: contentHash.isEmpty
-                  ? null
-                  : () {
-                      final player = ref.read(audioPlayerServiceProvider);
-                      if (isThisPlaying && isBusy) {
-                        player.stop();
-                      } else if (!isBusy) {
-                        player.play(
-                          vocabularyId: vocabulary.id,
-                          type: userVocabulary.vocabularyType ==
-                                  VocabularyType.custom
-                              ? 'custom'
-                              : 'system',
-                          contentHash: contentHash,
-                        );
-                      }
-                    },
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: contentHash.isEmpty
-                      ? VocaboColors.primary.withValues(alpha: 0.5)
-                      : VocaboColors.primary,
-                  shape: BoxShape.circle,
+          padding: const EdgeInsets.all(VocaboSpacing.lg),
+          decoration: BoxDecoration(
+            color: VocaboColors.surfaceContainerLowest,
+            borderRadius: VocaboRadius.lg,
+            boxShadow: [VocaboShadows.whisper],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Audio button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  mouseCursor: contentHash.isEmpty
+                      ? SystemMouseCursors.basic
+                      : SystemMouseCursors.click,
+                  onTap: contentHash.isEmpty
+                      ? null
+                      : () {
+                          final player = ref.read(audioPlayerServiceProvider);
+                          if (isThisPlaying && isBusy) {
+                            player.stop();
+                          } else if (!isBusy) {
+                            player.play(
+                              vocabularyId: vocabulary.id,
+                              type:
+                                  userVocabulary.vocabularyType ==
+                                      VocabularyType.custom
+                                  ? 'custom'
+                                  : 'system',
+                              contentHash: contentHash,
+                            );
+                          }
+                        },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: contentHash.isEmpty
+                          ? VocaboColors.primary.withValues(alpha: 0.5)
+                          : VocaboColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child:
+                        isThisPlaying &&
+                            audioState.status == AudioPlayerStatus.loading
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: VocaboColors.onPrimary,
+                            ),
+                          )
+                        : Icon(
+                            isThisPlaying &&
+                                    audioState.status ==
+                                        AudioPlayerStatus.playing
+                                ? Icons.stop
+                                : Icons.volume_up,
+                            color: VocaboColors.onPrimary,
+                            size: 20,
+                          ),
+                  ),
                 ),
-                child: isThisPlaying &&
-                        audioState.status == AudioPlayerStatus.loading
-                    ? const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: VocaboColors.onPrimary,
+              ),
+              const SizedBox(width: VocaboSpacing.md),
+
+              // Word info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(vocabulary.term, style: VocaboTypography.titleLg),
+                        const SizedBox(width: 8),
+                        Text(
+                          vocabulary.wordType.value.toUpperCase(),
+                          style: VocaboTypography.labelSm.copyWith(
+                            color: VocaboColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: VocaboSpacing.xs),
+                    if (vocabulary.meaning != null && showTranslations)
+                      Text(
+                        vocabulary.meaning!,
+                        style: VocaboTypography.bodyMd.copyWith(
+                          color: VocaboColors.neutral,
                         ),
                       )
-                    : Icon(
-                        isThisPlaying &&
-                                audioState.status == AudioPlayerStatus.playing
-                            ? Icons.stop
-                            : Icons.volume_up,
-                        color: VocaboColors.onPrimary,
-                        size: 20,
+                    else if (vocabulary.meaning != null)
+                      Text(
+                        '••••••••••',
+                        style: VocaboTypography.bodyMd.copyWith(
+                          color: VocaboColors.neutral300,
+                          letterSpacing: 2,
+                        ),
                       ),
+                    if (vocabulary.usageExamples?.sourceLang.isNotEmpty ??
+                        false) ...[
+                      const SizedBox(height: VocaboSpacing.xs),
+                      Text(
+                        vocabulary.usageExamples!.sourceLang.first,
+                        style: VocaboTypography.bodySm.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: VocaboColors.neutral,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: VocaboSpacing.sm),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        VocaboTagChip(
+                          label:
+                              userVocabulary.vocabularyType ==
+                                  VocabularyType.custom
+                              ? 'CUSTOM'
+                              : 'LIBRARY',
+                          variant:
+                              userVocabulary.vocabularyType ==
+                                  VocabularyType.custom
+                              ? TagChipVariant.learning
+                              : TagChipVariant.outlined,
+                        ),
+                        MemoryStrengthDots(
+                          strength:
+                              userVocabulary.flashcard?.strength ??
+                              MemoryStrength.of(stageIndex: 0),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: VocaboSpacing.md),
 
-          // Word info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(vocabulary.term, style: VocaboTypography.titleLg),
-                    const SizedBox(width: 8),
-                    Text(
-                      vocabulary.wordType.value.toUpperCase(),
-                      style: VocaboTypography.labelSm.copyWith(
-                        color: VocaboColors.primary,
-                      ),
-                    ),
-                  ],
+              // Date added
+              Text(
+                _formatDate(userVocabulary.createdAt),
+                style: VocaboTypography.bodySm.copyWith(
+                  color: VocaboColors.neutral,
                 ),
-                const SizedBox(height: VocaboSpacing.xs),
-                if (vocabulary.meaning != null && showTranslations)
-                  Text(
-                    vocabulary.meaning!,
-                    style: VocaboTypography.bodyMd.copyWith(
-                      color: VocaboColors.neutral,
-                    ),
-                  )
-                else if (vocabulary.meaning != null)
-                  Text(
-                    '••••••••••',
-                    style: VocaboTypography.bodyMd.copyWith(
-                      color: VocaboColors.neutral300,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                if (vocabulary.usageExamples?.sourceLang.isNotEmpty ?? false)
-                  ...[
-                    const SizedBox(height: VocaboSpacing.xs),
-                    Text(
-                      vocabulary.usageExamples!.sourceLang.first,
-                      style: VocaboTypography.bodySm.copyWith(
-                        fontStyle: FontStyle.italic,
-                        color: VocaboColors.neutral,
-                      ),
-                    ),
-                  ],
-                const SizedBox(height: VocaboSpacing.sm),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 6,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    VocaboTagChip(
-                      label: userVocabulary.vocabularyType == VocabularyType.custom
-                          ? 'CUSTOM'
-                          : 'LIBRARY',
-                      variant: userVocabulary.vocabularyType == VocabularyType.custom
-                          ? TagChipVariant.learning
-                          : TagChipVariant.outlined,
-                    ),
-                    MemoryStrengthDots(
-                      strength: userVocabulary.flashcard?.strength ??
-                          MemoryStrength.of(stageIndex: 0),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-
-          // Date added
-          Text(
-            _formatDate(userVocabulary.createdAt),
-            style: VocaboTypography.bodySm.copyWith(
-              color: VocaboColors.neutral,
-            ),
-          ),
-        ],
+        ),
       ),
-    ),
-    ),
     );
   }
 }

@@ -41,7 +41,9 @@ class VocaboSelectableChip extends StatelessWidget {
           child: Text(
             label.toUpperCase(),
             style: VocaboTypography.labelSm.copyWith(
-              color: isSelected ? VocaboColors.onPrimary : VocaboColors.onSurface,
+              color: isSelected
+                  ? VocaboColors.onPrimary
+                  : VocaboColors.onSurface,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),

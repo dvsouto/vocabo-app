@@ -7,7 +7,7 @@ class DictionaryRepository {
   final DictionaryDataSource _dataSource;
 
   DictionaryRepository({required DictionaryDataSource dataSource})
-      : _dataSource = dataSource;
+    : _dataSource = dataSource;
 
   Future<List<DictionaryWord>> download({required String lang}) =>
       apiCall(() => _dataSource.download(lang: lang));

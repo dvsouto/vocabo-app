@@ -29,14 +29,14 @@ class _VocaboTextButtonState extends State<VocaboTextButton> {
     final color = isDisabled
         ? VocaboColors.neutral
         : _isHovered
-            ? VocaboColors.primary800
-            : VocaboColors.primary700;
-    final displayLabel =
-        widget.uppercase ? widget.label.toUpperCase() : widget.label;
+        ? VocaboColors.primary800
+        : VocaboColors.primary700;
+    final displayLabel = widget.uppercase
+        ? widget.label.toUpperCase()
+        : widget.label;
 
     return MouseRegion(
-      cursor:
-          isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      cursor: isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
