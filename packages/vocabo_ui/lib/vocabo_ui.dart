@@ -24,6 +24,11 @@ export 'src/widgets/inputs/vocabo_text_field.dart';
 export 'src/widgets/inputs/vocabo_text_area.dart';
 export 'src/widgets/inputs/vocabo_search_field.dart';
 export 'src/widgets/inputs/vocabo_toggle_switch.dart';
+export 'src/widgets/inputs/vocabo_code_input.dart';
+export 'src/widgets/inputs/vocabo_phone_field.dart';
+
+// Widgets - Avatar
+export 'src/widgets/avatar/vocabo_avatar.dart';
 
 // Widgets - Chips
 export 'src/widgets/chips/vocabo_language_chip.dart';

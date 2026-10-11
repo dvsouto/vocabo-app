@@ -9,6 +9,9 @@ import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
+import 'package:vocabo_desktop/src/providers/spotlight_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
+import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 
 class TrayShell extends ConsumerStatefulWidget {
   const TrayShell({super.key, required this.child});
@@ -22,6 +25,7 @@ class TrayShell extends ConsumerStatefulWidget {
 class _TrayShellState extends ConsumerState<TrayShell>
     with TrayListener, WindowListener {
   static const _trayPanelChannel = MethodChannel('vocabo/tray_panel');
+  static const _spotlightChannel = MethodChannel('vocabo/spotlight');
   DateTime _lastToggle = DateTime(2000);
 
   @override
@@ -31,6 +35,62 @@ class _TrayShellState extends ConsumerState<TrayShell>
     windowManager.addListener(this);
     _initTray();
     _initMainChannelHandler();
+    _initSpotlightChannelHandler();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncSpotlight());
+  }
+
+  /// The hotkey is only active while signed in and enabled in Settings.
+  void _syncSpotlight() {
+    final isAuthenticated =
+        ref.read(authStatusProvider).valueOrNull == AuthStatus.authenticated;
+    final enabled = ref.read(spotlightEnabledProvider).valueOrNull ?? false;
+    _spotlightChannel
+        .invokeMethod('setEnabled', {'enabled': isAuthenticated && enabled})
+        .catchError((Object e) {
+          appLogger.error('Spotlight setEnabled error', e);
+        });
+  }
+
+  void _initSpotlightChannelHandler() {
+    _spotlightChannel.setMethodCallHandler((call) async {
+      final args = call.arguments as Map?;
+      switch (call.method) {
+        case 'openWord':
+          _openWord(
+            userVocabularyId: args?['user_vocabulary_id'] as String?,
+            term: args?['term'] as String? ?? '',
+          );
+        case 'vocabularyChanged':
+          ref.read(userVocabularyListProvider.notifier).refresh();
+      }
+    });
+  }
+
+  void _openWord({String? userVocabularyId, required String term}) {
+    windowManager.show();
+    windowManager.focus();
+
+    final entries = ref.read(userVocabularyListProvider).valueOrNull ?? [];
+    final entry = userVocabularyId == null
+        ? null
+        : entries.where((e) => e.id == userVocabularyId).firstOrNull;
+
+    if (entry != null) {
+      ref.read(dashboardSectionProvider.notifier).state =
+          DashboardSection.library;
+      ref.read(selectedWordProvider.notifier).state = entry;
+      ref.read(showWordDetailModalProvider.notifier).state = true;
+      return;
+    }
+
+    if (userVocabularyId != null) {
+      ref.read(dashboardSectionProvider.notifier).state =
+          DashboardSection.library;
+      return;
+    }
+
+    ref.read(addWordInitialTermProvider.notifier).state = term;
+    ref.read(showAddWordModalProvider.notifier).state = true;
   }
 
   void _initMainChannelHandler() {
@@ -59,11 +119,13 @@ class _TrayShellState extends ConsumerState<TrayShell>
     await trayManager.setIcon('assets/tray_icon.png', isTemplate: true);
     await trayManager.setToolTip('Vocabo');
 
-    final menu = Menu(items: [
-      MenuItem(key: 'open', label: 'Open Vocabo'),
-      MenuItem.separator(),
-      MenuItem(key: 'quit', label: 'Quit'),
-    ]);
+    final menu = Menu(
+      items: [
+        MenuItem(key: 'open', label: 'Open Vocabo'),
+        MenuItem.separator(),
+        MenuItem(key: 'quit', label: 'Quit'),
+      ],
+    );
     await trayManager.setContextMenu(menu);
   }
 
@@ -75,8 +137,7 @@ class _TrayShellState extends ConsumerState<TrayShell>
   @override
   void onTrayIconMouseDown() {
     final authStatus = ref.read(authStatusProvider);
-    final isAuthenticated =
-        authStatus.valueOrNull == AuthStatus.authenticated;
+    final isAuthenticated = authStatus.valueOrNull == AuthStatus.authenticated;
     if (isAuthenticated) {
       _toggleTrayPanel();
     } else {
@@ -113,15 +174,16 @@ class _TrayShellState extends ConsumerState<TrayShell>
       final x = bounds?.left ?? 0.0;
       final y = bounds?.top ?? 0.0;
       appLogger.debug('TrayPanel toggle: bounds=$bounds, sending x=$x, y=$y');
-      await _trayPanelChannel.invokeMethod('toggle', {
-        'x': x,
-        'y': y,
-      });
+      await _trayPanelChannel.invokeMethod('toggle', {'x': x, 'y': y});
     } catch (e) {
       appLogger.error('TrayPanel toggle error', e);
     }
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) {
+    ref.listen(authStatusProvider, (_, _) => _syncSpotlight());
+    ref.listen(spotlightEnabledProvider, (_, _) => _syncSpotlight());
+    return widget.child;
+  }
 }

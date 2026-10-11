@@ -1,3 +1,4 @@
+export 'account_verification.dart';
 export 'auth_token.dart';
 export 'dictionary_version.dart';
 export 'dictionary_word.dart';
@@ -6,8 +7,10 @@ export 'flashcard_session.dart';
 export 'flashcard_status_summary.dart';
 export 'flashcard_summary.dart';
 export 'paginated_response.dart';
+export 'translation_lookup.dart';
 export 'usage_examples.dart';
 export 'user.dart';
+export 'user_session.dart';
 export 'user_vocabulary.dart';
 export 'vocabulary.dart';
 export 'vocabulary_stats.dart';

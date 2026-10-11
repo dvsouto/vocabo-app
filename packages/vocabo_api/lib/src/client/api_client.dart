@@ -12,17 +12,18 @@ class ApiClient {
   ApiClient({
     required String baseUrl,
     required TokenStorage tokenStorage,
+    SessionEndedCallback? onSessionEnded,
   }) : dio = Dio(
-          BaseOptions(
-            baseUrl: baseUrl,
-            connectTimeout: const Duration(seconds: 15),
-            receiveTimeout: const Duration(seconds: 15),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-          ),
-        ) {
+         BaseOptions(
+           baseUrl: baseUrl,
+           connectTimeout: const Duration(seconds: 15),
+           receiveTimeout: const Duration(seconds: 15),
+           headers: {
+             'Content-Type': 'application/json',
+             'Accept': 'application/json',
+           },
+         ),
+       ) {
     dio.interceptors.addAll([
       TalkerDioLogger(
         talker: appLogger,
@@ -31,7 +32,7 @@ class ApiClient {
           printResponseHeaders: false,
         ),
       ),
-      AuthInterceptor(tokenStorage),
+      AuthInterceptor(tokenStorage, onSessionEnded: onSessionEnded),
       ErrorInterceptor(),
     ]);
   }

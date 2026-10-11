@@ -23,20 +23,20 @@ class VocaboSocialAuthButton extends StatelessWidget {
         backgroundColor: VocaboColors.surfaceContainerLowest,
         foregroundColor: VocaboColors.onSurface,
         minimumSize: const Size(44, 44),
+        enabledMouseCursor: SystemMouseCursors.click,
+        disabledMouseCursor: SystemMouseCursors.basic,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: VocaboRadius.sm),
         side: BorderSide(
           color: VocaboColors.outlineVariant.withValues(alpha: 0.15),
         ),
-        textStyle: VocaboTypography.bodyMd.copyWith(fontWeight: FontWeight.w500),
+        textStyle: VocaboTypography.bodyMd.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          icon,
-          const SizedBox(width: 8),
-          Text(label),
-        ],
+        children: [icon, const SizedBox(width: 8), Text(label)],
       ),
     );
   }

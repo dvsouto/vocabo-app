@@ -7,6 +7,7 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/dashboard_screen.dart';
 import 'package:vocabo_desktop/src/screens/login/login_email_screen.dart';
+import 'package:vocabo_desktop/src/screens/verification/verification_screen.dart';
 import 'package:vocabo_desktop/src/shell/tray_shell.dart';
 
 final _openLogViewerIntent = _OpenLogViewerIntent();
@@ -22,11 +23,20 @@ class VocaboDesktopApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authStatus = ref.watch(authStatusProvider);
 
+    ref.listen(sessionNoticeProvider, (_, notice) {
+      if (notice == null) return;
+      _messengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text(notice), duration: const Duration(seconds: 6)),
+      );
+      ref.read(sessionNoticeProvider.notifier).state = null;
+    });
+
     return MaterialApp(
       title: 'Vocabo',
       debugShowCheckedModeBanner: false,
       theme: VocaboTheme.light(),
       navigatorKey: _navigatorKey,
+      scaffoldMessengerKey: _messengerKey,
       home: Shortcuts(
         shortcuts: {
           LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyL):
@@ -53,8 +63,9 @@ class VocaboDesktopApp extends ConsumerWidget {
               error: (_, _) => const LoginEmailScreen(),
               data: (status) => switch (status) {
                 AuthStatus.authenticated => const DashboardScreen(),
-                AuthStatus.unauthenticated || AuthStatus.unknown =>
-                  const LoginEmailScreen(),
+                AuthStatus.needsVerification => const VerificationScreen(),
+                AuthStatus.unauthenticated ||
+                AuthStatus.unknown => const LoginEmailScreen(),
               },
             ),
           ),
@@ -65,3 +76,4 @@ class VocaboDesktopApp extends ConsumerWidget {
 }
 
 final _navigatorKey = GlobalKey<NavigatorState>();
+final _messengerKey = GlobalKey<ScaffoldMessengerState>();

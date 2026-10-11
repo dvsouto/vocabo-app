@@ -30,6 +30,7 @@
 		6F62BFF51FACC7DAAF9C2D60 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 789BB245FB7B55CE92591A78 /* Pods_Runner.framework */; };
 		AA0001012044BFA00003C045 /* TrayPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001002044BFA00003C045 /* TrayPanelController.swift */; };
 		BB0001012044BFA00003C045 /* TranslationPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001002044BFA00003C045 /* TranslationPlugin.swift */; };
+		CC0001012044BFA00003C045 /* SpotlightPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0001002044BFA00003C045 /* SpotlightPanelController.swift */; };
 		E7DAF1FC19125952A886EA07 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA05C15C6C890E75B5408DC3 /* Pods_RunnerTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -89,6 +90,7 @@
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		AA0001002044BFA00003C045 /* TrayPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrayPanelController.swift; sourceTree = "<group>"; };
 		BB0001002044BFA00003C045 /* TranslationPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationPlugin.swift; sourceTree = "<group>"; };
+		CC0001002044BFA00003C045 /* SpotlightPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightPanelController.swift; sourceTree = "<group>"; };
 		CA05C15C6C890E75B5408DC3 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D943784AEFC54787548E970E /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		FE11B76643BB70E568B49C3C /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
@@ -195,6 +197,7 @@
 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
 				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
 				BB0001002044BFA00003C045 /* TranslationPlugin.swift */,
+				CC0001002044BFA00003C045 /* SpotlightPanelController.swift */,
 				AA0001002044BFA00003C045 /* TrayPanelController.swift */,
 				33E51913231747F40026EE4D /* DebugProfile.entitlements */,
 				33E51914231749380026EE4D /* Release.entitlements */,
@@ -445,6 +448,7 @@
 				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
 				AA0001012044BFA00003C045 /* TrayPanelController.swift in Sources */,
 				BB0001012044BFA00003C045 /* TranslationPlugin.swift in Sources */,
+				CC0001012044BFA00003C045 /* SpotlightPanelController.swift in Sources */,
 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
 			);
@@ -564,7 +568,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -647,7 +651,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -697,7 +701,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;

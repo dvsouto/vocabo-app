@@ -6,6 +6,8 @@ import 'package:vocabo_core/vocabo_core.dart' show initLogger, appLogger;
 import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/app.dart';
+import 'package:vocabo_desktop/src/auth/device_info.dart';
+import 'package:vocabo_desktop/src/spotlight/spotlight_view.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_panel.dart';
 
 void main() async {
@@ -23,11 +25,12 @@ void main() async {
   );
   await windowManager.center();
 
+  final device = await loadDeviceInfo();
+
   runApp(
     ProviderScope(
-      observers: [
-        TalkerRiverpodObserver(talker: appLogger),
-      ],
+      observers: [TalkerRiverpodObserver(talker: appLogger)],
+      overrides: [deviceInfoProvider.overrideWithValue(device)],
       child: const VocaboDesktopApp(),
     ),
   );
@@ -66,6 +69,25 @@ void trayPanelMain() {
             clipBehavior: Clip.antiAlias,
             child: const TrayPanel(),
           ),
+        ),
+      ),
+    ),
+  );
+}
+
+@pragma('vm:entry-point')
+void spotlightMain() {
+  WidgetsFlutterBinding.ensureInitialized();
+  initLogger(verbose: kDebugMode);
+
+  runApp(
+    ProviderScope(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: VocaboTheme.light(),
+        home: const Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SpotlightView(),
         ),
       ),
     ),

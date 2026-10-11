@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 
@@ -17,6 +18,14 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
   final _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // The login state is global; a failed or abandoned attempt must not
+    // leak into a new visit of this screen.
+    Future.microtask(() => ref.invalidate(loginProvider));
+  }
+
+  @override
   void dispose() {
     _passwordController.dispose();
     super.dispose();
@@ -32,9 +41,15 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
 
     final loginState = ref.read(loginProvider);
     if (loginState.hasError && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loginState.error.toString())),
-      );
+      final error = loginState.error;
+      final message = switch (error) {
+        UnauthorizedException() => 'Incorrect email or password.',
+        AppException(:final message) => message,
+        _ => 'Could not sign in. Please try again.',
+      };
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } else if (!loginState.hasError && mounted) {
       // Auth status will change and routing will handle navigation
       Navigator.of(context).popUntil((route) => route.isFirst);

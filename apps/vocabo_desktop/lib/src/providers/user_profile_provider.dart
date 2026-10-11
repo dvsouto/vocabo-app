@@ -6,3 +6,11 @@ final userProfileProvider = FutureProvider<User>((ref) async {
   final api = ref.watch(apiClientProvider);
   return api.user.getProfile();
 });
+
+/// Devices currently signed in to the account.
+final userSessionsProvider = FutureProvider.autoDispose<List<UserSession>>((
+  ref,
+) async {
+  final api = ref.watch(apiClientProvider);
+  return api.user.listSessions();
+});

@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/config/env.dart';
+import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/providers/daily_reminder_provider.dart';
+import 'package:vocabo_desktop/src/providers/spotlight_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
+import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
+import 'package:vocabo_desktop/src/widgets/account/edit_profile_dialog.dart';
 
 class SettingsContent extends ConsumerWidget {
   const SettingsContent({super.key});
@@ -13,6 +18,7 @@ class SettingsContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProfileProvider);
+    final statsAsync = ref.watch(vocabularyStatsProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(VocaboSpacing.xl),
@@ -30,7 +36,7 @@ class SettingsContent extends ConsumerWidget {
           const SizedBox(height: VocaboSpacing.xl),
 
           // Profile section
-          _ProfileSection(userAsync: userAsync),
+          _ProfileSection(userAsync: userAsync, statsAsync: statsAsync),
           const SizedBox(height: VocaboSpacing.xl),
 
           // Settings cards grid
@@ -45,7 +51,9 @@ class SettingsContent extends ConsumerWidget {
                     width: cardWidth,
                     child: _AccountInfoCard(userAsync: userAsync),
                   ),
+                  SizedBox(width: cardWidth, child: const _SessionsCard()),
                   SizedBox(width: cardWidth, child: const _NotificationsCard()),
+                  SizedBox(width: cardWidth, child: const _SpotlightCard()),
                   SizedBox(width: cardWidth, child: const _StudyLanguageCard()),
                   SizedBox(width: cardWidth, child: const _SupportCard()),
                 ],
@@ -101,14 +109,16 @@ class SettingsContent extends ConsumerWidget {
 }
 
 class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({required this.userAsync});
+  const _ProfileSection({required this.userAsync, required this.statsAsync});
 
-  final AsyncValue userAsync;
+  final AsyncValue<User> userAsync;
+  final AsyncValue<VocabularyStats> statsAsync;
 
   @override
   Widget build(BuildContext context) {
-    final name =
-        userAsync.whenOrNull<String>(data: (user) => user.name) ?? '...';
+    final user = userAsync.valueOrNull;
+    final name = user?.name ?? '...';
+    final stats = statsAsync.valueOrNull;
 
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
@@ -121,20 +131,10 @@ class _ProfileSection extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar
-          CircleAvatar(
-            radius: 32,
-            backgroundColor: VocaboColors.primary.withValues(alpha: 0.1),
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: VocaboTypography.headlineSm.copyWith(
-                color: VocaboColors.primary,
-              ),
-            ),
-          ),
+          VocaboAvatar(name: name, imageUrl: Env.resolveUrl(user?.avatarUrl)),
           const SizedBox(width: VocaboSpacing.md),
 
-          // Name and badges
+          // Name, plan and edit
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,8 +143,20 @@ class _ProfileSection extends StatelessWidget {
                 const SizedBox(height: VocaboSpacing.sm),
                 Wrap(
                   spacing: VocaboSpacing.sm,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    _Badge(label: 'BEGINNER', color: VocaboColors.tertiary),
+                    if (user != null)
+                      _Badge(
+                        label: user.plan.label,
+                        color: user.plan == UserPlan.pro
+                            ? VocaboColors.primary
+                            : VocaboColors.neutral600,
+                      ),
+                    if (user != null)
+                      VocaboTextButton(
+                        label: 'Edit profile',
+                        onPressed: () => showEditProfileDialog(context, user),
+                      ),
                   ],
                 ),
               ],
@@ -152,9 +164,15 @@ class _ProfileSection extends StatelessWidget {
           ),
 
           // Stats
-          _StatColumn(label: 'CURRENT STREAK', value: '--'),
+          _StatColumn(
+            label: 'CURRENT STREAK',
+            value: stats == null ? '--' : '${stats.currentStreak} days',
+          ),
           const SizedBox(width: VocaboSpacing.xl),
-          _StatColumn(label: 'WEEKLY GOAL', value: '--'),
+          _StatColumn(
+            label: 'THIS WEEK',
+            value: stats == null ? '--' : '${stats.wordsThisWeek} words',
+          ),
         ],
       ),
     );
@@ -256,12 +274,14 @@ class _SettingsCard extends StatelessWidget {
 class _AccountInfoCard extends StatelessWidget {
   const _AccountInfoCard({required this.userAsync});
 
-  final AsyncValue userAsync;
+  final AsyncValue<User> userAsync;
 
   @override
   Widget build(BuildContext context) {
-    final email =
-        userAsync.whenOrNull<String>(data: (user) => user.email) ?? '...';
+    final user = userAsync.valueOrNull;
+    final phone = user?.phoneNumber;
+    final language = NativeLanguage.byCode(user?.nativeLanguage ?? '');
+    final providers = user?.providers ?? const <String>[];
 
     return _SettingsCard(
       icon: Icons.person_outline,
@@ -270,24 +290,186 @@ class _AccountInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'EMAIL ADDRESS',
-            style: VocaboTypography.labelSm.copyWith(
-              color: VocaboColors.neutral,
-            ),
+          _InfoRow(
+            label: 'EMAIL ADDRESS',
+            value: user?.email ?? '...',
+            verified: user?.emailVerified ?? false,
           ),
-          const SizedBox(height: VocaboSpacing.xs),
-          Text(email, style: VocaboTypography.bodyMd),
-          const SizedBox(height: VocaboSpacing.md),
-          Text(
-            'PASSWORD',
-            style: VocaboTypography.labelSm.copyWith(
-              color: VocaboColors.neutral,
-            ),
+          _InfoRow(
+            label: 'PHONE',
+            value: phone == null
+                ? 'Not added'
+                : formatPhoneInternational(phone, isoHint: user?.phoneCountry),
+            verified: user?.phoneVerified ?? false,
           ),
-          const SizedBox(height: VocaboSpacing.xs),
-          Text('\u2022' * 12, style: VocaboTypography.bodyMd),
+          _InfoRow(
+            label: 'NATIVE LANGUAGE',
+            value: language?.displayName ?? '...',
+          ),
+          _InfoRow(
+            label: 'SIGN IN',
+            value: [
+              if (user?.hasPassword ?? true) 'Password',
+              for (final provider in providers)
+                provider == 'apple' ? 'Apple' : 'Google',
+            ].join(' · '),
+            last: true,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.label,
+    required this.value,
+    this.verified = false,
+    this.last = false,
+  });
+
+  final String label;
+  final String value;
+  final bool verified;
+  final bool last;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: last ? 0 : VocaboSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: VocaboTypography.labelSm.copyWith(
+              color: VocaboColors.neutral,
+            ),
+          ),
+          const SizedBox(height: VocaboSpacing.xs),
+          Row(
+            children: [
+              Flexible(child: Text(value, style: VocaboTypography.bodyMd)),
+              if (verified) ...[
+                const SizedBox(width: VocaboSpacing.xs),
+                const Tooltip(
+                  message: 'Verified',
+                  child: Icon(
+                    Icons.verified_outlined,
+                    size: 14,
+                    color: VocaboColors.tertiary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SessionsCard extends ConsumerWidget {
+  const _SessionsCard();
+
+  String _lastSeen(DateTime moment) {
+    final elapsed = DateTime.now().difference(moment.toLocal());
+    if (elapsed.inMinutes < 5) return 'Active now';
+    if (elapsed.inHours < 1) return '${elapsed.inMinutes} min ago';
+    if (elapsed.inDays < 1) return '${elapsed.inHours} h ago';
+    return '${elapsed.inDays} d ago';
+  }
+
+  Future<void> _signOut(
+    BuildContext context,
+    WidgetRef ref,
+    UserSession session,
+  ) async {
+    try {
+      await ref.read(apiClientProvider).user.revokeSession(session.id);
+    } catch (e, st) {
+      appLogger.handle(e, st, 'Session revoke failed');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not sign out that device.')),
+        );
+      }
+    }
+    ref.invalidate(userSessionsProvider);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessions = ref.watch(userSessionsProvider);
+
+    return _SettingsCard(
+      icon: Icons.devices_outlined,
+      iconColor: VocaboColors.secondary,
+      title: 'Signed-in devices',
+      child: sessions.when(
+        loading: () => const SizedBox(
+          height: 24,
+          width: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        error: (_, _) => VocaboTextButton(
+          label: 'Could not load devices. Retry',
+          onPressed: () => ref.invalidate(userSessionsProvider),
+        ),
+        data: (list) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final session in list)
+              Padding(
+                padding: const EdgeInsets.only(bottom: VocaboSpacing.sm),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.laptop_mac_outlined,
+                      size: 18,
+                      color: VocaboColors.neutral,
+                    ),
+                    const SizedBox(width: VocaboSpacing.sm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            session.deviceName ?? 'Unknown device',
+                            style: VocaboTypography.bodyMd.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            session.current
+                                ? 'This device'
+                                : _lastSeen(session.lastSeenAt),
+                            style: VocaboTypography.bodySm.copyWith(
+                              color: VocaboColors.neutral,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!session.current)
+                      VocaboTextButton(
+                        label: 'Sign out',
+                        onPressed: () => _signOut(context, ref, session),
+                      ),
+                  ],
+                ),
+              ),
+            Text(
+              'Up to $maxActiveSessions devices stay signed in. Signing in on '
+              'another one signs out the oldest.',
+              style: VocaboTypography.bodySm.copyWith(
+                color: VocaboColors.neutral,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -376,6 +558,28 @@ class _NotificationsCardState extends ConsumerState<_NotificationsCard> {
             onChanged: (v) => setState(() => _weeklyReport = v),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SpotlightCard extends ConsumerWidget {
+  const _SpotlightCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(spotlightEnabledProvider).valueOrNull ?? true;
+
+    return _SettingsCard(
+      icon: Icons.translate,
+      iconColor: VocaboColors.primary,
+      title: 'Shortcuts',
+      child: _NotificationRow(
+        title: 'Translation spotlight',
+        subtitle: 'Press Control + Option + Space anywhere to translate a word',
+        value: enabled,
+        onChanged: (value) =>
+            ref.read(spotlightEnabledProvider.notifier).setEnabled(value),
       ),
     );
   }

@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/auth/social_sign_in.dart';
+import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/screens/login/login_password_screen.dart';
+import 'package:vocabo_desktop/src/screens/signup/signup_screen.dart';
 
-class LoginEmailScreen extends StatefulWidget {
+class LoginEmailScreen extends ConsumerStatefulWidget {
   const LoginEmailScreen({super.key});
 
   @override
-  State<LoginEmailScreen> createState() => _LoginEmailScreenState();
+  ConsumerState<LoginEmailScreen> createState() => _LoginEmailScreenState();
 }
 
-class _LoginEmailScreenState extends State<LoginEmailScreen> {
+class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
+  SocialAuthProvider? _pendingProvider;
+
   final _emailController = TextEditingController();
-  String _selectedLanguage = 'PT-BR';
+  String? _emailError;
 
   @override
   void dispose() {
@@ -21,7 +28,10 @@ class _LoginEmailScreenState extends State<LoginEmailScreen> {
 
   void _onContinue() {
     final email = _emailController.text.trim();
-    if (email.isEmpty) return;
+    if (!isValidEmail(email)) {
+      setState(() => _emailError = 'Enter a valid email address.');
+      return;
+    }
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -30,13 +40,37 @@ class _LoginEmailScreenState extends State<LoginEmailScreen> {
     );
   }
 
-  void _showComingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Em breve'),
-        duration: Duration(seconds: 1),
+  void _openSignUp() {
+    final email = _emailController.text.trim();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            SignUpScreen(initialEmail: isValidEmail(email) ? email : null),
       ),
     );
+  }
+
+  Future<void> _signInWith(SocialSignIn provider) async {
+    setState(() => _pendingProvider = provider.provider);
+    await ref.read(socialLoginProvider.notifier).signIn(provider);
+    if (!mounted) return;
+    setState(() => _pendingProvider = null);
+
+    final error = ref.read(socialLoginProvider).error;
+    if (error == null) return;
+    final message = switch (error) {
+      SocialSignInException(:final message) => message,
+      AppException(code: 'provider_not_configured') =>
+        'Sign in with ${provider.label} is not set up on the server yet.',
+      AppException(code: 'email_taken') =>
+        'This email already has an account. Sign in with your password.',
+      NetworkException() => 'No connection. Check your internet and try again.',
+      AppException(:final message) => message,
+      _ => 'Could not sign in with ${provider.label}. Please try again.',
+    };
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -102,36 +136,22 @@ class _LoginEmailScreenState extends State<LoginEmailScreen> {
                     ),
                     const SizedBox(height: VocaboSpacing.xl),
 
-                    // Native language
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'NATIVE LANGUAGE',
-                        style: VocaboTypography.labelSm,
-                      ),
-                    ),
-                    const SizedBox(height: VocaboSpacing.sm),
-                    VocaboLanguageChipGroup(
-                      options: const ['PT-BR', 'ES'],
-                      selected: _selectedLanguage,
-                      onSelected: (lang) =>
-                          setState(() => _selectedLanguage = lang),
-                    ),
-                    const SizedBox(height: VocaboSpacing.lg),
-
                     // Email
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        'WORK EMAIL',
-                        style: VocaboTypography.labelSm,
-                      ),
+                      child: Text('EMAIL', style: VocaboTypography.labelSm),
                     ),
                     const SizedBox(height: VocaboSpacing.sm),
                     VocaboTextField(
                       controller: _emailController,
                       hint: 'alex@atelier.io',
                       keyboardType: TextInputType.emailAddress,
+                      errorText: _emailError,
+                      onChanged: (_) {
+                        if (_emailError != null) {
+                          setState(() => _emailError = null);
+                        }
+                      },
                       onSubmitted: (_) => _onContinue(),
                     ),
                     const SizedBox(height: VocaboSpacing.lg),
@@ -167,16 +187,30 @@ class _LoginEmailScreenState extends State<LoginEmailScreen> {
                         Expanded(
                           child: VocaboSocialAuthButton(
                             label: 'Google',
-                            icon: const Icon(Icons.g_mobiledata, size: 20),
-                            onPressed: _showComingSoon,
+                            icon: _socialIcon(
+                              SocialAuthProvider.google,
+                              const Icon(Icons.g_mobiledata, size: 20),
+                            ),
+                            onPressed: _pendingProvider != null
+                                ? null
+                                : () => _signInWith(
+                                    ref.read(googleSignInProvider),
+                                  ),
                           ),
                         ),
                         const SizedBox(width: VocaboSpacing.sm),
                         Expanded(
                           child: VocaboSocialAuthButton(
-                            label: 'GitHub',
-                            icon: const Icon(Icons.code, size: 18),
-                            onPressed: _showComingSoon,
+                            label: 'Apple',
+                            icon: _socialIcon(
+                              SocialAuthProvider.apple,
+                              const Icon(Icons.apple, size: 18),
+                            ),
+                            onPressed: _pendingProvider != null
+                                ? null
+                                : () => _signInWith(
+                                    ref.read(appleSignInProvider),
+                                  ),
                           ),
                         ),
                       ],
@@ -184,8 +218,9 @@ class _LoginEmailScreenState extends State<LoginEmailScreen> {
                     const SizedBox(height: VocaboSpacing.lg),
 
                     // Bottom links
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: VocaboSpacing.sm,
                       children: [
                         VocaboTextButton(
                           label: 'Forgot Secret?',
@@ -195,7 +230,7 @@ class _LoginEmailScreenState extends State<LoginEmailScreen> {
                         VocaboTextButton(
                           label: 'Create Account',
                           uppercase: true,
-                          onPressed: () {},
+                          onPressed: _openSignUp,
                         ),
                       ],
                     ),
@@ -218,5 +253,13 @@ class _LoginEmailScreenState extends State<LoginEmailScreen> {
       ),
     );
   }
-}
 
+  Widget _socialIcon(SocialAuthProvider provider, Widget icon) {
+    if (_pendingProvider != provider) return icon;
+    return const SizedBox(
+      width: 16,
+      height: 16,
+      child: CircularProgressIndicator(strokeWidth: 2),
+    );
+  }
+}

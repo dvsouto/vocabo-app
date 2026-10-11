@@ -5,19 +5,31 @@ class ErrorInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final statusCode = err.response?.statusCode;
-    final message =
-        _extractMessage(err.response?.data) ?? err.message ?? 'Unknown error';
+    final data = err.response?.data;
+    final message = _extractMessage(data) ?? err.message ?? 'Unknown error';
+    final code = _field<String>(data, 'code');
+    final details = _extractDetails(data);
 
     AppException? appException;
 
     if (statusCode != null) {
       appException = switch (statusCode) {
-        400 => BadRequestException(message),
-        401 => UnauthorizedException(message),
-        404 => NotFoundException(message),
-        409 => ConflictException(message),
-        422 => UnprocessableException(message),
-        >= 500 => ServerException(message),
+        400 => BadRequestException(message, code: code, details: details),
+        401 => UnauthorizedException(message, code: code, details: details),
+        403 => ForbiddenException(message, code: code, details: details),
+        404 => NotFoundException(message, code: code, details: details),
+        409 => ConflictException(message, code: code, details: details),
+        422 => UnprocessableException(message, code: code, details: details),
+        429 => TooManyRequestsException(
+          message,
+          code: code,
+          details: details,
+          retryAfter: switch (_field<int>(data, 'retry_after')) {
+            final int seconds => Duration(seconds: seconds),
+            null => null,
+          },
+        ),
+        >= 500 => ServerException(message, code: code, details: details),
         _ => null,
       };
     }
@@ -49,10 +61,23 @@ class ErrorInterceptor extends Interceptor {
     return ServerException(message);
   }
 
-  String? _extractMessage(dynamic data) {
+  String? _extractMessage(dynamic data) => _field<String>(data, 'error');
+
+  T? _field<T>(dynamic data, String key) {
     if (data is Map<String, dynamic>) {
-      return data['error'] as String?;
+      final value = data[key];
+      if (value is T) return value;
     }
     return null;
+  }
+
+  Map<String, List<String>> _extractDetails(dynamic data) {
+    final details = _field<Map<String, dynamic>>(data, 'details');
+    if (details == null) return const {};
+    return {
+      for (final entry in details.entries)
+        if (entry.value is List)
+          entry.key: (entry.value as List).whereType<String>().toList(),
+    };
   }
 }

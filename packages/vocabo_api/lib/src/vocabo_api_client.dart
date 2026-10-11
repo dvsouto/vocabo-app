@@ -1,8 +1,11 @@
 import 'package:vocabo_api/src/auth/token_storage.dart';
 import 'package:vocabo_api/src/client/api_client.dart';
+import 'package:vocabo_api/src/client/device_info.dart';
+import 'package:vocabo_api/src/client/interceptors/auth_interceptor.dart';
 import 'package:vocabo_api/src/data_sources/auth_data_source.dart';
 import 'package:vocabo_api/src/data_sources/dictionary_data_source.dart';
 import 'package:vocabo_api/src/data_sources/flashcards_data_source.dart';
+import 'package:vocabo_api/src/data_sources/lookups_data_source.dart';
 import 'package:vocabo_api/src/data_sources/user_data_source.dart';
 import 'package:vocabo_api/src/data_sources/user_vocabulary_data_source.dart';
 import 'package:vocabo_api/src/data_sources/vocabulary_audio_data_source.dart';
@@ -10,6 +13,7 @@ import 'package:vocabo_api/src/data_sources/vocabulary_data_source.dart';
 import 'package:vocabo_api/src/repositories/auth_repository.dart';
 import 'package:vocabo_api/src/repositories/dictionary_repository.dart';
 import 'package:vocabo_api/src/repositories/flashcards_repository.dart';
+import 'package:vocabo_api/src/repositories/lookups_repository.dart';
 import 'package:vocabo_api/src/repositories/user_repository.dart';
 import 'package:vocabo_api/src/repositories/user_vocabulary_repository.dart';
 import 'package:vocabo_api/src/repositories/vocabulary_audio_repository.dart';
@@ -23,6 +27,7 @@ class VocaboApiClient {
   final DictionaryRepository dictionary;
   final VocabularyAudioRepository vocabularyAudio;
   final FlashcardsRepository flashcards;
+  final LookupsRepository lookups;
 
   VocaboApiClient._({
     required this.auth,
@@ -32,25 +37,30 @@ class VocaboApiClient {
     required this.dictionary,
     required this.vocabularyAudio,
     required this.flashcards,
+    required this.lookups,
   });
 
   factory VocaboApiClient({
     required String baseUrl,
     required TokenStorage tokenStorage,
+    DeviceInfo device = const DeviceInfo(),
+    SessionEndedCallback? onSessionEnded,
   }) {
     final apiClient = ApiClient(
       baseUrl: baseUrl,
       tokenStorage: tokenStorage,
+      onSessionEnded: onSessionEnded,
     );
     final dio = apiClient.dio;
 
-    final authDataSource = AuthDataSource(dio);
+    final authDataSource = AuthDataSource(dio, device: device);
     final userDataSource = UserDataSource(dio);
     final vocabularyDataSource = VocabularyDataSource(dio);
     final userVocabularyDataSource = UserVocabularyDataSource(dio);
     final dictionaryDataSource = DictionaryDataSource(dio);
     final vocabularyAudioDataSource = VocabularyAudioDataSource(dio);
     final flashcardsDataSource = FlashcardsDataSource(dio);
+    final lookupsDataSource = LookupsDataSource(dio);
 
     return VocaboApiClient._(
       auth: AuthRepository(
@@ -67,6 +77,7 @@ class VocaboApiClient {
         dataSource: vocabularyAudioDataSource,
       ),
       flashcards: FlashcardsRepository(dataSource: flashcardsDataSource),
+      lookups: LookupsRepository(dataSource: lookupsDataSource),
     );
   }
 }

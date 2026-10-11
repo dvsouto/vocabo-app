@@ -18,6 +18,7 @@ class MainFlutterWindow: NSWindow {
     // Setup tray panel controller here — engine is guaranteed to exist
     NSLog("[Vocabo] MainFlutterWindow: Setting up TrayPanelController")
     TrayPanelController.shared.setup(mainEngine: flutterViewController.engine)
+    SpotlightPanelController.shared.setup(mainEngine: flutterViewController.engine)
 
     super.awakeFromNib()
   }

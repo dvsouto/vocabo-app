@@ -21,7 +21,7 @@ if [ -n "$OLD_ID" ]; then
 fi
 
 HASH=$(docker exec vocabo-api bun -e "console.log(await Bun.password.hash('$PASSWORD', { algorithm: 'bcrypt', cost: 10 }))")
-"${PSQL[@]}" -c "insert into users (name, email, password) values ('E2E Flashcards', '$EMAIL', '$HASH');" >/dev/null
+"${PSQL[@]}" -c "insert into users (name, email, password, email_verified_at) values ('E2E Flashcards', '$EMAIL', '$HASH', now());" >/dev/null
 echo "e2e user ready: $EMAIL"
 
 cd "$APP_DIR"
