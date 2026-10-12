@@ -30,9 +30,9 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     if (widget.initialTerm != null && widget.initialTerm!.isNotEmpty) {
       _termController.text = widget.initialTerm!;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(addWordNotifierProvider.notifier).initFromTerm(
-              widget.initialTerm!,
-            );
+        ref
+            .read(addWordNotifierProvider.notifier)
+            .initFromTerm(widget.initialTerm!);
       });
     }
 
@@ -87,6 +87,9 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         color: Colors.transparent,
         child: Container(
           width: 680,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height - VocaboSpacing.xl,
+          ),
           decoration: BoxDecoration(
             color: VocaboColors.surface,
             borderRadius: VocaboRadius.lg,
@@ -98,27 +101,38 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                  _buildHeader(),
-                  const SizedBox(height: VocaboSpacing.md),
+                _buildHeader(),
+                const SizedBox(height: VocaboSpacing.md),
 
-                  _buildLanguageRow(wordState),
-                  const SizedBox(height: VocaboSpacing.md),
+                // Only the form scrolls when the window is short; the header
+                // and the actions stay in view.
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLanguageRow(wordState),
+                        const SizedBox(height: VocaboSpacing.md),
 
-                  _buildTermInput(wordState, notifier),
-                  const SizedBox(height: VocaboSpacing.md),
+                        _buildTermInput(wordState, notifier),
+                        const SizedBox(height: VocaboSpacing.md),
 
-                  _buildFieldsSection(wordState, notifier, fieldsEnabled),
-                  const SizedBox(height: VocaboSpacing.md),
+                        _buildFieldsSection(wordState, notifier, fieldsEnabled),
+                        const SizedBox(height: VocaboSpacing.md),
 
-                  _buildAutoDetectToggle(wordState, notifier),
-                  const SizedBox(height: VocaboSpacing.lg),
+                        _buildAutoDetectToggle(wordState, notifier),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: VocaboSpacing.lg),
 
-                  _buildActions(wordState, notifier, isAlreadyInVocabulary),
-                ],
-              ),
+                _buildActions(wordState, notifier, isAlreadyInVocabulary),
+              ],
             ),
           ),
         ),
+      ),
     );
   }
 
@@ -173,10 +187,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              'Vocabulary Card',
-              style: VocaboTypography.bodyMd,
-            ),
+            Text('Vocabulary Card', style: VocaboTypography.bodyMd),
           ],
         ),
       ],
@@ -197,7 +208,13 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
             focusNode: _termFocusNode,
             onChanged: notifier.setTerm,
             maxLength: 255,
-            buildCounter: (_, {required currentLength, required isFocused, required maxLength}) => null,
+            buildCounter:
+                (
+                  _, {
+                  required currentLength,
+                  required isFocused,
+                  required maxLength,
+                }) => null,
             style: VocaboTypography.headlineSm.copyWith(
               color: VocaboColors.primary,
             ),
@@ -237,14 +254,18 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     );
   }
 
-  Widget _buildPlayButton(bool canPlay, String contentHash, AddWordState wordState) {
+  Widget _buildPlayButton(
+    bool canPlay,
+    String contentHash,
+    AddWordState wordState,
+  ) {
     final audioState = ref.watch(audioPlayerStateProvider);
-    final isThisPlaying = contentHash.isNotEmpty &&
-        audioState.currentPlayingHash == contentHash;
-    final isLoading = isThisPlaying &&
-        audioState.status == AudioPlayerStatus.loading;
-    final isPlaying = isThisPlaying &&
-        audioState.status == AudioPlayerStatus.playing;
+    final isThisPlaying =
+        contentHash.isNotEmpty && audioState.currentPlayingHash == contentHash;
+    final isLoading =
+        isThisPlaying && audioState.status == AudioPlayerStatus.loading;
+    final isPlaying =
+        isThisPlaying && audioState.status == AudioPlayerStatus.playing;
 
     return Material(
       color: Colors.transparent,
@@ -327,9 +348,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                         onChanged: notifier.setMeaning,
                       ),
                       if (state.isSearching)
-                        Positioned.fill(
-                          child: _buildFieldLoader(),
-                        ),
+                        Positioned.fill(child: _buildFieldLoader()),
                     ],
                   ),
                 ],
@@ -363,9 +382,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         // Translation
         Text(
           'TRANSLATION',
-          style: VocaboTypography.labelSm.copyWith(
-            color: VocaboColors.neutral,
-          ),
+          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
         ),
         const SizedBox(height: 4),
         Stack(
@@ -375,10 +392,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
               hint: 'Translation in your language...',
               readOnly: !fieldsEnabled,
             ),
-            if (state.isSearching)
-              Positioned.fill(
-                child: _buildFieldLoader(),
-              ),
+            if (state.isSearching) Positioned.fill(child: _buildFieldLoader()),
           ],
         ),
         const SizedBox(height: VocaboSpacing.md),
@@ -386,9 +400,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         // Example sentences
         Text(
           'EXAMPLE SENTENCES',
-          style: VocaboTypography.labelSm.copyWith(
-            color: VocaboColors.neutral,
-          ),
+          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
         ),
         const SizedBox(height: 4),
         Stack(
@@ -401,10 +413,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
               minLines: 3,
               maxLines: 3,
             ),
-            if (state.isSearching)
-              Positioned.fill(
-                child: _buildFieldLoader(),
-              ),
+            if (state.isSearching) Positioned.fill(child: _buildFieldLoader()),
           ],
         ),
 
@@ -413,9 +422,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
           const SizedBox(height: VocaboSpacing.sm),
           Text(
             state.errorMessage!,
-            style: VocaboTypography.bodySm.copyWith(
-              color: Colors.red,
-            ),
+            style: VocaboTypography.bodySm.copyWith(color: Colors.red),
           ),
         ],
       ],
@@ -471,10 +478,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            VocaboTextButton(
-              label: 'Cancel',
-              onPressed: _close,
-            ),
+            VocaboTextButton(label: 'Cancel', onPressed: _close),
             const SizedBox(width: VocaboSpacing.sm),
             VocaboPrimaryButton(
               label: state.isSaving ? 'Saving...' : 'Save to Library',
@@ -482,14 +486,9 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(
-                      Icons.arrow_forward,
-                      size: 18,
-                    ),
+                  : const Icon(Icons.arrow_forward, size: 18),
               onPressed: canSave
                   ? () async {
                       final success = await notifier.save();

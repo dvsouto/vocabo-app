@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
+import 'package:vocabo_desktop/src/screens/password_reset/password_reset_screen.dart';
+import 'package:vocabo_desktop/src/widgets/account/password_field.dart';
 
 class LoginPasswordScreen extends ConsumerStatefulWidget {
   const LoginPasswordScreen({super.key, required this.email});
@@ -84,10 +86,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
           Center(
             child: GlassCard(
               width: 440,
-              padding: const EdgeInsets.symmetric(
-                horizontal: VocaboSpacing.xl,
-                vertical: VocaboSpacing.xxl,
-              ),
+              padding: const EdgeInsets.all(VocaboSpacing.xl),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -111,7 +110,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                   const SizedBox(height: VocaboSpacing.sm),
 
                   Text(
-                    'Enter your secret',
+                    'Enter your password',
                     style: VocaboTypography.bodySm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -139,10 +138,9 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                   const SizedBox(height: VocaboSpacing.md),
 
                   // Password field
-                  VocaboTextField(
+                  PasswordField(
                     controller: _passwordController,
-                    hint: 'Your secret',
-                    obscureText: true,
+                    hint: 'Your password',
                     autofocus: true,
                     onSubmitted: (_) => _onLogin(),
                   ),
@@ -165,10 +163,24 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                   ),
                   const SizedBox(height: VocaboSpacing.md),
 
-                  // Back button
-                  VocaboTextButton(
-                    label: 'Back',
-                    onPressed: () => Navigator.of(context).pop(),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: VocaboSpacing.sm,
+                    children: [
+                      VocaboTextButton(
+                        label: 'Back',
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      VocaboTextButton(
+                        label: 'Forgot password?',
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                PasswordResetScreen(initialEmail: widget.email),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

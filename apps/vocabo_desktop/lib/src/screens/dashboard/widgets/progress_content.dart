@@ -4,7 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
+import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_evaluation_bar.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+
+/// Color of the flashcard reviews series, next to the words added series.
+const _reviewsColor = VocaboColors.tertiary;
 
 class ProgressContent extends ConsumerWidget {
   const ProgressContent({super.key});
@@ -48,13 +52,53 @@ class ProgressContent extends ConsumerWidget {
             ),
             const SizedBox(height: VocaboSpacing.xl),
             _MetricsGrid(stats: data),
-            const SizedBox(height: VocaboSpacing.xl),
+            const SizedBox(height: VocaboSpacing.lg),
             _WeeklyChart(points: data.weeklyActivity),
-            const SizedBox(height: VocaboSpacing.xl),
+            const SizedBox(height: VocaboSpacing.lg),
+            _ResponsivePair(
+              first: _AnswersCard(evaluations: data.evaluations),
+              second: _MemoryStrengthCard(stats: data),
+            ),
+            const SizedBox(height: VocaboSpacing.lg),
             _DailyActivity(points: data.dailyActivity),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Two cards side by side, stacked when the window is narrow.
+class _ResponsivePair extends StatelessWidget {
+  const _ResponsivePair({required this.first, required this.second});
+
+  final Widget first;
+  final Widget second;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 640) {
+          return Column(
+            children: [
+              first,
+              const SizedBox(height: VocaboSpacing.lg),
+              second,
+            ],
+          );
+        }
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: first),
+              const SizedBox(width: VocaboSpacing.lg),
+              Expanded(child: second),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -66,9 +110,13 @@ class _MetricsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final clearRate = (stats.evaluations.clearRate * 100).round();
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = (constraints.maxWidth - VocaboSpacing.md * 3) / 4;
+        final columns = constraints.maxWidth >= 760 ? 4 : 2;
+        final width =
+            (constraints.maxWidth - VocaboSpacing.md * (columns - 1)) / columns;
         return Wrap(
           spacing: VocaboSpacing.md,
           runSpacing: VocaboSpacing.md,
@@ -76,26 +124,32 @@ class _MetricsGrid extends StatelessWidget {
             _MetricCard(
               width: width,
               icon: Icons.auto_stories_outlined,
-              label: 'TOTAL WORDS',
+              label: 'WORDS IN LIBRARY',
               value: '${stats.totalWords}',
+              caption: '${stats.wordsThisWeek} added this week',
             ),
             _MetricCard(
               width: width,
               icon: Icons.local_fire_department_outlined,
               label: 'CURRENT STREAK',
-              value: '${stats.currentStreak} days',
+              value: countLabel(stats.currentStreak, 'day'),
+              caption: 'Best: ${countLabel(stats.longestStreak, 'day')}',
             ),
             _MetricCard(
               width: width,
-              icon: Icons.emoji_events_outlined,
-              label: 'BEST STREAK',
-              value: '${stats.longestStreak} days',
+              icon: Icons.style_outlined,
+              label: 'FLASHCARDS REVIEWED',
+              value: '${stats.reviewsTotal}',
+              caption: stats.evaluations.total == 0
+                  ? '${stats.reviewsThisWeek} this week'
+                  : '$clearRate% answered clear',
             ),
             _MetricCard(
               width: width,
-              icon: Icons.calendar_today_outlined,
-              label: 'ACTIVE DAYS',
-              value: '${stats.activeDays}',
+              icon: Icons.workspace_premium_outlined,
+              label: 'WORDS MASTERED',
+              value: '${stats.cardsMastered}',
+              caption: '${stats.cardsInRotation} in rotation',
             ),
           ],
         );
@@ -110,17 +164,19 @@ class _MetricCard extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    required this.caption,
   });
 
   final double width;
   final IconData icon;
   final String label;
   final String value;
+  final String caption;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: math.max(170, width),
+      width: width,
       padding: const EdgeInsets.all(VocaboSpacing.lg),
       decoration: BoxDecoration(
         color: VocaboColors.surfaceContainerLowest,
@@ -136,12 +192,54 @@ class _MetricCard extends StatelessWidget {
           const SizedBox(height: VocaboSpacing.xs),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: VocaboTypography.labelSm.copyWith(
               color: VocaboColors.neutral,
             ),
           ),
+          const SizedBox(height: 2),
+          Text(
+            caption,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: VocaboTypography.bodySm.copyWith(
+              color: VocaboColors.neutral600,
+            ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _Legend extends StatelessWidget {
+  const _Legend({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: VocaboTypography.bodySm.copyWith(
+            color: VocaboColors.neutral600,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -151,12 +249,17 @@ class _WeeklyChart extends StatelessWidget {
 
   final List<VocabularyWeeklyActivityPoint> points;
 
+  static const _barsHeight = 120.0;
+
   @override
   Widget build(BuildContext context) {
     final maxCount = points.fold<int>(
       1,
-      (max, point) => math.max(max, point.count),
+      (max, point) => math.max(max, math.max(point.count, point.reviews)),
     );
+
+    double barHeight(int value) =>
+        value == 0 ? 3 : math.max(8, value / maxCount * _barsHeight);
 
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
@@ -167,56 +270,282 @@ class _WeeklyChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('12-WEEK ACTIVITY', style: VocaboTypography.labelSm),
-          const SizedBox(height: VocaboSpacing.xs),
-          Text('Words added over time', style: VocaboTypography.titleLg),
-          const SizedBox(height: VocaboSpacing.xl),
-          SizedBox(
-            height: 190,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: points.map((point) {
-                final height = point.count == 0
-                    ? 4.0
-                    : math.max(12.0, point.count / maxCount * 150);
-                return Expanded(
-                  child: Tooltip(
-                    message: '${point.count} words',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(
-                            height: height,
-                            decoration: BoxDecoration(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('LAST 12 WEEKS', style: VocaboTypography.labelSm),
+                    const SizedBox(height: VocaboSpacing.xs),
+                    Text('Weekly activity', style: VocaboTypography.titleLg),
+                  ],
+                ),
+              ),
+              const _Legend(color: VocaboColors.primary, label: 'Words added'),
+              const SizedBox(width: VocaboSpacing.md),
+              const _Legend(color: _reviewsColor, label: 'Reviews'),
+            ],
+          ),
+          const SizedBox(height: VocaboSpacing.lg),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: points.map((point) {
+              return Expanded(
+                child: Tooltip(
+                  message:
+                      'Week of ${point.weekStart.day}/${point.weekStart.month}: '
+                      '${countLabel(point.count, 'word')} added, '
+                      '${countLabel(point.reviews, 'review')}',
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: _barsHeight,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            _Bar(
+                              height: barHeight(point.count),
                               color: point.count == 0
                                   ? VocaboColors.neutral200
                                   : VocaboColors.primary,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(6),
-                              ),
                             ),
-                          ),
-                          const SizedBox(height: VocaboSpacing.sm),
-                          Text(
-                            '${point.weekStart.day}/${point.weekStart.month}',
-                            maxLines: 1,
-                            style: VocaboTypography.labelSm.copyWith(
-                              color: VocaboColors.neutral,
-                              fontSize: 9,
+                            const SizedBox(width: 2),
+                            _Bar(
+                              height: barHeight(point.reviews),
+                              color: point.reviews == 0
+                                  ? VocaboColors.neutral200
+                                  : _reviewsColor,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: VocaboSpacing.sm),
+                      Text(
+                        '${point.weekStart.day}/${point.weekStart.month}',
+                        maxLines: 1,
+                        style: VocaboTypography.labelSm.copyWith(
+                          color: VocaboColors.neutral,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              }).toList(),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Bar extends StatelessWidget {
+  const _Bar({required this.height, required this.color});
+
+  final double height;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 14),
+        height: height,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+        ),
+      ),
+    );
+  }
+}
+
+/// A labelled horizontal bar with its count, used by the breakdown cards.
+class _BreakdownRow extends StatelessWidget {
+  const _BreakdownRow({
+    required this.label,
+    required this.value,
+    required this.total,
+    required this.color,
+    this.leading,
+  });
+
+  final String label;
+  final int value;
+  final int total;
+  final Color color;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    final share = total == 0 ? 0.0 : value / total;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: VocaboSpacing.sm),
+      child: Row(
+        children: [
+          if (leading != null) ...[leading!, const SizedBox(width: 6)],
+          SizedBox(
+            width: leading == null ? 76 : 56,
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: VocaboTypography.bodySm,
+            ),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: VocaboRadius.sm,
+              child: LinearProgressIndicator(
+                value: share,
+                minHeight: 8,
+                color: color,
+                backgroundColor: VocaboColors.neutral200.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Text(
+              '$value',
+              textAlign: TextAlign.right,
+              style: VocaboTypography.bodySm.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BreakdownCard extends StatelessWidget {
+  const _BreakdownCard({
+    required this.overline,
+    required this.title,
+    required this.child,
+  });
+
+  final String overline;
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(VocaboSpacing.lg),
+      decoration: BoxDecoration(
+        color: VocaboColors.surfaceContainerLow,
+        borderRadius: VocaboRadius.lg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(overline, style: VocaboTypography.labelSm),
+          const SizedBox(height: VocaboSpacing.xs),
+          Text(title, style: VocaboTypography.titleLg),
+          const SizedBox(height: VocaboSpacing.lg),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _AnswersCard extends StatelessWidget {
+  const _AnswersCard({required this.evaluations});
+
+  final ReviewEvaluations evaluations;
+
+  @override
+  Widget build(BuildContext context) {
+    final counts = {
+      FlashcardEvaluation.hard: evaluations.blank,
+      FlashcardEvaluation.medium: evaluations.fuzzy,
+      FlashcardEvaluation.easy: evaluations.clear,
+    };
+
+    return _BreakdownCard(
+      overline: 'FLASHCARD ANSWERS',
+      title: 'How clear your recall is',
+      child: evaluations.total == 0
+          ? Text(
+              'Review your flashcards to see how clearly you remember '
+              'your words.',
+              style: VocaboTypography.bodySm.copyWith(
+                color: VocaboColors.neutral,
+              ),
+            )
+          : Column(
+              children: [
+                for (final entry in counts.entries)
+                  _BreakdownRow(
+                    leading: ClarityIcon(
+                      clarity: clarityOf(entry.key),
+                      color: evaluationPalette(context, entry.key).foreground,
+                      size: 14,
+                    ),
+                    label: clarityLabelOf(entry.key),
+                    value: entry.value,
+                    total: evaluations.total,
+                    color: evaluationPalette(context, entry.key).foreground,
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+class _MemoryStrengthCard extends StatelessWidget {
+  const _MemoryStrengthCard({required this.stats});
+
+  final VocabularyStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final stages = stats.stageDistribution;
+    final total =
+        stages.fold<int>(0, (sum, count) => sum + count) + stats.cardsMastered;
+
+    return _BreakdownCard(
+      overline: 'MEMORY STRENGTH',
+      title: 'Where your words are',
+      child: total == 0
+          ? Text(
+              'Add words to your library to start building memory.',
+              style: VocaboTypography.bodySm.copyWith(
+                color: VocaboColors.neutral,
+              ),
+            )
+          : Column(
+              children: [
+                for (var index = 0; index < stages.length; index++)
+                  _BreakdownRow(
+                    label:
+                        MemoryStrength.stageNames[math.min(
+                          index,
+                          MemoryStrength.stageNames.length - 1,
+                        )],
+                    value: stages[index],
+                    total: total,
+                    color: VocaboColors.primary.withValues(
+                      alpha: 0.35 + index / stages.length * 0.65,
+                    ),
+                  ),
+                _BreakdownRow(
+                  label: MemoryStrength.masteredName,
+                  value: stats.cardsMastered,
+                  total: total,
+                  color: _reviewsColor,
+                ),
+              ],
+            ),
     );
   }
 }
@@ -240,28 +569,42 @@ class _DailyActivity extends StatelessWidget {
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(right: VocaboSpacing.sm),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: VocaboSpacing.sm,
-                    vertical: VocaboSpacing.md,
-                  ),
-                  decoration: BoxDecoration(
-                    color: point.count > 0
-                        ? VocaboColors.primary50
-                        : VocaboColors.surfaceContainerLow,
-                    borderRadius: VocaboRadius.md,
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        _weekdays[point.date.weekday - 1],
-                        style: VocaboTypography.labelSm.copyWith(
-                          color: VocaboColors.neutral,
+                child: Tooltip(
+                  message:
+                      '${countLabel(point.count, 'word')} added, '
+                      '${countLabel(point.reviews, 'review')}',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: VocaboSpacing.xs,
+                      vertical: VocaboSpacing.md,
+                    ),
+                    decoration: BoxDecoration(
+                      color: point.isActive
+                          ? VocaboColors.primary50
+                          : VocaboColors.surfaceContainerLow,
+                      borderRadius: VocaboRadius.md,
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          _weekdays[point.date.weekday - 1],
+                          style: VocaboTypography.labelSm.copyWith(
+                            color: VocaboColors.neutral,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: VocaboSpacing.sm),
-                      Text('${point.count}', style: VocaboTypography.titleLg),
-                    ],
+                        const SizedBox(height: VocaboSpacing.sm),
+                        Text('${point.count}', style: VocaboTypography.titleLg),
+                        Text(
+                          '${point.reviews} rev.',
+                          maxLines: 1,
+                          style: VocaboTypography.labelSm.copyWith(
+                            color: point.reviews > 0
+                                ? _reviewsColor
+                                : VocaboColors.neutral,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

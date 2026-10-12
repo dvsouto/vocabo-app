@@ -47,6 +47,8 @@ class UserVocabularyDataSource {
     });
   }
 
+  Future<void> remove(String id) => _dio.delete<void>('/user-vocabulary/$id');
+
   Future<VocabularyStats> getStats({required int timezoneOffsetMinutes}) async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/user-vocabulary/stats',

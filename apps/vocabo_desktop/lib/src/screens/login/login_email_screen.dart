@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/widgets/legal/legal_consent_text.dart';
 import 'package:vocabo_desktop/src/auth/social_sign_in.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/screens/login/login_password_screen.dart';
+import 'package:vocabo_desktop/src/screens/password_reset/password_reset_screen.dart';
 import 'package:vocabo_desktop/src/screens/signup/signup_screen.dart';
 
 class LoginEmailScreen extends ConsumerStatefulWidget {
@@ -46,6 +48,17 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
       MaterialPageRoute<void>(
         builder: (_) =>
             SignUpScreen(initialEmail: isValidEmail(email) ? email : null),
+      ),
+    );
+  }
+
+  void _openPasswordReset() {
+    final email = _emailController.text.trim();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PasswordResetScreen(
+          initialEmail: isValidEmail(email) ? email : null,
+        ),
       ),
     );
   }
@@ -99,10 +112,7 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
             child: SingleChildScrollView(
               child: GlassCard(
                 width: 440,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: VocaboSpacing.xl,
-                  vertical: VocaboSpacing.xxl,
-                ),
+                padding: const EdgeInsets.all(VocaboSpacing.xl),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -215,7 +225,9 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: VocaboSpacing.lg),
+                    const SizedBox(height: VocaboSpacing.md),
+                    const LegalConsentText(action: 'continuing'),
+                    const SizedBox(height: VocaboSpacing.md),
 
                     // Bottom links
                     Wrap(
@@ -223,9 +235,9 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                       spacing: VocaboSpacing.sm,
                       children: [
                         VocaboTextButton(
-                          label: 'Forgot Secret?',
+                          label: 'Forgot password?',
                           uppercase: true,
-                          onPressed: () {},
+                          onPressed: _openPasswordReset,
                         ),
                         VocaboTextButton(
                           label: 'Create Account',
@@ -233,16 +245,6 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                           onPressed: _openSignUp,
                         ),
                       ],
-                    ),
-                    const SizedBox(height: VocaboSpacing.md),
-
-                    // Footer
-                    Text(
-                      'END-TO-END ENCRYPTED  \u00b7  ICLOUD SYNC READY',
-                      style: VocaboTypography.labelSm.copyWith(
-                        color: VocaboColors.neutral,
-                        fontWeight: FontWeight.w400,
-                      ),
                     ),
                   ],
                 ),

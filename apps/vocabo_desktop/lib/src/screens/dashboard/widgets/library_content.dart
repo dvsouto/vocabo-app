@@ -112,19 +112,6 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                               ),
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.more_vert,
-                              size: 20,
-                              color: VocaboColors.neutral,
-                            ),
-                            onPressed: () {},
-                            style: const ButtonStyle(
-                              mouseCursor: WidgetStatePropertyAll(
-                                SystemMouseCursors.click,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -149,18 +136,15 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
         ),
         const SizedBox(height: VocaboSpacing.xl),
 
-        // Stats
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: VocaboSpacing.xl),
-          child: StatsSection(),
-        ),
-        const SizedBox(height: VocaboSpacing.xl),
-
         // Vocabulary list with infinite scroll
         Expanded(
           child: vocabList.when(
             data: (vocabularies) => VocabularyList(
               userVocabularies: vocabularies,
+              leading: const Padding(
+                padding: EdgeInsets.only(bottom: VocaboSpacing.xl),
+                child: StatsSection(),
+              ),
               onLoadMore: () =>
                   ref.read(userVocabularyListProvider.notifier).loadMore(),
               hasMore: ref.read(userVocabularyListProvider.notifier).hasMore,

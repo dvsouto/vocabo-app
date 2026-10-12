@@ -59,6 +59,10 @@ class AuthRepository {
     }
   }
 
+  /// Forgets the local token without calling the API, for sessions that no
+  /// longer exist on the server (e.g. after deleting the account).
+  Future<void> clearSession() => _tokenStorage.deleteToken();
+
   Future<bool> isAuthenticated() async {
     final token = await _tokenStorage.getToken();
     return token != null;
@@ -66,6 +70,29 @@ class AuthRepository {
 
   Future<VerificationDispatch> sendVerification(VerificationChannel channel) =>
       apiCall(() => _dataSource.sendVerification(channel));
+
+  /// Emails a code to reset the password. Unknown addresses get the same
+  /// answer, so the caller cannot tell whether the account exists.
+  Future<VerificationDispatch> requestPasswordReset(String email) =>
+      apiCall(() => _dataSource.requestPasswordReset(email));
+
+  /// Sets a new password with the emailed code and signs in. Every other
+  /// device is signed out.
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    final authToken = await apiCall(
+      () => _dataSource.resetPassword(
+        email: email,
+        code: code,
+        password: password,
+      ),
+    );
+
+    await _tokenStorage.saveToken(authToken.token);
+  }
 
   Future<User> confirmVerification(String code) =>
       apiCall(() => _dataSource.confirmVerification(code));

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/widgets/account/password_field.dart';
+import 'package:vocabo_desktop/src/widgets/legal/legal_consent_text.dart';
 import 'package:vocabo_desktop/src/auth/device_info.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/widgets/account/auth_scaffold.dart';
@@ -32,7 +34,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       phoneCountryByIso(systemCountryCode()) ?? phoneCountryByIso('US')!;
   late String _nativeLanguage = systemNativeLanguage();
   Uint8List? _avatar;
-  bool _showPassword = false;
   Map<String, String> _errors = {};
 
   @override
@@ -158,9 +159,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(signUpProvider).isLoading;
     final name = _nameController.text;
+    final wide = MediaQuery.sizeOf(context).width >= 760;
 
     return AuthScaffold(
-      width: 480,
+      width: wide ? 640 : 480,
       onBack: () => Navigator.of(context).pop(),
       child: AutofillGroup(
         child: Column(
@@ -213,107 +215,138 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: VocaboSpacing.lg),
-
-            const FieldLabel('Name'),
-            VocaboTextField(
-              controller: _nameController,
-              hint: 'Alex Morgan',
-              autofocus: true,
-              autofillHints: const [AutofillHints.name],
-              errorText: _errors['name'],
-              textInputAction: TextInputAction.next,
-              onChanged: (_) {
-                _clearError('name');
-                setState(() {});
-              },
-            ),
             const SizedBox(height: VocaboSpacing.md),
 
-            const FieldLabel('Email'),
-            VocaboTextField(
-              controller: _emailController,
-              hint: 'alex@atelier.io',
-              keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
-              errorText: _errors['email'],
-              textInputAction: TextInputAction.next,
-              onChanged: (_) => _clearError('email'),
-            ),
-            const SizedBox(height: VocaboSpacing.md),
-
-            const FieldLabel('Password'),
-            VocaboTextField(
-              controller: _passwordController,
-              hint: 'At least 6 characters',
-              obscureText: !_showPassword,
-              autofillHints: const [AutofillHints.newPassword],
-              errorText: _errors['password'],
-              textInputAction: TextInputAction.next,
-              onChanged: (_) => _clearError('password'),
-              suffix: IconButton(
-                tooltip: _showPassword ? 'Hide password' : 'Show password',
-                icon: Icon(
-                  _showPassword
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  size: 18,
-                ),
-                color: VocaboColors.neutral,
-                onPressed: () => setState(() => _showPassword = !_showPassword),
-              ),
-            ),
-            const SizedBox(height: VocaboSpacing.sm),
-            PasswordRequirements(password: _passwordController.text),
-            const SizedBox(height: VocaboSpacing.md),
-
-            const FieldLabel('Native language'),
-            NativeLanguageField(
-              value: _nativeLanguage,
-              enabled: !isLoading,
-              onChanged: (code) => setState(() => _nativeLanguage = code),
-            ),
-            const SizedBox(height: VocaboSpacing.xs),
-            Text(
-              'Suggested from your system languages. Change it if needed.',
-              style: VocaboTypography.bodySm.copyWith(
-                color: VocaboColors.neutral,
-              ),
-            ),
-            const SizedBox(height: VocaboSpacing.md),
-
-            const FieldLabel('Phone', optional: true),
-            VocaboPhoneField(
-              country: _phoneCountry,
-              controller: _phoneController,
-              errorText: _errors['phone_number'],
-              enabled: !isLoading,
-              onCountryChanged: (country) {
-                _clearError('phone_number');
-                setState(() => _phoneCountry = country);
-              },
-              onChanged: (_) => _clearError('phone_number'),
-            ),
-            const SizedBox(height: VocaboSpacing.md),
-
-            const FieldLabel('Age', optional: true),
-            SizedBox(
-              width: 120,
-              child: VocaboTextField(
-                controller: _ageController,
-                hint: '30',
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(3),
+            _pair(
+              wide,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const FieldLabel('Name'),
+                  VocaboTextField(
+                    controller: _nameController,
+                    hint: 'Alex Morgan',
+                    autofocus: true,
+                    autofillHints: const [AutofillHints.name],
+                    errorText: _errors['name'],
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) {
+                      _clearError('name');
+                      setState(() {});
+                    },
+                  ),
                 ],
-                errorText: _errors['age'],
-                onChanged: (_) => _clearError('age'),
-                onSubmitted: (_) => _submit(),
               ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const FieldLabel('Email'),
+                  VocaboTextField(
+                    controller: _emailController,
+                    hint: 'alex@atelier.io',
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    errorText: _errors['email'],
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) => _clearError('email'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: VocaboSpacing.md),
+
+            _pair(
+              wide,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const FieldLabel('Password'),
+                  PasswordField(
+                    controller: _passwordController,
+                    hint: 'At least 6 characters',
+                    isNewPassword: true,
+                    errorText: _errors['password'],
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) {
+                      _clearError('password');
+                      setState(() {});
+                    },
+                  ),
+                  const SizedBox(height: VocaboSpacing.sm),
+                  PasswordRequirements(password: _passwordController.text),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const FieldLabel('Native language'),
+                  NativeLanguageField(
+                    value: _nativeLanguage,
+                    enabled: !isLoading,
+                    onChanged: (code) => setState(() => _nativeLanguage = code),
+                  ),
+                  const SizedBox(height: VocaboSpacing.xs),
+                  Text(
+                    'Suggested from your system languages.',
+                    style: VocaboTypography.bodySm.copyWith(
+                      color: VocaboColors.neutral,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: VocaboSpacing.md),
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const FieldLabel('Phone', optional: true),
+                      VocaboPhoneField(
+                        country: _phoneCountry,
+                        controller: _phoneController,
+                        errorText: _errors['phone_number'],
+                        enabled: !isLoading,
+                        onCountryChanged: (country) {
+                          _clearError('phone_number');
+                          setState(() => _phoneCountry = country);
+                        },
+                        onChanged: (_) => _clearError('phone_number'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: VocaboSpacing.md),
+                SizedBox(
+                  width: 120,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const FieldLabel('Age', optional: true),
+                      VocaboTextField(
+                        controller: _ageController,
+                        hint: '30',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(3),
+                        ],
+                        errorText: _errors['age'],
+                        onChanged: (_) => _clearError('age'),
+                        onSubmitted: (_) => _submit(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: VocaboSpacing.xl),
 
+            const LegalConsentText(action: 'creating an account'),
+            const SizedBox(height: VocaboSpacing.md),
             VocaboPrimaryButton(
               label: 'Create account',
               isExpanded: true,
@@ -330,6 +363,28 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Two fields side by side on wide windows, stacked otherwise.
+  Widget _pair(bool wide, Widget first, Widget second) {
+    if (!wide) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          first,
+          const SizedBox(height: VocaboSpacing.md),
+          second,
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: first),
+        const SizedBox(width: VocaboSpacing.md),
+        Expanded(child: second),
+      ],
     );
   }
 }

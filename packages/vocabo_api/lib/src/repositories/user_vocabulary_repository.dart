@@ -17,6 +17,9 @@ class UserVocabularyRepository {
   Future<UserVocabulary> add({required Map<String, dynamic> data}) =>
       apiCall(() => _dataSource.add(data: data));
 
+  /// Removes the word from the library together with its flashcard.
+  Future<void> remove(String id) => apiCall(() => _dataSource.remove(id));
+
   Future<VocabularyStats> getStats({required int timezoneOffsetMinutes}) =>
       apiCall(
         () =>

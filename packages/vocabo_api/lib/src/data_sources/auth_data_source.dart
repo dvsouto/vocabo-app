@@ -99,6 +99,33 @@ class AuthDataSource {
     return VerificationDispatch.fromJson(response.data!);
   }
 
+  Future<VerificationDispatch> requestPasswordReset(String email) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/auth/password/forgot',
+      data: {'email': email},
+    );
+
+    return VerificationDispatch.fromJson(response.data!);
+  }
+
+  Future<AuthToken> resetPassword({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/auth/password/reset',
+      data: {
+        'email': email,
+        'code': code,
+        'password': password,
+        'device': _device.toJson(),
+      },
+    );
+
+    return AuthToken.fromJson(response.data!);
+  }
+
   Future<User> confirmVerification(String code) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/auth/verification/confirm',

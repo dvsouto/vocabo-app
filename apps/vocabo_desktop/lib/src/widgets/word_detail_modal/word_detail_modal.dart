@@ -5,7 +5,9 @@ import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 
@@ -16,8 +18,18 @@ class WordDetailModal extends ConsumerWidget {
 
   String _formatFullDate(DateTime date) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -32,12 +44,14 @@ class WordDetailModal extends ConsumerWidget {
     final vocabulary = userVocabulary.vocabulary!;
     final showDetail = ref.watch(showWordDetailModalProvider);
     final audioState = ref.watch(audioPlayerStateProvider);
-    final flashcard =
-        ref.watch(flashcardByVocabularyProvider(userVocabulary.id)).valueOrNull;
+    final flashcard = ref
+        .watch(flashcardByVocabularyProvider(userVocabulary.id))
+        .valueOrNull;
     final contentHash = vocabulary.contentHash ?? '';
     final isThisPlaying =
         showDetail && audioState.currentPlayingHash == contentHash;
-    final isBusy = audioState.status == AudioPlayerStatus.loading ||
+    final isBusy =
+        audioState.status == AudioPlayerStatus.loading ||
         audioState.status == AudioPlayerStatus.playing;
 
     final hasTranslation =
@@ -74,13 +88,15 @@ class WordDetailModal extends ConsumerWidget {
                   _buildHeader(ref, vocabulary, flashcard),
                   const SizedBox(height: VocaboSpacing.lg),
                   _buildTermRow(
-                    ref, vocabulary, contentHash,
-                    isThisPlaying, isBusy, audioState,
+                    ref,
+                    vocabulary,
+                    contentHash,
+                    isThisPlaying,
+                    isBusy,
+                    audioState,
                   ),
                   const SizedBox(height: VocaboSpacing.xl),
-                  _buildTopColumns(
-                    vocabulary, hasTranslation, examples,
-                  ),
+                  _buildTopColumns(vocabulary, hasTranslation, examples),
                   if (hasMeaning) ...[
                     const SizedBox(height: VocaboSpacing.lg),
                     _buildMeaningSection(vocabulary),
@@ -88,7 +104,7 @@ class WordDetailModal extends ConsumerWidget {
                   const SizedBox(height: VocaboSpacing.xl),
                   _buildDateSection(flashcard),
                   const SizedBox(height: VocaboSpacing.xl),
-                  _buildActions(ref),
+                  _buildActions(context, ref, flashcard),
                 ],
               ),
             ),
@@ -168,7 +184,8 @@ class WordDetailModal extends ConsumerWidget {
                     } else if (!isBusy) {
                       player.play(
                         vocabularyId: vocabulary.id,
-                        type: userVocabulary.vocabularyType ==
+                        type:
+                            userVocabulary.vocabularyType ==
                                 VocabularyType.custom
                             ? 'custom'
                             : 'system',
@@ -185,7 +202,8 @@ class WordDetailModal extends ConsumerWidget {
                     : VocaboColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: isThisPlaying &&
+              child:
+                  isThisPlaying &&
                       audioState.status == AudioPlayerStatus.loading
                   ? const Padding(
                       padding: EdgeInsets.all(12),
@@ -230,10 +248,7 @@ class WordDetailModal extends ConsumerWidget {
           child: _buildTranslationColumn(vocabulary, hasTranslation),
         ),
         const SizedBox(width: VocaboSpacing.xxl),
-        Expanded(
-          flex: 3,
-          child: _buildExamplesSection(examples, vocabulary),
-        ),
+        Expanded(flex: 3, child: _buildExamplesSection(examples, vocabulary)),
       ],
     );
   }
@@ -294,31 +309,30 @@ class WordDetailModal extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: VocaboSpacing.sm),
-        ...examples.map((example) => Padding(
-              padding: const EdgeInsets.only(bottom: VocaboSpacing.md),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, right: 10),
-                    child: Container(
-                      width: 7,
-                      height: 7,
-                      decoration: const BoxDecoration(
-                        color: VocaboColors.primary,
-                        shape: BoxShape.circle,
-                      ),
+        ...examples.map(
+          (example) => Padding(
+            padding: const EdgeInsets.only(bottom: VocaboSpacing.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, right: 10),
+                  child: Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: VocaboColors.primary,
+                      shape: BoxShape.circle,
                     ),
                   ),
-                  Expanded(
-                    child: _buildHighlightedExample(
-                      example,
-                      vocabulary.term,
-                    ),
-                  ),
-                ],
-              ),
-            )),
+                ),
+                Expanded(
+                  child: _buildHighlightedExample(example, vocabulary.term),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -425,19 +439,108 @@ class WordDetailModal extends ConsumerWidget {
     );
   }
 
-  Widget _buildActions(WidgetRef ref) {
+  Future<void> _toggleArchive(
+    BuildContext context,
+    WidgetRef ref,
+    Flashcard flashcard,
+  ) async {
+    final api = ref.read(apiClientProvider);
+    final archived = flashcard.status == FlashcardStatus.archived;
+    try {
+      if (archived) {
+        await api.flashcards.restore(flashcard.id);
+      } else {
+        await api.flashcards.archive(flashcard.id);
+      }
+      ref.invalidate(flashcardByVocabularyProvider(userVocabulary.id));
+      ref.invalidate(archivedFlashcardsProvider);
+      ref.invalidate(flashcardStatusProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              archived
+                  ? 'Flashcard restored. It is back in your reviews.'
+                  : 'Flashcard archived. The word stays in your library.',
+            ),
+          ),
+        );
+      }
+    } catch (e, st) {
+      appLogger.handle(e, st, 'WordDetail toggleArchive() error');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not update the flashcard.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _remove(BuildContext context, WidgetRef ref) async {
+    final term = userVocabulary.vocabulary?.term ?? 'this word';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Remove "$term"?'),
+        content: const Text(
+          'The word leaves your library and its flashcard progress is lost.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref
+          .read(userVocabularyListProvider.notifier)
+          .removeVocabulary(userVocabulary.id);
+      ref.invalidate(flashcardStatusProvider);
+      ref.invalidate(archivedFlashcardsProvider);
+      _close(ref);
+    } catch (e, st) {
+      appLogger.handle(e, st, 'WordDetail remove() error');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not remove the word.')),
+        );
+      }
+    }
+  }
+
+  Widget _buildActions(
+    BuildContext context,
+    WidgetRef ref,
+    Flashcard? flashcard,
+  ) {
+    final archived = flashcard?.status == FlashcardStatus.archived;
+
     return Row(
       children: [
-        VocaboTextButton(
-          label: 'Edit Entry',
-          leading: const Icon(Icons.edit_outlined),
-          onPressed: () {},
-        ),
+        if (flashcard != null)
+          VocaboTextButton(
+            label: archived ? 'Restore flashcard' : 'Archive flashcard',
+            leading: Icon(
+              archived ? Icons.unarchive_outlined : Icons.archive_outlined,
+            ),
+            onPressed: () => _toggleArchive(context, ref, flashcard),
+          ),
         const Spacer(),
         VocaboNeutralButton(
-          label: 'Archive',
+          label: 'Remove',
           leading: const Icon(Icons.delete_outline),
-          onPressed: () {},
+          onPressed: () => _remove(context, ref),
         ),
       ],
     );

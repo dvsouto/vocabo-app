@@ -82,6 +82,17 @@ class UserVocabularyListNotifier extends AsyncNotifier<List<UserVocabulary>> {
     _saveToCache(updated);
   }
 
+  /// Removes the word and its flashcard from the library.
+  Future<void> removeVocabulary(String id) async {
+    await ref.read(apiClientProvider).userVocabulary.remove(id);
+
+    final updated = (state.valueOrNull ?? [])
+        .where((item) => item.id != id)
+        .toList();
+    state = AsyncData(updated);
+    _saveToCache(updated);
+  }
+
   void refresh() {
     _nextCursor = null;
     _hasMore = false;

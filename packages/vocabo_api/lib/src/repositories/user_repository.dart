@@ -48,6 +48,21 @@ class UserRepository {
   Future<User> confirmPhoneChange(String code) =>
       apiCall(() => _dataSource.confirmPhoneChange(code));
 
+  /// Other devices are signed out once the password changes.
+  Future<User> changePassword({
+    String? currentPassword,
+    required String newPassword,
+  }) => apiCall(
+    () => _dataSource.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    ),
+  );
+
+  /// Permanently deletes the account and all of its data.
+  Future<void> deleteAccount({String? password}) =>
+      apiCall(() => _dataSource.deleteAccount(password: password));
+
   Future<List<UserSession>> listSessions() => apiCall(_dataSource.listSessions);
 
   Future<void> revokeSession(String id) =>

@@ -9,11 +9,15 @@ class VocabularyList extends StatelessWidget {
     required this.userVocabularies,
     this.onLoadMore,
     this.hasMore = false,
+    this.leading,
   });
 
   final List<UserVocabulary> userVocabularies;
   final VoidCallback? onLoadMore;
   final bool hasMore;
+
+  /// Scrolls together with the list, above the column titles.
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +32,19 @@ class VocabularyList extends StatelessWidget {
       },
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: VocaboSpacing.xl),
-        itemCount: userVocabularies.length + 1 + (hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
+        itemCount:
+            (leading == null ? 0 : 1) +
+            1 +
+            (userVocabularies.isEmpty ? 1 : userVocabularies.length) +
+            (hasMore ? 1 : 0),
+        itemBuilder: (context, position) {
+          if (leading != null && position == 0) return leading!;
+          final index = leading == null ? position : position - 1;
+
+          if (userVocabularies.isEmpty) {
+            return index == 0 ? const SizedBox.shrink() : const _EmptyLibrary();
+          }
+
           // Header row
           if (index == 0) {
             return Padding(
@@ -89,6 +104,41 @@ class VocabularyList extends StatelessWidget {
             child: VocabularyListItem(userVocabulary: uv),
           );
         },
+      ),
+    );
+  }
+}
+
+class _EmptyLibrary extends StatelessWidget {
+  const _EmptyLibrary();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(VocaboSpacing.xxl),
+      decoration: BoxDecoration(
+        color: VocaboColors.surfaceContainerLow,
+        borderRadius: VocaboRadius.lg,
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.auto_stories_outlined,
+            size: 32,
+            color: VocaboColors.primary,
+          ),
+          const SizedBox(height: VocaboSpacing.md),
+          Text('Your library is empty', style: VocaboTypography.titleLg),
+          const SizedBox(height: VocaboSpacing.xs),
+          Text(
+            'Add your first word with "Add New Word", or press Control + '
+            'Option + Space anywhere on your Mac to translate one.',
+            textAlign: TextAlign.center,
+            style: VocaboTypography.bodyMd.copyWith(
+              color: VocaboColors.neutral,
+            ),
+          ),
+        ],
       ),
     );
   }

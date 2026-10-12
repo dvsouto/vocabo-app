@@ -80,9 +80,7 @@ class _DailyProgressCard extends StatelessWidget {
           ),
           const SizedBox(height: VocaboSpacing.sm),
           Text(
-            stats.currentStreak == 1
-                ? '1 Day Straight'
-                : '${stats.currentStreak} Days Straight',
+            '${countLabel(stats.currentStreak, 'day')} in a row',
             style: VocaboTypography.headlineSm,
           ),
           const SizedBox(height: VocaboSpacing.md),
@@ -100,9 +98,10 @@ class _MiniBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int activity(VocabularyActivityPoint point) => point.count + point.reviews;
     final maxCount = points.fold<int>(
       1,
-      (max, point) => math.max(max, point.count),
+      (max, point) => math.max(max, activity(point)),
     );
 
     return SizedBox(
@@ -110,22 +109,25 @@ class _MiniBarChart extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: points.map((point) {
-          final height = point.count == 0
+          final count = activity(point);
+          final height = count == 0
               ? 4.0
-              : math.max(10.0, point.count / maxCount * 48);
+              : math.max(10.0, count / maxCount * 48);
           return Expanded(
             child: Tooltip(
-              message: '${point.count} words',
+              message:
+                  '${countLabel(point.count, 'word')} added · '
+                  '${countLabel(point.reviews, 'card')} reviewed',
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   width: 16,
                   height: height,
                   decoration: BoxDecoration(
-                    color: point.count == 0
+                    color: count == 0
                         ? VocaboColors.neutral200
                         : VocaboColors.primary.withValues(
-                            alpha: 0.45 + point.count / maxCount * 0.55,
+                            alpha: 0.45 + count / maxCount * 0.55,
                           ),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(4),
@@ -149,7 +151,9 @@ class _SummaryCard extends StatelessWidget {
   String get _comparisonText {
     final change = stats.weeklyChangePercent;
     if (stats.wordsThisWeek == 0) {
-      return 'Add a word today to start building your weekly momentum.';
+      return stats.reviewsThisWeek == 0
+          ? 'Add a word or review your flashcards to start the week.'
+          : 'Add a new word to keep your library growing.';
     }
     if (stats.wordsLastWeek == 0) {
       return 'A fresh week is underway. Keep adding words to build a consistent rhythm.';
@@ -186,14 +190,22 @@ class _SummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'SUMMARY',
+                'THIS WEEK',
                 style: VocaboTypography.labelSm.copyWith(color: Colors.white),
               ),
               const SizedBox(height: VocaboSpacing.sm),
               Text(
-                '${stats.wordsThisWeek} Words learned this week',
+                countLabel(stats.wordsThisWeek, 'new word'),
                 style: VocaboTypography.headlineSm.copyWith(
                   color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: VocaboSpacing.xs),
+              Text(
+                '${countLabel(stats.reviewsThisWeek, 'flashcard')} reviewed',
+                style: VocaboTypography.bodyMd.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: VocaboSpacing.sm),

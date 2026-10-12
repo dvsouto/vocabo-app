@@ -88,4 +88,10 @@ void main() {
       expect(UserPlan.fromJson('enterprise'), UserPlan.free);
     });
   });
+
+  test('countLabel picks the singular or plural noun', () {
+    expect(countLabel(1, 'day'), '1 day');
+    expect(countLabel(0, 'day'), '0 days');
+    expect(countLabel(2, 'entry', plural: 'entries'), '2 entries');
+  });
 }

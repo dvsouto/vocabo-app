@@ -100,94 +100,108 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
     return Focus(
       focusNode: _focusNode,
       onKeyEvent: _handleKey,
-      child: Column(
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Short windows get the compact card so the answer buttons and
+          // the card actions stay visible without scrolling.
+          final compact = constraints.maxHeight < 600;
+          final gap = compact ? VocaboSpacing.sm : VocaboSpacing.lg;
+          return Column(
             children: [
-              IconButton(
-                tooltip: 'Back to flashcards (Esc)',
-                icon: const Icon(Icons.arrow_back, size: 20),
-                color: VocaboColors.neutral,
-                onPressed: notifier.leaveSession,
-                style: const ButtonStyle(
-                  mouseCursor: WidgetStatePropertyAll(SystemMouseCursors.click),
+              Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Back to flashcards (Esc)',
+                    icon: const Icon(Icons.arrow_back, size: 20),
+                    color: VocaboColors.neutral,
+                    onPressed: notifier.leaveSession,
+                    style: const ButtonStyle(
+                      mouseCursor: WidgetStatePropertyAll(
+                        SystemMouseCursors.click,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: VocaboSpacing.xs),
+                  Text('Review session', style: VocaboTypography.titleLg),
+                ],
+              ),
+              SizedBox(height: gap),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _contentWidth),
+                child: FlashcardProgress(
+                  current: state.evaluatedCount,
+                  total: state.totalCards,
                 ),
               ),
-              const SizedBox(width: VocaboSpacing.xs),
-              Text('Review session', style: VocaboTypography.titleLg),
-            ],
-          ),
-          const SizedBox(height: VocaboSpacing.lg),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _contentWidth),
-            child: FlashcardProgress(
-              current: state.evaluatedCount,
-              total: state.totalCards,
-            ),
-          ),
-          const SizedBox(height: VocaboSpacing.lg),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Text(
-              state.isFlipped
-                  ? 'How clear was it?'
-                  : card.flashcard.direction == FlashcardDirection.reverse
-                  ? 'Which English word means this?'
-                  : 'What does it mean to you?',
-              key: ValueKey(state.isFlipped),
-              style: VocaboTypography.bodyMd.copyWith(
-                color: VocaboColors.neutral,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          const SizedBox(height: VocaboSpacing.lg),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: _contentWidth),
-                  child: FlashcardCard(
-                    key: ValueKey(card.id),
-                    card: card,
-                    isFlipped: state.isFlipped,
-                    isExpanded: state.isExpanded,
-                    enabled: interactive,
-                    onFlip: notifier.flip,
-                    onToggleMeaning: notifier.toggleMeaning,
-                    onSetAside: () => _archiveCurrent(card),
+              SizedBox(height: gap),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  state.isFlipped
+                      ? 'How clear was it?'
+                      : card.flashcard.direction == FlashcardDirection.reverse
+                      ? 'Which English word means this?'
+                      : 'What does it mean to you?',
+                  key: ValueKey(state.isFlipped),
+                  style: VocaboTypography.bodyMd.copyWith(
+                    color: VocaboColors.neutral,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: VocaboSpacing.lg),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _contentWidth),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: state.isFlipped
-                  ? FlashcardEvaluationBar(
-                      key: ValueKey('evaluate-${card.id}'),
-                      selected: state.selectedEvaluation,
-                      enabled: interactive,
-                      onEvaluate: notifier.evaluate,
-                      stageIndex: card.flashcard.currentStageIndex,
-                      stages: stages,
-                    )
-                  : VocaboPrimaryButton(
-                      key: ValueKey('continue-${card.id}'),
-                      label: 'Continue',
-                      trailing: const VocaboKeyCap(
-                        'Space',
-                        color: VocaboColors.onPrimary,
+              SizedBox(height: gap),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: _contentWidth,
                       ),
-                      isExpanded: true,
-                      onPressed: interactive ? notifier.flip : null,
+                      child: FlashcardCard(
+                        key: ValueKey(card.id),
+                        card: card,
+                        compact: compact,
+                        isFlipped: state.isFlipped,
+                        isExpanded: state.isExpanded,
+                        enabled: interactive,
+                        onFlip: notifier.flip,
+                        onToggleMeaning: notifier.toggleMeaning,
+                        onSetAside: () => _archiveCurrent(card),
+                      ),
                     ),
-            ),
-          ),
-        ],
+                  ),
+                ),
+              ),
+              SizedBox(height: gap),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _contentWidth),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: state.isFlipped
+                      ? FlashcardEvaluationBar(
+                          key: ValueKey('evaluate-${card.id}'),
+                          selected: state.selectedEvaluation,
+                          enabled: interactive,
+                          onEvaluate: notifier.evaluate,
+                          stageIndex: card.flashcard.currentStageIndex,
+                          stages: stages,
+                          compact: compact,
+                        )
+                      : VocaboPrimaryButton(
+                          key: ValueKey('continue-${card.id}'),
+                          label: 'Continue',
+                          trailing: const VocaboKeyCap(
+                            'Space',
+                            color: VocaboColors.onPrimary,
+                          ),
+                          isExpanded: true,
+                          onPressed: interactive ? notifier.flip : null,
+                        ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

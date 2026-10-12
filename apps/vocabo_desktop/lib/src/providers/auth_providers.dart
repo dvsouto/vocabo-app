@@ -56,6 +56,16 @@ final logoutProvider = AsyncNotifierProvider<LogoutNotifier, void>(
   LogoutNotifier.new,
 );
 
+final deleteAccountProvider =
+    AsyncNotifierProvider<DeleteAccountNotifier, void>(
+      DeleteAccountNotifier.new,
+    );
+
+final passwordResetProvider =
+    AsyncNotifierProvider<PasswordResetNotifier, void>(
+      PasswordResetNotifier.new,
+    );
+
 class LoginNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
@@ -115,6 +125,47 @@ class SocialLoginNotifier extends AsyncNotifier<void> {
         name: credential.name,
         nativeLanguage: systemNativeLanguage(),
       );
+      _refreshAccount(ref);
+    });
+  }
+}
+
+class PasswordResetNotifier extends AsyncNotifier<void> {
+  @override
+  FutureOr<void> build() {}
+
+  /// Sets the new password with the emailed code and signs in.
+  Future<void> reset({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiClientProvider);
+      await api.auth.resetPassword(
+        email: email,
+        code: code,
+        password: password,
+      );
+      _refreshAccount(ref);
+    });
+  }
+}
+
+class DeleteAccountNotifier extends AsyncNotifier<void> {
+  @override
+  FutureOr<void> build() {}
+
+  /// Deletes the account for good and returns to the login screen.
+  Future<void> delete({String? password}) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiClientProvider);
+      await api.user.deleteAccount(password: password);
+      await api.auth.clearSession();
+      ref.read(sessionNoticeProvider.notifier).state =
+          'Your account and all of its data were deleted.';
       _refreshAccount(ref);
     });
   }

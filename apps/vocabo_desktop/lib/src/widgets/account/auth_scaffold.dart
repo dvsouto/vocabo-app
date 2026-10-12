@@ -39,10 +39,7 @@ class AuthScaffold extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: VocaboSpacing.xl),
               child: GlassCard(
                 width: width,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: VocaboSpacing.xl,
-                  vertical: VocaboSpacing.xxl,
-                ),
+                padding: const EdgeInsets.all(VocaboSpacing.xl),
                 child: child,
               ),
             ),

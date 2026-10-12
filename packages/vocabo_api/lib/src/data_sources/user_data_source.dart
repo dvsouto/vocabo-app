@@ -57,6 +57,26 @@ class UserDataSource {
     return User.fromJson(response.data!);
   }
 
+  Future<User> changePassword({
+    String? currentPassword,
+    required String newPassword,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/user/password',
+      data: {
+        if (currentPassword != null) 'current_password': currentPassword,
+        'new_password': newPassword,
+      },
+    );
+
+    return User.fromJson(response.data!);
+  }
+
+  Future<void> deleteAccount({String? password}) => _dio.delete<void>(
+    '/user/account',
+    data: {if (password != null) 'password': password},
+  );
+
   Future<List<UserSession>> listSessions() async {
     final response = await _dio.get<Map<String, dynamic>>('/user/sessions');
 

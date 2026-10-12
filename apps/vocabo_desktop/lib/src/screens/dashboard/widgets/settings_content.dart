@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/config/env.dart';
@@ -10,7 +12,11 @@ import 'package:vocabo_desktop/src/providers/spotlight_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
+import 'package:vocabo_desktop/src/legal/legal_documents.dart';
+import 'package:vocabo_desktop/src/widgets/account/change_password_dialog.dart';
+import 'package:vocabo_desktop/src/widgets/account/delete_account_dialog.dart';
 import 'package:vocabo_desktop/src/widgets/account/edit_profile_dialog.dart';
+import 'package:vocabo_desktop/src/widgets/legal/legal_document_dialog.dart';
 
 class SettingsContent extends ConsumerWidget {
   const SettingsContent({super.key});
@@ -42,7 +48,10 @@ class SettingsContent extends ConsumerWidget {
           // Settings cards grid
           LayoutBuilder(
             builder: (context, constraints) {
-              final cardWidth = (constraints.maxWidth - VocaboSpacing.md) / 2;
+              final columns = constraints.maxWidth >= 640 ? 2 : 1;
+              final cardWidth =
+                  (constraints.maxWidth - VocaboSpacing.md * (columns - 1)) /
+                  columns;
               return Wrap(
                 spacing: VocaboSpacing.md,
                 runSpacing: VocaboSpacing.md,
@@ -52,9 +61,12 @@ class SettingsContent extends ConsumerWidget {
                     child: _AccountInfoCard(userAsync: userAsync),
                   ),
                   SizedBox(width: cardWidth, child: const _SessionsCard()),
+                  SizedBox(
+                    width: cardWidth,
+                    child: _SecurityCard(user: userAsync.valueOrNull),
+                  ),
                   SizedBox(width: cardWidth, child: const _NotificationsCard()),
                   SizedBox(width: cardWidth, child: const _SpotlightCard()),
-                  SizedBox(width: cardWidth, child: const _StudyLanguageCard()),
                   SizedBox(width: cardWidth, child: const _SupportCard()),
                 ],
               );
@@ -120,6 +132,64 @@ class _ProfileSection extends StatelessWidget {
     final name = user?.name ?? '...';
     final stats = statsAsync.valueOrNull;
 
+    final identity = Row(
+      children: [
+        VocaboAvatar(name: name, imageUrl: Env.resolveUrl(user?.avatarUrl)),
+        const SizedBox(width: VocaboSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: VocaboTypography.titleLg,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: VocaboSpacing.sm),
+              Wrap(
+                spacing: VocaboSpacing.sm,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (user != null)
+                    _Badge(
+                      label: user.plan.label,
+                      color: user.plan == UserPlan.pro
+                          ? VocaboColors.primary
+                          : VocaboColors.neutral600,
+                    ),
+                  if (user != null)
+                    VocaboTextButton(
+                      label: 'Edit profile',
+                      onPressed: () => showEditProfileDialog(context, user),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    Widget figures({required bool alignEnd}) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _StatColumn(
+          alignEnd: alignEnd,
+          label: 'CURRENT STREAK',
+          value: stats == null ? '--' : countLabel(stats.currentStreak, 'day'),
+        ),
+        const SizedBox(width: VocaboSpacing.xl),
+        _StatColumn(
+          alignEnd: alignEnd,
+          label: 'REVIEWED THIS WEEK',
+          value: stats == null
+              ? '--'
+              : countLabel(stats.reviewsThisWeek, 'card'),
+        ),
+      ],
+    );
+
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
       decoration: BoxDecoration(
@@ -129,51 +199,25 @@ class _ProfileSection extends StatelessWidget {
           color: VocaboColors.outlineVariant.withValues(alpha: 0.3),
         ),
       ),
-      child: Row(
-        children: [
-          VocaboAvatar(name: name, imageUrl: Env.resolveUrl(user?.avatarUrl)),
-          const SizedBox(width: VocaboSpacing.md),
-
-          // Name, plan and edit
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 560) {
+            return Row(
               children: [
-                Text(name, style: VocaboTypography.titleLg),
-                const SizedBox(height: VocaboSpacing.sm),
-                Wrap(
-                  spacing: VocaboSpacing.sm,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if (user != null)
-                      _Badge(
-                        label: user.plan.label,
-                        color: user.plan == UserPlan.pro
-                            ? VocaboColors.primary
-                            : VocaboColors.neutral600,
-                      ),
-                    if (user != null)
-                      VocaboTextButton(
-                        label: 'Edit profile',
-                        onPressed: () => showEditProfileDialog(context, user),
-                      ),
-                  ],
-                ),
+                Expanded(child: identity),
+                figures(alignEnd: true),
               ],
-            ),
-          ),
-
-          // Stats
-          _StatColumn(
-            label: 'CURRENT STREAK',
-            value: stats == null ? '--' : '${stats.currentStreak} days',
-          ),
-          const SizedBox(width: VocaboSpacing.xl),
-          _StatColumn(
-            label: 'THIS WEEK',
-            value: stats == null ? '--' : '${stats.wordsThisWeek} words',
-          ),
-        ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              identity,
+              const SizedBox(height: VocaboSpacing.lg),
+              figures(alignEnd: false),
+            ],
+          );
+        },
       ),
     );
   }
@@ -205,15 +249,22 @@ class _Badge extends StatelessWidget {
 }
 
 class _StatColumn extends StatelessWidget {
-  const _StatColumn({required this.label, required this.value});
+  const _StatColumn({
+    required this.label,
+    required this.value,
+    this.alignEnd = true,
+  });
 
   final String label;
   final String value;
+  final bool alignEnd;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         Text(
           label,
@@ -260,7 +311,13 @@ class _SettingsCard extends StatelessWidget {
             children: [
               Icon(icon, size: 20, color: iconColor),
               const SizedBox(width: VocaboSpacing.sm),
-              Text(title, style: VocaboTypography.titleLg),
+              Expanded(
+                child: Text(
+                  title,
+                  style: VocaboTypography.titleLg,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: VocaboSpacing.lg),
@@ -483,8 +540,6 @@ class _NotificationsCard extends ConsumerStatefulWidget {
 }
 
 class _NotificationsCardState extends ConsumerState<_NotificationsCard> {
-  bool _weeklyReport = false;
-
   Future<void> _setDailyReminder(bool enabled) async {
     if (enabled) {
       final granted = await ref
@@ -538,26 +593,15 @@ class _NotificationsCardState extends ConsumerState<_NotificationsCard> {
       icon: Icons.notifications_outlined,
       iconColor: VocaboColors.secondary,
       title: 'Notifications',
-      child: Column(
-        children: [
-          _NotificationRow(
-            title: 'Daily Reminder',
-            subtitle:
-                'Flashcards waiting, every day at '
-                '${preferences.dailyReminderTime}',
-            actionLabel: 'Change time',
-            onAction: () => _pickTime(preferences.dailyReminderTime),
-            value: preferences.dailyReminderEnabled,
-            onChanged: _setDailyReminder,
-          ),
-          const SizedBox(height: VocaboSpacing.md),
-          _NotificationRow(
-            title: 'Weekly Progress Report',
-            subtitle: 'Summary of your learned words',
-            value: _weeklyReport,
-            onChanged: (v) => setState(() => _weeklyReport = v),
-          ),
-        ],
+      child: _NotificationRow(
+        title: 'Daily Reminder',
+        subtitle:
+            'Flashcards waiting, every day at '
+            '${preferences.dailyReminderTime}',
+        actionLabel: 'Change time',
+        onAction: () => _pickTime(preferences.dailyReminderTime),
+        value: preferences.dailyReminderEnabled,
+        onChanged: _setDailyReminder,
       ),
     );
   }
@@ -638,36 +682,44 @@ class _NotificationRow extends StatelessWidget {
   }
 }
 
-class _StudyLanguageCard extends StatelessWidget {
-  const _StudyLanguageCard();
+class _SecurityCard extends StatelessWidget {
+  const _SecurityCard({required this.user});
+
+  final User? user;
 
   @override
   Widget build(BuildContext context) {
+    final user = this.user;
+    final danger = Theme.of(context).colorScheme.error;
+
     return _SettingsCard(
-      icon: Icons.language,
-      iconColor: VocaboColors.tertiary,
-      title: 'Study Language',
-      child: Row(
+      icon: Icons.lock_outline,
+      iconColor: VocaboColors.primary,
+      title: 'Account security',
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('English (US)', style: VocaboTypography.bodyMd),
-                const SizedBox(height: 2),
-                Text(
-                  'Mastering 2,400+ vocabulary tokens',
-                  style: VocaboTypography.bodySm.copyWith(
-                    color: VocaboColors.neutral,
-                  ),
-                ),
-              ],
-            ),
+          _SupportRow(
+            label: (user?.hasPassword ?? true)
+                ? 'Change password'
+                : 'Set a password',
+            onTap: user == null
+                ? null
+                : () async {
+                    final saved = await showChangePasswordDialog(context, user);
+                    if (saved == true && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Password saved.')),
+                      );
+                    }
+                  },
           ),
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(foregroundColor: VocaboColors.primary),
-            child: const Text('Switch'),
+          const Divider(height: 1),
+          _SupportRow(
+            label: 'Delete account',
+            color: danger,
+            onTap: user == null
+                ? null
+                : () => showDeleteAccountDialog(context, user),
           ),
         ],
       ),
@@ -678,6 +730,32 @@ class _StudyLanguageCard extends StatelessWidget {
 class _SupportCard extends StatelessWidget {
   const _SupportCard();
 
+  Future<void> _contactSupport(BuildContext context) async {
+    final opened = await launchUrl(
+      Uri(
+        scheme: 'mailto',
+        path: supportEmail,
+        queryParameters: {'subject': 'Vocabo support'},
+      ),
+    );
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Write to us at $supportEmail.')),
+      );
+    }
+  }
+
+  Future<void> _showAbout(BuildContext context) async {
+    final info = await PackageInfo.fromPlatform();
+    if (!context.mounted) return;
+    showAboutDialog(
+      context: context,
+      applicationName: 'Vocabo',
+      applicationVersion: '${info.version} (${info.buildNumber})',
+      applicationLegalese: '© ${DateTime.now().year} Vocabo',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return _SettingsCard(
@@ -686,11 +764,27 @@ class _SupportCard extends StatelessWidget {
       title: 'Support',
       child: Column(
         children: [
-          _SupportRow(label: 'Help Center & FAQ', onTap: () {}),
+          _SupportRow(
+            label: 'Help & FAQ',
+            onTap: () => showLegalDocument(context, helpCenter),
+          ),
           const Divider(height: 1),
-          _SupportRow(label: 'Privacy Policy', onTap: () {}),
+          _SupportRow(
+            label: 'Contact support',
+            onTap: () => _contactSupport(context),
+          ),
           const Divider(height: 1),
-          _SupportRow(label: 'Submit Feedback', onTap: () {}),
+          _SupportRow(
+            label: 'Terms of Service',
+            onTap: () => showLegalDocument(context, termsOfService),
+          ),
+          const Divider(height: 1),
+          _SupportRow(
+            label: 'Privacy Policy',
+            onTap: () => showLegalDocument(context, privacyPolicy),
+          ),
+          const Divider(height: 1),
+          _SupportRow(label: 'About Vocabo', onTap: () => _showAbout(context)),
         ],
       ),
     );
@@ -698,10 +792,11 @@ class _SupportCard extends StatelessWidget {
 }
 
 class _SupportRow extends StatelessWidget {
-  const _SupportRow({required this.label, required this.onTap});
+  const _SupportRow({required this.label, required this.onTap, this.color});
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -712,7 +807,12 @@ class _SupportRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
           children: [
-            Expanded(child: Text(label, style: VocaboTypography.bodyMd)),
+            Expanded(
+              child: Text(
+                label,
+                style: VocaboTypography.bodyMd.copyWith(color: color),
+              ),
+            ),
             const Icon(
               Icons.chevron_right,
               size: 20,

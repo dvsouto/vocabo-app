@@ -28,12 +28,13 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
   void _onSwapLanguages() {
     final translationState = ref.read(translationNotifierProvider);
     ref.read(translationDirectionProvider.notifier).swapLanguages();
-    ref.read(translationNotifierProvider.notifier).onLanguagesSwapped(
+    ref
+        .read(translationNotifierProvider.notifier)
+        .onLanguagesSwapped(
           oldInputText: translationState.inputText,
           oldTranslatedText: translationState.translatedText,
         );
-    _inputController.text =
-        translationState.translatedText ?? '';
+    _inputController.text = translationState.translatedText ?? '';
   }
 
   void _onSaveToVocabulary() {
@@ -77,10 +78,8 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
           ),
-          error: (_, _) => _buildContent(
-            const TranslationDirection(),
-            translationState,
-          ),
+          error: (_, _) =>
+              _buildContent(const TranslationDirection(), translationState),
         );
       },
       loading: () => const Center(
@@ -97,50 +96,50 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
   Widget _buildSetupRequired() {
     return Center(
       child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: VocaboColors.primary.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: VocaboColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.translate,
+              size: 28,
+              color: VocaboColors.primary,
+            ),
           ),
-          child: const Icon(
-            Icons.translate,
-            size: 28,
-            color: VocaboColors.primary,
+          const SizedBox(height: VocaboSpacing.md),
+          Text(
+            'Translation Setup Required',
+            style: VocaboTypography.bodyMd.copyWith(
+              fontWeight: FontWeight.w600,
+              color: VocaboColors.onSurface,
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: VocaboSpacing.md),
-        Text(
-          'Translation Setup Required',
-          style: VocaboTypography.bodyMd.copyWith(
-            fontWeight: FontWeight.w600,
-            color: VocaboColors.onSurface,
+          const SizedBox(height: VocaboSpacing.xs),
+          Text(
+            'Download translation languages in\nSystem Settings to enable offline translation.',
+            style: VocaboTypography.bodySm.copyWith(
+              color: VocaboColors.neutral,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: VocaboSpacing.xs),
-        Text(
-          'Download translation languages in\nSystem Settings to enable offline translation.',
-          style: VocaboTypography.bodySm.copyWith(
-            color: VocaboColors.neutral,
+          const SizedBox(height: VocaboSpacing.lg),
+          VocaboPrimaryButton(
+            label: 'Open Settings',
+            trailing: const Icon(
+              Icons.open_in_new,
+              size: 16,
+              color: VocaboColors.onPrimary,
+            ),
+            onPressed: _onOpenTranslationSettings,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: VocaboSpacing.lg),
-        VocaboPrimaryButton(
-          label: 'Open Settings',
-          trailing: const Icon(
-            Icons.open_in_new,
-            size: 16,
-            color: VocaboColors.onPrimary,
-          ),
-          onPressed: _onOpenTranslationSettings,
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
@@ -197,15 +196,19 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
                   maxLines: 3,
                   minLines: 2,
                   maxLength: 255,
-                  buildCounter: (_, {required currentLength, required isFocused, required maxLength}) => null,
+                  buildCounter:
+                      (
+                        _, {
+                        required currentLength,
+                        required isFocused,
+                        required maxLength,
+                      }) => null,
                   style: VocaboTypography.bodyMd,
                   decoration: InputDecoration(
                     hintText: 'Enter text to translate...',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(0),
-                      borderSide: const BorderSide(
-                        color: Colors.transparent,
-                      ),
+                      borderSide: const BorderSide(color: Colors.transparent),
                     ),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
@@ -215,14 +218,10 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
                     filled: true,
                     fillColor: VocaboColors.surfaceContainerLow,
                     enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                      ),
+                      borderSide: BorderSide(color: Colors.transparent),
                     ),
                     focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                      ),
+                      borderSide: BorderSide(color: Colors.transparent),
                     ),
                     hoverColor: Colors.transparent,
                     focusColor: Colors.transparent,
@@ -269,31 +268,6 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
                           color: VocaboColors.primary,
                         ),
                       ),
-                      const Spacer(),
-                      // Audio button placeholder - disabled until API provides audio
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: null,
-                          customBorder: const CircleBorder(),
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: VocaboColors.surfaceContainerHigh
-                                  .withValues(alpha: 0.5),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.volume_up,
-                              size: 14,
-                              color: VocaboColors.primary
-                                  .withValues(alpha: 0.4),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: VocaboSpacing.xs),
                     ],
                   ),
                 ),
@@ -318,8 +292,9 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
         VocaboPrimaryButton(
           label: 'Save to Vocabulary',
           isExpanded: true,
-          onPressed:
-              translationState.hasTranslation ? _onSaveToVocabulary : null,
+          onPressed: translationState.hasTranslation
+              ? _onSaveToVocabulary
+              : null,
         ),
       ],
     );
@@ -342,9 +317,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
     if (state.errorMessage != null) {
       return Text(
         state.errorMessage!,
-        style: VocaboTypography.bodySm.copyWith(
-          color: Colors.red,
-        ),
+        style: VocaboTypography.bodySm.copyWith(color: Colors.red),
       );
     }
 
@@ -375,9 +348,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
     if (state.inputText.isEmpty) {
       return Text(
         'Translation will appear here',
-        style: VocaboTypography.bodySm.copyWith(
-          color: VocaboColors.neutral,
-        ),
+        style: VocaboTypography.bodySm.copyWith(color: VocaboColors.neutral),
       );
     }
 
