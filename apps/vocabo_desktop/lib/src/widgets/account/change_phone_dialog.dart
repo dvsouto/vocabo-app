@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/auth/device_info.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 import 'package:vocabo_desktop/src/widgets/account/code_verification_panel.dart';
@@ -45,11 +46,11 @@ class _ChangePhoneDialogState extends ConsumerState<_ChangePhoneDialog> {
   void _continue() {
     final e164 = toE164(_country.isoCode, _phoneController.text);
     if (e164 == null) {
-      setState(() => _phoneError = 'Enter a valid mobile number.');
+      setState(() => _phoneError = context.l10n.authInvalidPhone);
       return;
     }
     if (e164 == widget.user?.phoneNumber) {
-      setState(() => _phoneError = 'This is already your number.');
+      setState(() => _phoneError = context.l10n.authPhoneAlreadyYours);
       return;
     }
     setState(() => _newPhone = e164);
@@ -65,11 +66,14 @@ class _ChangePhoneDialogState extends ConsumerState<_ChangePhoneDialog> {
   Widget build(BuildContext context) {
     final api = ref.read(apiClientProvider);
     final newPhone = _newPhone;
+    final l10n = context.l10n;
 
     return AlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       title: Text(
-        newPhone == null ? 'Change phone number' : 'Confirm your new number',
+        newPhone == null
+            ? l10n.authChangePhoneTitle
+            : l10n.authConfirmNewPhoneTitle,
       ),
       content: SizedBox(
         width: 400,
@@ -79,7 +83,7 @@ class _ChangePhoneDialogState extends ConsumerState<_ChangePhoneDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'We will send a code to the new number to confirm it.',
+                    l10n.authChangePhoneIntro,
                     style: VocaboTypography.bodyMd.copyWith(
                       color: VocaboColors.neutral600,
                     ),
@@ -87,6 +91,10 @@ class _ChangePhoneDialogState extends ConsumerState<_ChangePhoneDialog> {
                   const SizedBox(height: VocaboSpacing.md),
                   VocaboPhoneField(
                     country: _country,
+                    hint: l10n.authPhoneNumberHint,
+                    countryPickerTitle: l10n.authCountryPickerTitle,
+                    countrySearchHint: l10n.authCountrySearchHint,
+                    noCountryFoundText: l10n.authNoCountryFound,
                     controller: _phoneController,
                     autofocus: true,
                     errorText: _phoneError,
@@ -113,14 +121,14 @@ class _ChangePhoneDialogState extends ConsumerState<_ChangePhoneDialog> {
       ),
       actions: [
         VocaboTextButton(
-          label: 'Cancel',
+          label: l10n.commonCancel,
           onPressed: () => Navigator.of(context).pop(false),
         ),
         if (newPhone == null)
-          VocaboPrimaryButton(label: 'Send code', onPressed: _continue)
+          VocaboPrimaryButton(label: l10n.authSendCode, onPressed: _continue)
         else
           VocaboTextButton(
-            label: 'Use another number',
+            label: l10n.authUseAnotherNumber,
             onPressed: () => setState(() => _newPhone = null),
           ),
       ],

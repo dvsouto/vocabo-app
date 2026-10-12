@@ -16,6 +16,8 @@ import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/app.dart';
 import 'package:vocabo_desktop/src/config/env.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
@@ -155,6 +157,7 @@ void main() {
 
   setUpAll(() async {
     initLogger(verbose: false);
+    await InterfaceLanguageStore().write('en');
     await windowManager.ensureInitialized();
     await windowManager.setSize(const Size(1280, 860));
     await windowManager.center();
@@ -415,6 +418,9 @@ Future<void> _launchTrayPanel(WidgetTester tester) async {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: VocaboTheme.light(),
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             backgroundColor: VocaboColors.surface,
             body: Center(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/widgets/vocabulary_list_item.dart';
 
 class VocabularyList extends StatelessWidget {
@@ -57,7 +58,7 @@ class VocabularyList extends StatelessWidget {
                   SizedBox(
                     width: 200,
                     child: Text(
-                      'WORD',
+                      context.l10n.libraryColumnWord,
                       style: VocaboTypography.labelSm.copyWith(
                         color: VocaboColors.neutral,
                       ),
@@ -65,14 +66,14 @@ class VocabularyList extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      'MEANING & USAGE',
+                      context.l10n.libraryColumnMeaning,
                       style: VocaboTypography.labelSm.copyWith(
                         color: VocaboColors.neutral,
                       ),
                     ),
                   ),
                   Text(
-                    'ADDED',
+                    context.l10n.libraryColumnAdded,
                     style: VocaboTypography.labelSm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -114,6 +115,7 @@ class _EmptyLibrary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.xxl),
       decoration: BoxDecoration(
@@ -128,11 +130,10 @@ class _EmptyLibrary extends StatelessWidget {
             color: VocaboColors.primary,
           ),
           const SizedBox(height: VocaboSpacing.md),
-          Text('Your library is empty', style: VocaboTypography.titleLg),
+          Text(l10n.libraryEmptyTitle, style: VocaboTypography.titleLg),
           const SizedBox(height: VocaboSpacing.xs),
           Text(
-            'Add your first word with "Add New Word", or press Control + '
-            'Option + Space anywhere on your Mac to translate one.',
+            l10n.libraryEmptyBody(l10n.addWordTitle),
             textAlign: TextAlign.center,
             style: VocaboTypography.bodyMd.copyWith(
               color: VocaboColors.neutral,

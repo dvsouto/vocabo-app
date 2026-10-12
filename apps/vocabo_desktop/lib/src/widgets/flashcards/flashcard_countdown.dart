@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+
 class FlashcardCountdown extends StatefulWidget {
   const FlashcardCountdown({
     super.key,
@@ -62,7 +64,7 @@ class _FlashcardCountdownState extends State<FlashcardCountdown> {
   @override
   Widget build(BuildContext context) {
     return Text(
-      _countdown.label,
+      context.l10n.countdownLabel(_countdown),
       style: (widget.style ?? VocaboTypography.displayMd).copyWith(
         color: VocaboColors.primary,
         fontFeatures: const [FontFeature.tabularFigures()],

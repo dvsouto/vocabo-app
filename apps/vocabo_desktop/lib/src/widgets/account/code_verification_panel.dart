@@ -4,16 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
-String verificationErrorMessage(Object error) => switch (error) {
-  AppException(code: 'invalid_code') =>
-    'That code is not right. Check it and try again.',
-  AppException(code: 'expired_code') =>
-    'This code has expired. Send a new one.',
-  AppException(code: 'phone_missing') => 'Add a phone number first.',
-  NetworkException() => 'No connection. Check your internet and try again.',
-  AppException(:final message) => message,
-  _ => 'Something went wrong. Please try again.',
-};
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+
+String verificationErrorMessage(AppLocalizations l10n, Object error) =>
+    switch (error) {
+      AppException(code: 'invalid_code') => l10n.authCodeInvalid,
+      AppException(code: 'expired_code') => l10n.authCodeExpired,
+      AppException(code: 'phone_missing') => l10n.authPhoneMissing,
+      NetworkException() => l10n.commonNoConnection,
+      AppException(:final message) => message,
+      _ => l10n.commonSomethingWrong,
+    };
 
 /// Sends a 6-digit code and confirms it, with a resend countdown. Shared by
 /// the account confirmation screen and the phone change dialog.
@@ -82,7 +83,9 @@ class _CodeVerificationPanelState extends State<CodeVerificationPanel> {
       if (!mounted) return;
       _startCountdown(e.retryAfter ?? const Duration(seconds: 30));
     } catch (e) {
-      if (mounted) setState(() => _error = verificationErrorMessage(e));
+      if (mounted) {
+        setState(() => _error = verificationErrorMessage(context.l10n, e));
+      }
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -98,7 +101,7 @@ class _CodeVerificationPanelState extends State<CodeVerificationPanel> {
     } catch (e) {
       if (!mounted) return;
       _codeController.clear();
-      setState(() => _error = verificationErrorMessage(e));
+      setState(() => _error = verificationErrorMessage(context.l10n, e));
     } finally {
       if (mounted) setState(() => _confirming = false);
     }
@@ -109,6 +112,7 @@ class _CodeVerificationPanelState extends State<CodeVerificationPanel> {
     final dispatch = _dispatch;
     final minutes = _resendIn ~/ 60;
     final seconds = (_resendIn % 60).toString().padLeft(2, '0');
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,8 +120,8 @@ class _CodeVerificationPanelState extends State<CodeVerificationPanel> {
       children: [
         Text(
           dispatch == null
-              ? (_sending ? 'Sending your code…' : 'We will send you a code.')
-              : 'Enter the 6-digit code sent to ${dispatch.sentTo}.',
+              ? (_sending ? l10n.authSendingCode : l10n.authWillSendCode)
+              : l10n.authCodeSentTo(dispatch.sentTo),
           style: VocaboTypography.bodyMd.copyWith(
             color: VocaboColors.neutral600,
           ),
@@ -142,8 +146,7 @@ class _CodeVerificationPanelState extends State<CodeVerificationPanel> {
               borderRadius: VocaboRadius.sm,
             ),
             child: Text(
-              'Delivery is simulated while SMS and email are not set up. '
-              'Your code is $debugCode.',
+              l10n.authSimulatedDelivery(debugCode),
               style: VocaboTypography.bodySm.copyWith(
                 color: VocaboColors.primary800,
               ),
@@ -161,14 +164,16 @@ class _CodeVerificationPanelState extends State<CodeVerificationPanel> {
               )
             else if (_resendIn > 0)
               Text(
-                'Resend code in $minutes:$seconds',
+                l10n.authResendCodeIn('$minutes:$seconds'),
                 style: VocaboTypography.bodySm.copyWith(
                   color: VocaboColors.neutral,
                 ),
               )
             else
               VocaboTextButton(
-                label: dispatch == null ? 'Send code' : 'Resend code',
+                label: dispatch == null
+                    ? l10n.authSendCode
+                    : l10n.authResendCode,
                 onPressed: _send,
               ),
           ],

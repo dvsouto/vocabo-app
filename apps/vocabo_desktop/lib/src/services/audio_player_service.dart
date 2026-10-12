@@ -42,8 +42,13 @@ class AudioPlayerService extends ChangeNotifier {
   AudioPlayerService({
     required VocabularyAudioRepository audioRepository,
     required AudioCacheService cacheService,
+    required String Function() voice,
   })  : _audioRepository = audioRepository,
-        _cacheService = cacheService;
+        _cacheService = cacheService,
+        _voice = voice;
+
+  /// The user's preferred voice gender, read on every play.
+  final String Function() _voice;
 
   AudioPlayerState get state => _state;
 
@@ -69,19 +74,21 @@ class AudioPlayerService extends ChangeNotifier {
     ));
 
     try {
-      final cached = await _cacheService.getCached(contentHash);
+      final voice = _voice();
+      final cached = await _cacheService.getCached(contentHash, voice: voice);
       String audioPath;
 
       if (cached != null) {
         audioPath = cached.path;
       } else {
         final response = await _audioRepository
-            .getAudio(vocabularyId: vocabularyId, type: type)
+            .getAudio(vocabularyId: vocabularyId, type: type, voice: voice)
             .timeout(const Duration(seconds: 15));
 
         final file = await _cacheService.cacheAudio(
           contentHash,
           response.bytes,
+          voice: voice,
           contentType: response.contentType,
         );
         audioPath = file.path;

@@ -71,13 +71,17 @@ class ErrorInterceptor extends Interceptor {
     return null;
   }
 
+  /// Validation errors come as lists of messages; other details (such as
+  /// plan limits) as single values, kept as one-item lists.
   Map<String, List<String>> _extractDetails(dynamic data) {
     final details = _field<Map<String, dynamic>>(data, 'details');
     if (details == null) return const {};
     return {
       for (final entry in details.entries)
         if (entry.value is List)
-          entry.key: (entry.value as List).whereType<String>().toList(),
+          entry.key: (entry.value as List).whereType<String>().toList()
+        else if (entry.value != null)
+          entry.key: ['${entry.value}'],
     };
   }
 }

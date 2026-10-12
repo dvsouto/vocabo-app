@@ -4,6 +4,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/pro/plan_card.dart';
+import 'package:vocabo_desktop/src/legal/legal_documents_for.dart';
 import 'package:vocabo_desktop/src/config/env.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
@@ -12,10 +15,13 @@ import 'package:vocabo_desktop/src/providers/spotlight_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/legal/legal_documents.dart';
 import 'package:vocabo_desktop/src/widgets/account/change_password_dialog.dart';
 import 'package:vocabo_desktop/src/widgets/account/delete_account_dialog.dart';
 import 'package:vocabo_desktop/src/widgets/account/edit_profile_dialog.dart';
+import 'package:vocabo_desktop/src/widgets/account/native_language_field.dart';
 import 'package:vocabo_desktop/src/widgets/legal/legal_document_dialog.dart';
 
 class SettingsContent extends ConsumerWidget {
@@ -25,16 +31,17 @@ class SettingsContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProfileProvider);
     final statsAsync = ref.watch(vocabularyStatsProvider);
+    final l10n = context.l10n;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(VocaboSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Account Settings', style: VocaboTypography.headlineSm),
+          Text(l10n.settingsTitle, style: VocaboTypography.headlineSm),
           const SizedBox(height: VocaboSpacing.xs),
           Text(
-            'Curate your learning environment and profile',
+            l10n.settingsSubtitle,
             style: VocaboTypography.bodyMd.copyWith(
               color: VocaboColors.neutral,
             ),
@@ -60,6 +67,27 @@ class SettingsContent extends ConsumerWidget {
                     width: cardWidth,
                     child: _AccountInfoCard(userAsync: userAsync),
                   ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: PlanCard(
+                      cardBuilder:
+                          ({
+                            required icon,
+                            required iconColor,
+                            required title,
+                            required child,
+                          }) => _SettingsCard(
+                            icon: icon,
+                            iconColor: iconColor,
+                            title: title,
+                            child: child,
+                          ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: _LanguageCard(user: userAsync.valueOrNull),
+                  ),
                   SizedBox(width: cardWidth, child: const _SessionsCard()),
                   SizedBox(
                     width: cardWidth,
@@ -80,7 +108,7 @@ class SettingsContent extends ConsumerWidget {
             child: TextButton.icon(
               onPressed: () => _confirmSignOut(context, ref),
               icon: const Icon(Icons.logout, size: 18),
-              label: const Text('Sign Out'),
+              label: Text(l10n.settingsSignOut),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.red,
                 padding: const EdgeInsets.symmetric(
@@ -99,12 +127,12 @@ class SettingsContent extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text(ctx.l10n.settingsSignOut),
+        content: Text(ctx.l10n.settingsSignOutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(ctx.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () {
@@ -112,7 +140,7 @@ class SettingsContent extends ConsumerWidget {
               ref.read(logoutProvider.notifier).logout();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Sign Out'),
+            child: Text(ctx.l10n.settingsSignOut),
           ),
         ],
       ),
@@ -131,6 +159,7 @@ class _ProfileSection extends StatelessWidget {
     final user = userAsync.valueOrNull;
     final name = user?.name ?? '...';
     final stats = statsAsync.valueOrNull;
+    final l10n = context.l10n;
 
     final identity = Row(
       children: [
@@ -153,14 +182,14 @@ class _ProfileSection extends StatelessWidget {
                 children: [
                   if (user != null)
                     _Badge(
-                      label: user.plan.label,
+                      label: l10n.planLabel(user.plan),
                       color: user.plan == UserPlan.pro
                           ? VocaboColors.primary
                           : VocaboColors.neutral600,
                     ),
                   if (user != null)
                     VocaboTextButton(
-                      label: 'Edit profile',
+                      label: l10n.settingsEditProfile,
                       onPressed: () => showEditProfileDialog(context, user),
                     ),
                 ],
@@ -176,16 +205,14 @@ class _ProfileSection extends StatelessWidget {
       children: [
         _StatColumn(
           alignEnd: alignEnd,
-          label: 'CURRENT STREAK',
-          value: stats == null ? '--' : countLabel(stats.currentStreak, 'day'),
+          label: l10n.settingsCurrentStreak,
+          value: stats == null ? '--' : l10n.countDays(stats.currentStreak),
         ),
         const SizedBox(width: VocaboSpacing.xl),
         _StatColumn(
           alignEnd: alignEnd,
-          label: 'REVIEWED THIS WEEK',
-          value: stats == null
-              ? '--'
-              : countLabel(stats.reviewsThisWeek, 'card'),
+          label: l10n.settingsReviewedThisWeek,
+          value: stats == null ? '--' : l10n.countCards(stats.reviewsThisWeek),
         ),
       ],
     );
@@ -337,36 +364,32 @@ class _AccountInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = userAsync.valueOrNull;
     final phone = user?.phoneNumber;
-    final language = NativeLanguage.byCode(user?.nativeLanguage ?? '');
     final providers = user?.providers ?? const <String>[];
+    final l10n = context.l10n;
 
     return _SettingsCard(
       icon: Icons.person_outline,
       iconColor: VocaboColors.primary,
-      title: 'Account Info',
+      title: l10n.settingsAccountInfo,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _InfoRow(
-            label: 'EMAIL ADDRESS',
+            label: l10n.settingsEmailAddress,
             value: user?.email ?? '...',
             verified: user?.emailVerified ?? false,
           ),
           _InfoRow(
-            label: 'PHONE',
+            label: l10n.settingsPhone,
             value: phone == null
-                ? 'Not added'
+                ? l10n.settingsPhoneNotAdded
                 : formatPhoneInternational(phone, isoHint: user?.phoneCountry),
             verified: user?.phoneVerified ?? false,
           ),
           _InfoRow(
-            label: 'NATIVE LANGUAGE',
-            value: language?.displayName ?? '...',
-          ),
-          _InfoRow(
-            label: 'SIGN IN',
+            label: l10n.settingsSignInMethods,
             value: [
-              if (user?.hasPassword ?? true) 'Password',
+              if (user?.hasPassword ?? true) l10n.settingsSignInPassword,
               for (final provider in providers)
                 provider == 'apple' ? 'Apple' : 'Google',
             ].join(' · '),
@@ -410,8 +433,8 @@ class _InfoRow extends StatelessWidget {
               Flexible(child: Text(value, style: VocaboTypography.bodyMd)),
               if (verified) ...[
                 const SizedBox(width: VocaboSpacing.xs),
-                const Tooltip(
-                  message: 'Verified',
+                Tooltip(
+                  message: context.l10n.settingsVerified,
                   child: Icon(
                     Icons.verified_outlined,
                     size: 14,
@@ -430,12 +453,14 @@ class _InfoRow extends StatelessWidget {
 class _SessionsCard extends ConsumerWidget {
   const _SessionsCard();
 
-  String _lastSeen(DateTime moment) {
+  String _lastSeen(AppLocalizations l10n, DateTime moment) {
     final elapsed = DateTime.now().difference(moment.toLocal());
-    if (elapsed.inMinutes < 5) return 'Active now';
-    if (elapsed.inHours < 1) return '${elapsed.inMinutes} min ago';
-    if (elapsed.inDays < 1) return '${elapsed.inHours} h ago';
-    return '${elapsed.inDays} d ago';
+    if (elapsed.inMinutes < 5) return l10n.settingsLastSeenNow;
+    if (elapsed.inHours < 1) {
+      return l10n.settingsLastSeenMinutes(elapsed.inMinutes);
+    }
+    if (elapsed.inDays < 1) return l10n.settingsLastSeenHours(elapsed.inHours);
+    return l10n.settingsLastSeenDays(elapsed.inDays);
   }
 
   Future<void> _signOut(
@@ -449,7 +474,7 @@ class _SessionsCard extends ConsumerWidget {
       appLogger.handle(e, st, 'Session revoke failed');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not sign out that device.')),
+          SnackBar(content: Text(context.l10n.settingsSignOutDeviceFailed)),
         );
       }
     }
@@ -459,11 +484,12 @@ class _SessionsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessions = ref.watch(userSessionsProvider);
+    final l10n = context.l10n;
 
     return _SettingsCard(
       icon: Icons.devices_outlined,
       iconColor: VocaboColors.secondary,
-      title: 'Signed-in devices',
+      title: l10n.settingsDevicesTitle,
       child: sessions.when(
         loading: () => const SizedBox(
           height: 24,
@@ -471,7 +497,7 @@ class _SessionsCard extends ConsumerWidget {
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
         error: (_, _) => VocaboTextButton(
-          label: 'Could not load devices. Retry',
+          label: l10n.settingsDevicesLoadFailed,
           onPressed: () => ref.invalidate(userSessionsProvider),
         ),
         data: (list) => Column(
@@ -493,7 +519,7 @@ class _SessionsCard extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            session.deviceName ?? 'Unknown device',
+                            session.deviceName ?? l10n.settingsUnknownDevice,
                             style: VocaboTypography.bodyMd.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -501,8 +527,8 @@ class _SessionsCard extends ConsumerWidget {
                           ),
                           Text(
                             session.current
-                                ? 'This device'
-                                : _lastSeen(session.lastSeenAt),
+                                ? l10n.settingsThisDevice
+                                : _lastSeen(l10n, session.lastSeenAt),
                             style: VocaboTypography.bodySm.copyWith(
                               color: VocaboColors.neutral,
                             ),
@@ -512,15 +538,17 @@ class _SessionsCard extends ConsumerWidget {
                     ),
                     if (!session.current)
                       VocaboTextButton(
-                        label: 'Sign out',
+                        label: l10n.settingsSignOutDevice,
                         onPressed: () => _signOut(context, ref, session),
                       ),
                   ],
                 ),
               ),
             Text(
-              'Up to $maxActiveSessions devices stay signed in. Signing in on '
-              'another one signs out the oldest.',
+              l10n.settingsDevicesLimit(
+                ref.watch(planStatusProvider).valueOrNull?.limits.devices ??
+                    maxActiveSessions,
+              ),
               style: VocaboTypography.bodySm.copyWith(
                 color: VocaboColors.neutral,
               ),
@@ -548,12 +576,7 @@ class _NotificationsCardState extends ConsumerState<_NotificationsCard> {
       if (!granted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Allow notifications for Vocabo in System Settings to get '
-                'daily reminders.',
-              ),
-            ),
+            SnackBar(content: Text(context.l10n.settingsNotificationsDenied)),
           );
         }
         return;
@@ -588,17 +611,18 @@ class _NotificationsCardState extends ConsumerState<_NotificationsCard> {
     final preferences =
         ref.watch(userPreferencesProvider).valueOrNull ??
         const UserPreferences();
+    final l10n = context.l10n;
 
     return _SettingsCard(
       icon: Icons.notifications_outlined,
       iconColor: VocaboColors.secondary,
-      title: 'Notifications',
+      title: l10n.settingsNotificationsTitle,
       child: _NotificationRow(
-        title: 'Daily Reminder',
-        subtitle:
-            'Flashcards waiting, every day at '
-            '${preferences.dailyReminderTime}',
-        actionLabel: 'Change time',
+        title: l10n.settingsDailyReminder,
+        subtitle: l10n.settingsDailyReminderSubtitle(
+          preferences.dailyReminderTime,
+        ),
+        actionLabel: l10n.settingsChangeTime,
         onAction: () => _pickTime(preferences.dailyReminderTime),
         value: preferences.dailyReminderEnabled,
         onChanged: _setDailyReminder,
@@ -613,14 +637,15 @@ class _SpotlightCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final enabled = ref.watch(spotlightEnabledProvider).valueOrNull ?? true;
+    final l10n = context.l10n;
 
     return _SettingsCard(
       icon: Icons.translate,
       iconColor: VocaboColors.primary,
-      title: 'Shortcuts',
+      title: l10n.settingsShortcutsTitle,
       child: _NotificationRow(
-        title: 'Translation spotlight',
-        subtitle: 'Press Control + Option + Space anywhere to translate a word',
+        title: l10n.settingsSpotlightTitle,
+        subtitle: l10n.settingsSpotlightSubtitle,
         value: enabled,
         onChanged: (value) =>
             ref.read(spotlightEnabledProvider.notifier).setEnabled(value),
@@ -682,6 +707,118 @@ class _NotificationRow extends StatelessWidget {
   }
 }
 
+class _LanguageCard extends ConsumerStatefulWidget {
+  const _LanguageCard({required this.user});
+
+  final User? user;
+
+  @override
+  ConsumerState<_LanguageCard> createState() => _LanguageCardState();
+}
+
+class _LanguageCardState extends ConsumerState<_LanguageCard> {
+  bool _savingNative = false;
+
+  Future<void> _setNativeLanguage(String code) async {
+    setState(() => _savingNative = true);
+    try {
+      await ref
+          .read(apiClientProvider)
+          .user
+          .updateProfile(nativeLanguage: code);
+      ref.invalidate(userProfileProvider);
+    } catch (e, st) {
+      appLogger.handle(e, st, 'Native language update failed');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.settingsLanguageChangeFailed)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingNative = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = widget.user;
+    final interfaceLanguage =
+        ref.watch(interfaceLanguageProvider).valueOrNull ?? 'en';
+    final l10n = context.l10n;
+
+    return _SettingsCard(
+      icon: Icons.language,
+      iconColor: VocaboColors.tertiary,
+      title: l10n.settingsLanguageTitle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.settingsAppLanguage,
+            style: VocaboTypography.labelSm.copyWith(
+              color: VocaboColors.neutral,
+            ),
+          ),
+          const SizedBox(height: VocaboSpacing.xs),
+          NativeLanguageField.interface(
+            value: interfaceLanguage,
+            onChanged: (code) =>
+                ref.read(interfaceLanguageProvider.notifier).select(code),
+          ),
+          const SizedBox(height: VocaboSpacing.md),
+          Text(
+            l10n.settingsNativeLanguage,
+            style: VocaboTypography.labelSm.copyWith(
+              color: VocaboColors.neutral,
+            ),
+          ),
+          const SizedBox(height: VocaboSpacing.xs),
+          if (user != null)
+            NativeLanguageField(
+              value:
+                  NativeLanguage.byCode(user.nativeLanguage)?.code ??
+                  defaultNativeLanguage,
+              enabled: !_savingNative,
+              onChanged: _setNativeLanguage,
+            ),
+          const SizedBox(height: VocaboSpacing.xs),
+          Text(
+            l10n.settingsNativeLanguageHint,
+            style: VocaboTypography.bodySm.copyWith(
+              color: VocaboColors.neutral,
+            ),
+          ),
+          const SizedBox(height: VocaboSpacing.md),
+          Text(
+            l10n.settingsVoiceLabel,
+            style: VocaboTypography.labelSm.copyWith(
+              color: VocaboColors.neutral,
+            ),
+          ),
+          const SizedBox(height: VocaboSpacing.xs),
+          SegmentedButton<String>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(
+                value: 'female',
+                label: Text(l10n.settingsVoiceFemale),
+              ),
+              ButtonSegment(value: 'male', label: Text(l10n.settingsVoiceMale)),
+            ],
+            selected: {
+              ref.watch(userPreferencesProvider).valueOrNull?.voiceGender ??
+                  'female',
+            },
+            onSelectionChanged: (selection) => ref
+                .read(userPreferencesProvider.notifier)
+                .setVoiceGender(selection.first),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SecurityCard extends StatelessWidget {
   const _SecurityCard({required this.user});
 
@@ -691,31 +828,32 @@ class _SecurityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = this.user;
     final danger = Theme.of(context).colorScheme.error;
+    final l10n = context.l10n;
 
     return _SettingsCard(
       icon: Icons.lock_outline,
       iconColor: VocaboColors.primary,
-      title: 'Account security',
+      title: l10n.settingsSecurityTitle,
       child: Column(
         children: [
           _SupportRow(
             label: (user?.hasPassword ?? true)
-                ? 'Change password'
-                : 'Set a password',
+                ? l10n.settingsChangePassword
+                : l10n.settingsSetPassword,
             onTap: user == null
                 ? null
                 : () async {
                     final saved = await showChangePasswordDialog(context, user);
                     if (saved == true && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Password saved.')),
+                        SnackBar(content: Text(l10n.settingsPasswordSaved)),
                       );
                     }
                   },
           ),
           const Divider(height: 1),
           _SupportRow(
-            label: 'Delete account',
+            label: l10n.settingsDeleteAccount,
             color: danger,
             onTap: user == null
                 ? null
@@ -735,12 +873,12 @@ class _SupportCard extends StatelessWidget {
       Uri(
         scheme: 'mailto',
         path: supportEmail,
-        queryParameters: {'subject': 'Vocabo support'},
+        queryParameters: {'subject': context.l10n.settingsSupportEmailSubject},
       ),
     );
     if (!opened && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Write to us at $supportEmail.')),
+        SnackBar(content: Text(context.l10n.settingsWriteToUs(supportEmail))),
       );
     }
   }
@@ -758,28 +896,39 @@ class _SupportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return _SettingsCard(
       icon: Icons.support_agent,
       iconColor: Colors.orange,
-      title: 'Support',
+      title: l10n.settingsSupportTitle,
       child: Column(
         children: [
           _SupportRow(
-            label: 'Contact support',
+            label: l10n.settingsContactSupport,
             onTap: () => _contactSupport(context),
           ),
           const Divider(height: 1),
           _SupportRow(
-            label: 'Terms of Service',
-            onTap: () => showLegalDocument(context, termsOfService),
+            label: l10n.settingsTermsOfService,
+            onTap: () => showLegalDocument(
+              context,
+              termsOfServiceFor(Localizations.localeOf(context)),
+            ),
           ),
           const Divider(height: 1),
           _SupportRow(
-            label: 'Privacy Policy',
-            onTap: () => showLegalDocument(context, privacyPolicy),
+            label: l10n.settingsPrivacyPolicy,
+            onTap: () => showLegalDocument(
+              context,
+              privacyPolicyFor(Localizations.localeOf(context)),
+            ),
           ),
           const Divider(height: 1),
-          _SupportRow(label: 'About Vocabo', onTap: () => _showAbout(context)),
+          _SupportRow(
+            label: l10n.settingsAboutApp,
+            onTap: () => _showAbout(context),
+          ),
         ],
       ),
     );

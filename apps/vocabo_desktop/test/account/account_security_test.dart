@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/screens/password_reset/password_reset_screen.dart';
 import 'package:vocabo_desktop/src/widgets/account/delete_account_dialog.dart';
@@ -25,7 +26,12 @@ Widget _host(Widget child) => ProviderScope(
       (ref) => throw StateError('API must not be used'),
     ),
   ],
-  child: MaterialApp(theme: VocaboTheme.light(), home: child),
+  child: MaterialApp(
+    theme: VocaboTheme.light(),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: child,
+  ),
 );
 
 void main() {
@@ -76,7 +82,9 @@ void main() {
     await tester.pumpWidget(
       _host(
         const Scaffold(
-          body: Center(child: LegalConsentText(action: 'continuing')),
+          body: Center(
+            child: LegalConsentText(action: LegalConsentAction.continuing),
+          ),
         ),
       ),
     );

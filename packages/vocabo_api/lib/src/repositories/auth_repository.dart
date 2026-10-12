@@ -29,22 +29,27 @@ class AuthRepository {
     await _tokenStorage.saveToken(authToken.token);
   }
 
-  Future<void> socialLogin({
+  /// Signs in with Google or Apple. Returns true when the account was just
+  /// created, so the app can confirm the profile details.
+  Future<bool> socialLogin({
     required SocialAuthProvider provider,
     required String idToken,
     String? name,
     String? nativeLanguage,
+    String? interfaceLanguage,
   }) async {
-    final authToken = await apiCall(
+    final result = await apiCall(
       () => _dataSource.socialLogin(
         provider: provider,
         idToken: idToken,
         name: name,
         nativeLanguage: nativeLanguage,
+        interfaceLanguage: interfaceLanguage,
       ),
     );
 
-    await _tokenStorage.saveToken(authToken.token);
+    await _tokenStorage.saveToken(result.token.token);
+    return result.created;
   }
 
   /// Ends the session on the server when reachable; the local token is

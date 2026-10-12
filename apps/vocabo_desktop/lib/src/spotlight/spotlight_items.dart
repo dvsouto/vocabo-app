@@ -1,13 +1,19 @@
 import 'package:vocabo_core/vocabo_core.dart';
 
-enum SpotlightSection {
-  recent('Recent'),
-  library('Your library'),
-  dictionary('Dictionary'),
-  translate('Translate');
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 
-  const SpotlightSection(this.label);
-  final String label;
+enum SpotlightSection {
+  recent,
+  library,
+  dictionary,
+  translate;
+
+  String label(AppLocalizations l10n) => switch (this) {
+    SpotlightSection.recent => l10n.spotlightSectionRecent,
+    SpotlightSection.library => l10n.spotlightSectionLibrary,
+    SpotlightSection.dictionary => l10n.spotlightSectionDictionary,
+    SpotlightSection.translate => l10n.spotlightSectionTranslate,
+  };
 }
 
 /// One row of the spotlight list.

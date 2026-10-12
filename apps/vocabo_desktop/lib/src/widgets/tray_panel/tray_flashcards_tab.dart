@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_card.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_countdown.dart';
@@ -49,6 +50,7 @@ class _TrayHome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final status = ref.watch(flashcardStatusProvider);
     final notifier = ref.read(flashcardSessionProvider.notifier);
 
@@ -61,29 +63,26 @@ class _TrayHome extends ConsumerWidget {
         ),
       ),
       error: (_, _) => _TrayMessage(
-        title: 'Flashcards are unavailable',
-        subtitle: 'Check your connection and try again.',
+        title: l10n.trayFlashcardsUnavailable,
+        subtitle: l10n.trayFlashcardsCheckConnection,
         action: VocaboTextButton(
-          label: 'Retry',
+          label: l10n.commonRetry,
           onPressed: () => ref.invalidate(flashcardStatusProvider),
         ),
       ),
       data: (summary) {
         if (summary.canStartSession) {
-          final words = summary.dueCount == 1
-              ? '1 word is waiting'
-              : '${summary.dueCount} words are waiting';
           return _TrayMessage(
             title: summary.hasActiveSession
-                ? 'You have a session in progress'
-                : words,
+                ? l10n.trayFlashcardsSessionInProgress
+                : l10n.trayFlashcardsWordsWaiting(summary.dueCount),
             subtitle: summary.hasActiveSession
-                ? 'Pick up right where you left off.'
-                : 'A quick round of up to $quickSessionSize words.',
+                ? l10n.trayFlashcardsResumeHint
+                : l10n.trayFlashcardsQuickRoundHint(quickSessionSize),
             action: VocaboPrimaryButton(
               label: summary.hasActiveSession
-                  ? 'Continue reviewing'
-                  : 'Quick session',
+                  ? l10n.trayFlashcardsContinueReviewing
+                  : l10n.trayFlashcardsQuickSession,
               isExpanded: true,
               onPressed: () => notifier.startSession(size: quickSessionSize),
             ),
@@ -92,8 +91,8 @@ class _TrayHome extends ConsumerWidget {
 
         if (summary.isWaiting) {
           return _TrayMessage(
-            title: 'Your memory is in good shape.',
-            subtitle: 'Your next words return in',
+            title: l10n.trayFlashcardsMemoryGood,
+            subtitle: l10n.trayFlashcardsNextWordsIn,
             action: FlashcardCountdown(
               target: summary.nextReviewAt!,
               style: VocaboTypography.headlineSm,
@@ -102,10 +101,9 @@ class _TrayHome extends ConsumerWidget {
           );
         }
 
-        return const _TrayMessage(
-          title: 'No flashcards yet',
-          subtitle:
-              "Words you save will return here, right before you'd forget them.",
+        return _TrayMessage(
+          title: l10n.trayFlashcardsEmptyTitle,
+          subtitle: l10n.trayFlashcardsEmptyBody,
         );
       },
     );
@@ -113,7 +111,10 @@ class _TrayHome extends ConsumerWidget {
     return Column(
       children: [
         Expanded(child: body),
-        VocaboTextButton(label: 'Open Flashcards', onPressed: onOpenFlashcards),
+        VocaboTextButton(
+          label: l10n.trayFlashcardsOpen,
+          onPressed: onOpenFlashcards,
+        ),
       ],
     );
   }
@@ -244,7 +245,7 @@ class _TraySessionState extends ConsumerState<_TraySession> {
           Row(
             children: [
               IconButton(
-                tooltip: 'Stop',
+                tooltip: context.l10n.trayFlashcardsStop,
                 icon: const Icon(Icons.close, size: 18),
                 color: VocaboColors.neutral,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -299,7 +300,7 @@ class _TraySessionState extends ConsumerState<_TraySession> {
                 )
               : VocaboPrimaryButton(
                   key: ValueKey('tray-continue-${card.id}'),
-                  label: 'Continue',
+                  label: context.l10n.commonContinue,
                   isExpanded: true,
                   onPressed: interactive ? notifier.flip : null,
                 ),
@@ -316,6 +317,7 @@ class _TrayCompletion extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final state = ref.watch(flashcardSessionProvider);
     final notifier = ref.read(flashcardSessionProvider.notifier);
 
@@ -323,20 +325,21 @@ class _TrayCompletion extends ConsumerWidget {
       children: [
         Expanded(
           child: _TrayMessage(
-            title: 'Round complete',
+            title: l10n.trayFlashcardsRoundComplete,
             subtitle: sessionSummary(
+              context.l10n,
               reviewed: state.evaluatedCount,
               clear: state.countOf(FlashcardEvaluation.easy),
             ),
             action: VocaboPrimaryButton(
-              label: 'Done',
+              label: l10n.commonDone,
               isExpanded: true,
               onPressed: notifier.finishCompletion,
             ),
           ),
         ),
         VocaboTextButton(
-          label: 'Open Flashcards',
+          label: l10n.trayFlashcardsOpen,
           onPressed: () {
             notifier.finishCompletion();
             onOpenFlashcards();

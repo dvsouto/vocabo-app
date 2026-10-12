@@ -54,6 +54,10 @@ class VocaboPhoneField extends StatelessWidget {
     this.onSubmitted,
     this.enabled = true,
     this.autofocus = false,
+    this.hint = 'Phone number',
+    this.countryPickerTitle = 'Country',
+    this.countrySearchHint = 'Search country or code',
+    this.noCountryFoundText = 'No country found',
   });
 
   final PhoneCountry country;
@@ -65,10 +69,21 @@ class VocaboPhoneField extends StatelessWidget {
   final bool enabled;
   final bool autofocus;
 
+  /// Placeholder of the number, except for Brazil, which shows a sample.
+  final String hint;
+  final String countryPickerTitle;
+  final String countrySearchHint;
+  final String noCountryFoundText;
+
   Future<void> _pickCountry(BuildContext context) async {
     final picked = await showDialog<PhoneCountry>(
       context: context,
-      builder: (_) => _CountryPickerDialog(selected: country),
+      builder: (_) => _CountryPickerDialog(
+        selected: country,
+        title: countryPickerTitle,
+        searchHint: countrySearchHint,
+        emptyText: noCountryFoundText,
+      ),
     );
     if (picked == null || picked.isoCode == country.isoCode) return;
 
@@ -80,7 +95,7 @@ class VocaboPhoneField extends StatelessWidget {
   Widget build(BuildContext context) {
     return VocaboTextField(
       controller: controller,
-      hint: country.isoCode == 'BR' ? '(11) 98765-4321' : 'Phone number',
+      hint: country.isoCode == 'BR' ? '(11) 98765-4321' : hint,
       keyboardType: TextInputType.phone,
       autofillHints: const [AutofillHints.telephoneNumberNational],
       inputFormatters: [PhoneNationalFormatter(country.isoCode)],
@@ -125,9 +140,17 @@ class VocaboPhoneField extends StatelessWidget {
 }
 
 class _CountryPickerDialog extends StatefulWidget {
-  const _CountryPickerDialog({required this.selected});
+  const _CountryPickerDialog({
+    required this.selected,
+    required this.title,
+    required this.searchHint,
+    required this.emptyText,
+  });
 
   final PhoneCountry selected;
+  final String title;
+  final String searchHint;
+  final String emptyText;
 
   @override
   State<_CountryPickerDialog> createState() => _CountryPickerDialogState();
@@ -151,10 +174,10 @@ class _CountryPickerDialogState extends State<_CountryPickerDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Country', style: VocaboTypography.titleLg),
+              Text(widget.title, style: VocaboTypography.titleLg),
               const SizedBox(height: VocaboSpacing.md),
               VocaboSearchField(
-                hint: 'Search country or code',
+                hint: widget.searchHint,
                 autofocus: true,
                 onChanged: (value) => setState(() => _query = value),
               ),
@@ -163,7 +186,7 @@ class _CountryPickerDialogState extends State<_CountryPickerDialog> {
                 child: countries.isEmpty
                     ? Center(
                         child: Text(
-                          'No country found',
+                          widget.emptyText,
                           style: VocaboTypography.bodySm.copyWith(
                             color: VocaboColors.neutral,
                           ),

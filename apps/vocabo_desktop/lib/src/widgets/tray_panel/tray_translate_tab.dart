@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/translation_providers.dart';
 
 class TrayTranslateTab extends ConsumerStatefulWidget {
@@ -103,9 +104,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: VocaboSpacing.md),
         child: Text(
-          'Your native language is English, so words come with definitions '
-          'instead of translations. Look them up with Control + Option + '
-          'Space.',
+          context.l10n.translateNoTranslationNeeded,
           style: VocaboTypography.bodySm.copyWith(color: VocaboColors.neutral),
           textAlign: TextAlign.center,
         ),
@@ -114,6 +113,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
   }
 
   Widget _buildSetupRequired() {
+    final l10n = context.l10n;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -133,7 +133,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
           ),
           const SizedBox(height: VocaboSpacing.md),
           Text(
-            'Translation Setup Required',
+            l10n.translateSetupRequiredTitle,
             style: VocaboTypography.bodyMd.copyWith(
               fontWeight: FontWeight.w600,
               color: VocaboColors.onSurface,
@@ -142,7 +142,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
           ),
           const SizedBox(height: VocaboSpacing.xs),
           Text(
-            'Download translation languages in\nSystem Settings to enable offline translation.',
+            l10n.translateSetupRequiredBody,
             style: VocaboTypography.bodySm.copyWith(
               color: VocaboColors.neutral,
             ),
@@ -150,7 +150,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
           ),
           const SizedBox(height: VocaboSpacing.lg),
           VocaboPrimaryButton(
-            label: 'Open Settings',
+            label: l10n.translateOpenSettings,
             trailing: const Icon(
               Icons.open_in_new,
               size: 16,
@@ -225,7 +225,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
                       }) => null,
                   style: VocaboTypography.bodyMd,
                   decoration: InputDecoration(
-                    hintText: 'Enter text to translate...',
+                    hintText: context.l10n.translateInputHint,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(0),
                       borderSide: const BorderSide(color: Colors.transparent),
@@ -310,7 +310,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
 
         // Save to Vocabulary button
         VocaboPrimaryButton(
-          label: 'Save to Vocabulary',
+          label: context.l10n.translateSaveToVocabulary,
           isExpanded: true,
           onPressed: translationState.hasTranslation
               ? _onSaveToVocabulary
@@ -367,7 +367,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
 
     if (state.inputText.isEmpty) {
       return Text(
-        'Translation will appear here',
+        context.l10n.translatePlaceholder,
         style: VocaboTypography.bodySm.copyWith(color: VocaboColors.neutral),
       );
     }

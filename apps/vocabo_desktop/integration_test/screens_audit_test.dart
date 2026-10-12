@@ -16,11 +16,17 @@ import 'package:window_manager/window_manager.dart';
 
 import 'package:vocabo_desktop/src/app.dart';
 import 'package:vocabo_desktop/src/config/env.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 
 const _email = String.fromEnvironment('E2E_EMAIL');
 const _password = String.fromEnvironment('E2E_PASSWORD');
 const _unverifiedEmail = String.fromEnvironment('AUDIT_UNVERIFIED_EMAIL');
+
+/// Interface language of the audit; the runner sets it on the test users.
+const _localeCode = String.fromEnvironment('AUDIT_LOCALE', defaultValue: 'en');
+final _l = lookupAppLocalizations(Locale(_localeCode));
 
 const _sizes = <String, Size>{
   'min': Size(800, 600),
@@ -63,6 +69,8 @@ Future<void> _snap(WidgetTester tester, String name) async {
   final file = File(
     '${_shotsDir.path}/${_shotIndex.toString().padLeft(2, '0')}-$name.png',
   );
+  // macOS may purge the container's tmp folder while the test runs.
+  await file.parent.create(recursive: true);
   await file.writeAsBytes(bytes!);
 }
 
@@ -125,7 +133,7 @@ Future<void> _launch(WidgetTester tester, VocaboApiClient api) async {
 }
 
 Future<void> _closeDialog(WidgetTester tester) async {
-  final cancel = find.text('Cancel');
+  final cancel = find.text(_l.commonCancel);
   if (cancel.evaluate().isNotEmpty) {
     await tester.tap(cancel.last);
   } else {
@@ -154,7 +162,10 @@ void main() {
     await windowManager.ensureInitialized();
     await windowManager.setSize(_sizes['default']!);
     await windowManager.center();
-    _shotsDir = Directory('${Directory.systemTemp.path}/vocabo_audit');
+    await InterfaceLanguageStore().write(_localeCode);
+    _shotsDir = Directory(
+      '${Directory.systemTemp.path}/vocabo_audit/$_localeCode',
+    );
     if (_shotsDir.existsSync()) _shotsDir.deleteSync(recursive: true);
     _shotsDir.createSync(recursive: true);
   });
@@ -165,29 +176,29 @@ void main() {
       tokenStorage: InMemoryTokenStorage(),
     );
     await _launch(tester, api);
-    await _pumpUntil(tester, find.text('Continue to Library'));
+    await _pumpUntil(tester, find.text(_l.authContinueToLibrary));
     await _audit(tester, 'login-email');
 
     await _step('password-reset', () async {
-      await tester.tap(find.text('FORGOT PASSWORD?'));
-      await _pumpUntil(tester, find.text('Reset your password'));
+      await tester.tap(find.text(_l.authForgotPassword.toUpperCase()));
+      await _pumpUntil(tester, find.text(_l.authResetPasswordTitle));
       await _audit(tester, 'password-reset');
-      await tester.tap(find.byTooltip('Back'));
+      await tester.tap(find.byTooltip(_l.commonBack));
       await _pumpFor(tester, const Duration(seconds: 1));
     });
 
     await _step('login-password', () async {
       await tester.enterText(find.byType(TextField).first, _email);
-      await tester.tap(find.text('Continue to Library'));
-      await _pumpUntil(tester, find.text('Enter Library'));
+      await tester.tap(find.text(_l.authContinueToLibrary));
+      await _pumpUntil(tester, find.text(_l.authEnterLibrary));
       await _audit(tester, 'login-password');
-      await tester.tap(find.text('Back'));
+      await tester.tap(find.text(_l.commonBack));
       await _pumpFor(tester, const Duration(seconds: 1));
     });
 
     await _step('signup', () async {
-      await tester.tap(find.text('CREATE ACCOUNT'));
-      await _pumpUntil(tester, find.text('Create your account'));
+      await tester.tap(find.text(_l.authCreateAccount.toUpperCase()));
+      await _pumpUntil(tester, find.text(_l.authSignUpTitle));
       await _audit(tester, 'signup');
     });
   });
@@ -199,7 +210,7 @@ void main() {
       () => api.auth.login(email: _unverifiedEmail, password: _password),
     );
     await _launch(tester, api);
-    await _pumpUntil(tester, find.text('Use another account'));
+    await _pumpUntil(tester, find.text(_l.authUseAnotherAccount));
     await _audit(tester, 'verification');
   });
 
@@ -212,7 +223,10 @@ void main() {
       () => api.auth.login(email: _email, password: _password),
     );
     await _launch(tester, api);
-    await _pumpUntil(tester, find.text('PERSONAL WORKSPACE'));
+    await _pumpUntil(
+      tester,
+      find.text(_l.sidebarPersonalWorkspace),
+    );
     await _pumpFor(tester, const Duration(seconds: 2));
     await _audit(tester, 'library');
 
@@ -224,7 +238,7 @@ void main() {
     });
 
     await _step('add-word', () async {
-      await tester.tap(find.text('Add New Word'));
+      await tester.tap(find.text(_l.sidebarAddNewWord));
       await _pumpFor(tester, const Duration(milliseconds: 800));
       await _audit(tester, 'add-word');
       await tester.enterText(find.byType(TextField).last, 'umbrella');
@@ -234,74 +248,78 @@ void main() {
     });
 
     await _step('flashcards', () async {
-      await tester.tap(_navItem('Flashcards'));
+      await tester.tap(_navItem(_l.sidebarFlashcards));
       await _pumpFor(tester, const Duration(seconds: 2));
       await _audit(tester, 'flashcards-home');
-      final start = find.textContaining(RegExp(r'^(Review now|Continue)'));
+      final start = find.textContaining(
+        RegExp(
+          '^(${RegExp.escape(_l.flashcardsReviewNow)}|${RegExp.escape(_l.commonContinue)})',
+        ),
+      );
       if (start.evaluate().isNotEmpty) {
         await tester.tap(start.first);
         await _pumpFor(tester, const Duration(seconds: 2));
         await _audit(tester, 'flashcards-session-front');
-        await tester.tap(find.text('Continue').first);
+        await tester.tap(find.text(_l.commonContinue).first);
         await _pumpFor(tester, const Duration(seconds: 2));
         await _audit(tester, 'flashcards-session-back');
       }
     });
 
     await _step('security', () async {
-      await tester.tap(_navItem('Settings'));
+      await tester.tap(_navItem(_l.sidebarSettings));
       await _pumpFor(tester, const Duration(seconds: 2));
-      await tester.ensureVisible(find.text('Privacy Policy'));
-      await tester.tap(find.text('Privacy Policy'));
+      await tester.ensureVisible(find.text(_l.settingsPrivacyPolicy));
+      await tester.tap(find.text(_l.settingsPrivacyPolicy));
       await _pumpFor(tester, const Duration(seconds: 1));
       await _audit(tester, 'privacy');
-      await tester.tap(find.byTooltip('Close'));
+      await tester.tap(find.byTooltip(_l.commonClose));
       await _pumpFor(tester, const Duration(milliseconds: 500));
-      await tester.ensureVisible(find.text('Change password'));
-      await tester.tap(find.text('Change password'));
+      await tester.ensureVisible(find.text(_l.settingsChangePassword));
+      await tester.tap(find.text(_l.settingsChangePassword));
       await _pumpFor(tester, const Duration(seconds: 1));
       await _audit(tester, 'change-password');
       await _closeDialog(tester);
-      await tester.ensureVisible(find.text('Delete account'));
-      await tester.tap(find.text('Delete account'));
+      await tester.ensureVisible(find.text(_l.settingsDeleteAccount));
+      await tester.tap(find.text(_l.settingsDeleteAccount));
       await _pumpFor(tester, const Duration(seconds: 1));
       await _audit(tester, 'delete-account');
       await _closeDialog(tester);
     });
 
     await _step('archived', () async {
-      await tester.tap(_navItem('Library'));
+      await tester.tap(_navItem(_l.sidebarLibrary));
       await _pumpFor(tester, const Duration(milliseconds: 500));
-      await tester.tap(_navItem('Flashcards'));
+      await tester.tap(_navItem(_l.sidebarFlashcards));
       await _pumpFor(tester, const Duration(seconds: 2));
-      final stop = find.byTooltip('Stop');
+      final stop = find.byTooltip(_l.trayFlashcardsStop);
       if (stop.evaluate().isNotEmpty) {
         await tester.tap(stop.first);
         await _pumpFor(tester, const Duration(seconds: 1));
       }
-      await tester.tap(find.textContaining('Archived').first);
+      await tester.tap(find.textContaining(_l.flashcardsArchivedButton).first);
       await _pumpFor(tester, const Duration(seconds: 1));
       await _audit(tester, 'archived');
       await _closeDialog(tester);
     });
 
     await _step('progress', () async {
-      await tester.tap(_navItem('Progress'));
+      await tester.tap(_navItem(_l.sidebarProgress));
       await _pumpFor(tester, const Duration(seconds: 2));
       await _audit(tester, 'progress');
     });
 
     await _step('settings', () async {
-      await tester.tap(_navItem('Settings'));
+      await tester.tap(_navItem(_l.sidebarSettings));
       await _pumpFor(tester, const Duration(seconds: 2));
       await _audit(tester, 'settings');
     });
 
     await _step('edit-profile', () async {
-      await tester.tap(find.text('Edit profile'));
+      await tester.tap(find.text(_l.settingsEditProfile));
       await _pumpFor(tester, const Duration(seconds: 1));
       await _audit(tester, 'edit-profile');
-      await tester.tap(find.text('Add').first);
+      await tester.tap(find.text(_l.authAddPhone).first);
       await _pumpFor(tester, const Duration(seconds: 1));
       await _audit(tester, 'change-phone');
       await _closeDialog(tester);

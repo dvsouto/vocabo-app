@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/services/daily_reminder_service.dart';
 
 class _FakeNotifications implements FlutterLocalNotificationsPlugin {
@@ -62,6 +65,7 @@ void main() {
       return _status(dueCount);
     },
     onOpen: () {},
+    loadLocalizations: () => lookupAppLocalizations(const Locale('en')),
     notifications: notifications,
     stateStore: store,
   );

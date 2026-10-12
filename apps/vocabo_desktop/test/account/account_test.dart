@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 
 import 'package:vocabo_desktop/src/auth/social_sign_in.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/screens/signup/signup_screen.dart';
@@ -28,20 +29,23 @@ class _CancelledSignIn implements SocialSignIn {
 void main() {
   group('verificationErrorMessage', () {
     test('explains the API codes', () {
+      final l10n = lookupAppLocalizations(const Locale('en'));
       expect(
         verificationErrorMessage(
+          l10n,
           const UnprocessableException('x', code: 'invalid_code'),
         ),
         'That code is not right. Check it and try again.',
       );
       expect(
         verificationErrorMessage(
+          l10n,
           const UnprocessableException('x', code: 'expired_code'),
         ),
         'This code has expired. Send a new one.',
       );
       expect(
-        verificationErrorMessage(const NetworkException('offline')),
+        verificationErrorMessage(l10n, const NetworkException('offline')),
         'No connection. Check your internet and try again.',
       );
     });
@@ -78,7 +82,11 @@ void main() {
             (ref) => throw StateError('API must not be used'),
           ),
         ],
-        child: const MaterialApp(home: SignUpScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SignUpScreen(),
+        ),
       ),
     );
 

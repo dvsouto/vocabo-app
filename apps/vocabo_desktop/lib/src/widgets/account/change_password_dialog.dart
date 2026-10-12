@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 import 'package:vocabo_desktop/src/widgets/account/auth_scaffold.dart';
@@ -46,13 +47,12 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   Future<void> _save() async {
     final current = _currentController.text;
     final next = _newController.text;
+    final l10n = context.l10n;
     setState(() {
       _currentError = _hasPassword && current.isEmpty
-          ? 'Enter your current password.'
+          ? l10n.authEnterCurrentPassword
           : null;
-      _newError = isValidPassword(next)
-          ? null
-          : 'The password does not meet the rules below.';
+      _newError = isValidPassword(next) ? null : l10n.authPasswordRulesNotMet;
     });
     if (_currentError != null || _newError != null) return;
 
@@ -72,11 +72,11 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
       if (!mounted) return;
       setState(() {
         if (e case AppException(code: 'incorrect_password')) {
-          _currentError = 'The current password is incorrect.';
+          _currentError = l10n.authCurrentPasswordIncorrect;
         } else {
           _newError = e is AppException
               ? e.message
-              : 'Could not change the password. Please try again.';
+              : l10n.authChangePasswordFailed;
         }
       });
     } finally {
@@ -86,9 +86,13 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return AlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
-      title: Text(_hasPassword ? 'Change password' : 'Set a password'),
+      title: Text(
+        _hasPassword ? l10n.authChangePasswordTitle : l10n.authSetPasswordTitle,
+      ),
       content: SizedBox(
         width: 400,
         child: Column(
@@ -97,19 +101,18 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
           children: [
             Text(
               _hasPassword
-                  ? 'Your other devices will be signed out.'
-                  : 'Sign in with your email and this password, besides '
-                        'Google or Apple.',
+                  ? l10n.authChangePasswordNotice
+                  : l10n.authSetPasswordNotice,
               style: VocaboTypography.bodyMd.copyWith(
                 color: VocaboColors.neutral600,
               ),
             ),
             const SizedBox(height: VocaboSpacing.lg),
             if (_hasPassword) ...[
-              const FieldLabel('Current password'),
+              FieldLabel(l10n.authFieldCurrentPassword),
               PasswordField(
                 controller: _currentController,
-                hint: 'Current password',
+                hint: l10n.authFieldCurrentPassword,
                 autofocus: true,
                 enabled: !_saving,
                 errorText: _currentError,
@@ -118,10 +121,10 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
               ),
               const SizedBox(height: VocaboSpacing.md),
             ],
-            const FieldLabel('New password'),
+            FieldLabel(l10n.authFieldNewPassword),
             PasswordField(
               controller: _newController,
-              hint: 'At least 6 characters',
+              hint: l10n.passwordRuleLength(minPasswordLength),
               isNewPassword: true,
               autofocus: !_hasPassword,
               enabled: !_saving,
@@ -136,11 +139,11 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
       ),
       actions: [
         VocaboTextButton(
-          label: 'Cancel',
+          label: l10n.commonCancel,
           onPressed: _saving ? null : () => Navigator.of(context).pop(false),
         ),
         VocaboPrimaryButton(
-          label: 'Save',
+          label: l10n.commonSave,
           isLoading: _saving,
           onPressed: _saving ? null : _save,
         ),

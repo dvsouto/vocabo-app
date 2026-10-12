@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_desktop/src/auth/device_info.dart';
 import 'package:vocabo_desktop/src/auth/social_sign_in.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 
@@ -31,6 +32,10 @@ final authStatusProvider = FutureProvider<AuthStatus>((ref) async {
     return AuthStatus.authenticated;
   }
 });
+
+/// Set when Google or Apple just created the account: its native language
+/// was only guessed, so the user is asked to confirm it.
+final confirmNativeLanguageProvider = StateProvider<bool>((_) => false);
 
 /// Why the user was signed out, shown once on the login screen.
 final sessionNoticeProvider = StateProvider<String?>((_) => null);
@@ -119,12 +124,16 @@ class SocialLoginNotifier extends AsyncNotifier<void> {
       if (credential == null) return;
 
       final api = ref.read(apiClientProvider);
-      await api.auth.socialLogin(
+      final created = await api.auth.socialLogin(
         provider: provider.provider,
         idToken: credential.idToken,
         name: credential.name,
         nativeLanguage: systemNativeLanguage(),
+        interfaceLanguage: ref.read(interfaceLanguageProvider).valueOrNull,
       );
+      if (created) {
+        ref.read(confirmNativeLanguageProvider.notifier).state = true;
+      }
       _refreshAccount(ref);
     });
   }
@@ -164,8 +173,9 @@ class DeleteAccountNotifier extends AsyncNotifier<void> {
       final api = ref.read(apiClientProvider);
       await api.user.deleteAccount(password: password);
       await api.auth.clearSession();
-      ref.read(sessionNoticeProvider.notifier).state =
-          'Your account and all of its data were deleted.';
+      ref.read(sessionNoticeProvider.notifier).state = ref
+          .read(appLocalizationsProvider)
+          .authAccountDeletedNotice;
       _refreshAccount(ref);
     });
   }

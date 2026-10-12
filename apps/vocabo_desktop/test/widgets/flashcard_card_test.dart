@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_card.dart';
@@ -55,6 +56,8 @@ Future<void> _pump(WidgetTester tester, Widget child) async {
       ],
       child: MaterialApp(
         theme: VocaboTheme.light(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SingleChildScrollView(child: child)),
       ),
     ),

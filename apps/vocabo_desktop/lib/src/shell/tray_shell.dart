@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:vocabo_core/vocabo_core.dart' show appLogger;
 import 'package:window_manager/window_manager.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
@@ -118,12 +120,16 @@ class _TrayShellState extends ConsumerState<TrayShell>
   Future<void> _initTray() async {
     await trayManager.setIcon('assets/tray_icon.png', isTemplate: true);
     await trayManager.setToolTip('Vocabo');
+    await _buildTrayMenu(ref.read(appLocaleProvider));
+  }
 
+  Future<void> _buildTrayMenu(Locale locale) async {
+    final l10n = lookupAppLocalizations(locale);
     final menu = Menu(
       items: [
-        MenuItem(key: 'open', label: 'Open Vocabo'),
+        MenuItem(key: 'open', label: l10n.trayMenuOpen),
         MenuItem.separator(),
-        MenuItem(key: 'quit', label: 'Quit'),
+        MenuItem(key: 'quit', label: l10n.trayMenuQuit),
       ],
     );
     await trayManager.setContextMenu(menu);
@@ -184,6 +190,7 @@ class _TrayShellState extends ConsumerState<TrayShell>
   Widget build(BuildContext context) {
     ref.listen(authStatusProvider, (_, _) => _syncSpotlight());
     ref.listen(spotlightEnabledProvider, (_, _) => _syncSpotlight());
+    ref.listen(appLocaleProvider, (_, locale) => _buildTrayMenu(locale));
     return widget.child;
   }
 }

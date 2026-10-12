@@ -2,15 +2,21 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
-import 'package:vocabo_desktop/src/legal/legal_documents.dart';
+import 'package:vocabo_desktop/src/legal/legal_documents_for.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/widgets/legal/legal_document_dialog.dart';
+
+/// What the user is doing when agreeing to the documents.
+enum LegalConsentAction { continuing, creatingAccount }
+
+const _termsMarker = '\u{E000}';
+const _privacyMarker = '\u{E001}';
 
 /// "By creating an account you agree to…" with links to both documents.
 class LegalConsentText extends StatefulWidget {
   const LegalConsentText({super.key, required this.action});
 
-  /// What the user is doing, e.g. "creating an account".
-  final String action;
+  final LegalConsentAction action;
 
   @override
   State<LegalConsentText> createState() => _LegalConsentTextState();
@@ -18,9 +24,15 @@ class LegalConsentText extends StatefulWidget {
 
 class _LegalConsentTextState extends State<LegalConsentText> {
   late final _terms = TapGestureRecognizer()
-    ..onTap = () => showLegalDocument(context, termsOfService);
+    ..onTap = () => showLegalDocument(
+      context,
+      termsOfServiceFor(Localizations.localeOf(context)),
+    );
   late final _privacy = TapGestureRecognizer()
-    ..onTap = () => showLegalDocument(context, privacyPolicy);
+    ..onTap = () => showLegalDocument(
+      context,
+      privacyPolicyFor(Localizations.localeOf(context)),
+    );
 
   @override
   void dispose() {
@@ -37,27 +49,43 @@ class _LegalConsentTextState extends State<LegalConsentText> {
       fontWeight: FontWeight.w600,
     );
 
-    return Text.rich(
-      TextSpan(
-        style: base,
-        children: [
-          TextSpan(text: 'By ${widget.action} you agree to the '),
-          TextSpan(
-            text: 'Terms of Service',
-            style: link,
-            recognizer: _terms,
-            mouseCursor: SystemMouseCursors.click,
-          ),
-          const TextSpan(text: ' and the '),
-          TextSpan(
-            text: 'Privacy Policy',
-            style: link,
-            recognizer: _privacy,
-            mouseCursor: SystemMouseCursors.click,
-          ),
-          const TextSpan(text: '.'),
-        ],
+    final l10n = context.l10n;
+    // The sentence is translated as a whole; the markers mark where the
+    // links go so each language can place them where it needs.
+    final sentence = switch (widget.action) {
+      LegalConsentAction.continuing => l10n.authLegalConsentContinuing(
+        _termsMarker,
+        _privacyMarker,
       ),
+      LegalConsentAction.creatingAccount =>
+        l10n.authLegalConsentCreatingAccount(_termsMarker, _privacyMarker),
+    };
+
+    final spans = <InlineSpan>[];
+    var start = 0;
+    for (final match in RegExp(
+      '$_termsMarker|$_privacyMarker',
+    ).allMatches(sentence)) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: sentence.substring(start, match.start)));
+      }
+      final isTerms = match[0] == _termsMarker;
+      spans.add(
+        TextSpan(
+          text: isTerms ? l10n.authTermsOfService : l10n.authPrivacyPolicy,
+          style: link,
+          recognizer: isTerms ? _terms : _privacy,
+          mouseCursor: SystemMouseCursors.click,
+        ),
+      );
+      start = match.end;
+    }
+    if (start < sentence.length) {
+      spans.add(TextSpan(text: sentence.substring(start)));
+    }
+
+    return Text.rich(
+      TextSpan(style: base, children: spans),
       textAlign: TextAlign.center,
     );
   }

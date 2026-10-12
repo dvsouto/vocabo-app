@@ -17,10 +17,11 @@ class VocabularyAudioDataSource {
   Future<AudioResponse> getAudio({
     required String vocabularyId,
     required String type,
+    String? voice,
   }) async {
     final response = await _dio.get<List<int>>(
       '/vocabulary/$vocabularyId/audio',
-      queryParameters: {'type': type},
+      queryParameters: {'type': type, 'voice': ?voice},
       options: Options(responseType: ResponseType.bytes),
     );
 

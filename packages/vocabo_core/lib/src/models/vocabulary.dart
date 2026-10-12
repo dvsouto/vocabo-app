@@ -36,11 +36,9 @@ class Vocabulary extends Equatable {
   @JsonKey(name: 'content_hash')
   final String? contentHash;
 
-  @JsonKey(name: 'audio_status')
-  final String? audioStatus;
-
-  @JsonKey(name: 'audio_path')
-  final String? audioPath;
+  /// Voice genders (`female`, `male`) with a recorded pronunciation.
+  @JsonKey(name: 'audios', fromJson: _audioVoicesFromJson, toJson: _audioVoicesToJson)
+  final List<String> audioVoices;
 
   const Vocabulary({
     required this.id,
@@ -55,8 +53,7 @@ class Vocabulary extends Equatable {
     this.createdAt,
     this.updatedAt,
     this.contentHash,
-    this.audioStatus,
-    this.audioPath,
+    this.audioVoices = const [],
   });
 
   factory Vocabulary.fromJson(Map<String, dynamic> json) =>
@@ -91,7 +88,16 @@ class Vocabulary extends Equatable {
     createdAt,
     updatedAt,
     contentHash,
-    audioStatus,
-    audioPath,
+    audioVoices,
   ];
 }
+
+List<String> _audioVoicesFromJson(Object? json) => [
+  for (final audio in (json as List<dynamic>? ?? const []))
+    if (audio is Map<String, dynamic> && audio['gender'] is String)
+      audio['gender'] as String,
+];
+
+List<Map<String, String>> _audioVoicesToJson(List<String> voices) => [
+  for (final voice in voices) {'gender': voice},
+];

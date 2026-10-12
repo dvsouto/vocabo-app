@@ -17,6 +17,9 @@ class UserVocabularyRepository {
   Future<UserVocabulary> add({required Map<String, dynamic> data}) =>
       apiCall(() => _dataSource.add(data: data));
 
+  /// The whole library as CSV (Pro).
+  Future<String> exportCsv() => apiCall(_dataSource.exportCsv);
+
   /// Removes the word from the library together with its flashcard.
   Future<void> remove(String id) => apiCall(() => _dataSource.remove(id));
 

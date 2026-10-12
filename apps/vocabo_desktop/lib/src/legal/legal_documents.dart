@@ -66,30 +66,35 @@ const privacyPolicy = LegalDocument(
           'advertising.',
     ]),
     LegalSection('3. Service providers', [
-      'OpenAI generates translations, definitions, examples and pronunciation '
-          'audio. Only the word being looked up and the target language are '
-          'sent; your name, email and other account details are not.',
-      'Twilio delivers verification codes by SMS and receives only the phone '
-          'number and the message. An email provider delivers verification '
-          'and password reset emails and receives only your email address and '
-          'the message.',
+      'We share data only with providers that help us run Vocabo, under '
+          'contracts that limit them to that purpose:',
+      'Artificial intelligence providers generate translations, '
+          'definitions, examples and pronunciation audio. They receive only '
+          'the word being looked up and the target language, never your name, '
+          'email or other account details.',
+      'Cloud infrastructure providers host our servers and databases. '
+          'Communication providers deliver verification codes by email and '
+          'SMS and receive only the address or number the code is sent to.',
       'Google and Apple process your sign in when you choose those options, '
           'under their own privacy policies.',
-      'Hetzner hosts our servers and databases in the European Union.',
       'Translations made with the menu bar or the spotlight may use Apple '
           'Translation, which runs on your Mac.',
+      'The current list of providers is available on request at '
+          '$supportEmail.',
     ]),
     LegalSection('4. International transfers', [
-      'Some providers, such as OpenAI and Twilio, process data in the United '
-          'States. These transfers rely on the safeguards allowed by the LGPD '
-          'and the GDPR, such as standard contractual clauses.',
+      'Some of these providers process data outside Brazil, for example in '
+          'the European Union and the United States. These transfers rely on '
+          'the safeguards allowed by the LGPD and the GDPR, such as standard '
+          'contractual clauses.',
     ]),
     LegalSection('5. How long we keep it', [
       'We keep your data while your account exists. When you delete your '
           'account, your profile, library, flashcards, progress, translation '
           'history and photo are deleted immediately from our systems. Backups '
-          'are overwritten within 30 days. Security logs are kept for up to '
-          '6 months.',
+          'are overwritten within 30 days. Connection and security logs are '
+          'kept for 6 months, as required by the Brazilian Internet Civil '
+          'Framework (Marco Civil da Internet).',
     ]),
     LegalSection('6. Security', [
       'Data travels over encrypted connections. Your sign-in token is stored '

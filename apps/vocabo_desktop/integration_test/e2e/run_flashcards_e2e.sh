@@ -2,7 +2,7 @@
 # Runs the flashcards end-to-end test on macOS against the local vocabo-api
 # Docker stack. It recreates an isolated test user first so developer data is
 # never touched, and signs the app ad hoc so no Apple Development certificate
-# is required.
+# is required. The user is Pro, since the flow archives and reverses cards.
 set -euo pipefail
 
 EMAIL=${E2E_EMAIL:-e2e-flashcards@vocabo.test}
@@ -21,7 +21,7 @@ if [ -n "$OLD_ID" ]; then
 fi
 
 HASH=$(docker exec vocabo-api bun -e "console.log(await Bun.password.hash('$PASSWORD', { algorithm: 'bcrypt', cost: 10 }))")
-"${PSQL[@]}" -c "insert into users (name, email, password, email_verified_at) values ('E2E Flashcards', '$EMAIL', '$HASH', now());" >/dev/null
+"${PSQL[@]}" -c "insert into users (name, email, password, email_verified_at, plan, interface_language) values ('E2E Flashcards', '$EMAIL', '$HASH', now(), 'pro', 'en');" >/dev/null
 echo "e2e user ready: $EMAIL"
 
 cd "$APP_DIR"

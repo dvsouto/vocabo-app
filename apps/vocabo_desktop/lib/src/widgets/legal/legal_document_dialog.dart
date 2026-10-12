@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/legal/legal_documents.dart';
 
 Future<void> showLegalDocument(BuildContext context, LegalDocument document) {
@@ -44,7 +45,7 @@ class _LegalDocumentDialog extends StatelessWidget {
                           style: VocaboTypography.headlineSm,
                         ),
                         Text(
-                          'Last updated ${document.updatedOn}',
+                          context.l10n.legalLastUpdated(document.updatedOn),
                           style: VocaboTypography.bodySm.copyWith(
                             color: VocaboColors.neutral,
                           ),
@@ -53,7 +54,7 @@ class _LegalDocumentDialog extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Close',
+                    tooltip: context.l10n.commonClose,
                     icon: const Icon(Icons.close),
                     color: VocaboColors.neutral,
                     onPressed: () => Navigator.of(context).pop(),

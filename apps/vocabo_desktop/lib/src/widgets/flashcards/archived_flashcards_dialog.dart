@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 
@@ -36,7 +38,7 @@ class _ArchivedFlashcardsDialogState
       appLogger.handle(e, st, 'Archived flashcards restore() error');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not restore this flashcard.')),
+          SnackBar(content: Text(context.l10n.flashcardsRestoreFailed)),
         );
       }
     } finally {
@@ -45,13 +47,14 @@ class _ArchivedFlashcardsDialogState
   }
 
   String _formatDate(DateTime date) {
-    final local = date.toLocal();
-    return '${local.day}/${local.month}/${local.year}';
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return DateFormat.yMMMd(locale).format(date.toLocal());
   }
 
   @override
   Widget build(BuildContext context) {
     final archived = ref.watch(archivedFlashcardsProvider);
+    final l10n = context.l10n;
 
     return Dialog(
       backgroundColor: VocaboColors.surface,
@@ -66,7 +69,10 @@ class _ArchivedFlashcardsDialogState
             children: [
               Row(
                 children: [
-                  Text('Archived cards', style: VocaboTypography.titleLg),
+                  Text(
+                    l10n.flashcardsArchivedTitle,
+                    style: VocaboTypography.titleLg,
+                  ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
@@ -86,7 +92,7 @@ class _ArchivedFlashcardsDialogState
               ),
               const SizedBox(height: VocaboSpacing.xs),
               Text(
-                'Restoring a card puts it back in rotation from D+0.',
+                l10n.flashcardsArchivedRestoreHint,
                 style: VocaboTypography.bodySm.copyWith(
                   color: VocaboColors.neutral,
                 ),
@@ -102,7 +108,7 @@ class _ArchivedFlashcardsDialogState
                   error: (_, _) => Padding(
                     padding: const EdgeInsets.all(VocaboSpacing.lg),
                     child: Text(
-                      'Could not load archived cards.',
+                      l10n.flashcardsArchivedLoadFailed,
                       style: VocaboTypography.bodyMd.copyWith(
                         color: VocaboColors.neutral,
                       ),
@@ -114,7 +120,7 @@ class _ArchivedFlashcardsDialogState
                             vertical: VocaboSpacing.lg,
                           ),
                           child: Text(
-                            'No archived cards.',
+                            l10n.flashcardsArchivedEmpty,
                             style: VocaboTypography.bodyMd.copyWith(
                               color: VocaboColors.neutral,
                             ),
@@ -184,7 +190,7 @@ class _ArchivedRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Archived $dateLabel',
+                  context.l10n.flashcardsArchivedOn(dateLabel),
                   style: VocaboTypography.bodySm.copyWith(
                     color: VocaboColors.neutral,
                   ),
@@ -205,7 +211,7 @@ class _ArchivedRow extends StatelessWidget {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Restore'),
+                : Text(context.l10n.flashcardsRestore),
           ),
         ],
       ),

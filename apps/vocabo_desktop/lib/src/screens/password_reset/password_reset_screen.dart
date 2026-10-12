@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/widgets/account/auth_scaffold.dart';
@@ -61,7 +62,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
   Future<void> _sendCode() async {
     final email = _emailController.text.trim();
     if (!isValidEmail(email)) {
-      setState(() => _emailError = 'Enter a valid email address.');
+      setState(() => _emailError = context.l10n.authInvalidEmail);
       return;
     }
 
@@ -84,7 +85,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
       _startCountdown(e.retryAfter ?? const Duration(seconds: 30));
     } catch (e) {
       if (!mounted) return;
-      final message = verificationErrorMessage(e);
+      final message = verificationErrorMessage(context.l10n, e);
       setState(() {
         if (_dispatch == null) {
           _emailError = message;
@@ -100,11 +101,12 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
   Future<void> _reset() async {
     final code = _codeController.text;
     final password = _passwordController.text;
+    final l10n = context.l10n;
     setState(() {
-      _codeError = code.length == 6 ? null : 'Enter the 6-digit code.';
+      _codeError = code.length == 6 ? null : l10n.authEnterSixDigitCode;
       _passwordError = isValidPassword(password)
           ? null
-          : 'The password does not meet the rules below.';
+          : l10n.authPasswordRulesNotMet;
     });
     if (_codeError != null || _passwordError != null) return;
 
@@ -122,12 +124,13 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
       Navigator.of(context).popUntil((route) => route.isFirst);
       return;
     }
-    setState(() => _codeError = verificationErrorMessage(error));
+    setState(() => _codeError = verificationErrorMessage(context.l10n, error));
   }
 
   @override
   Widget build(BuildContext context) {
     final dispatch = _dispatch;
+    final l10n = context.l10n;
 
     return AuthScaffold(
       onBack: () => Navigator.of(context).pop(),
@@ -135,14 +138,12 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Reset your password', style: VocaboTypography.headlineSm),
+          Text(l10n.authResetPasswordTitle, style: VocaboTypography.headlineSm),
           const SizedBox(height: VocaboSpacing.sm),
           Text(
             dispatch == null
-                ? 'Enter the email of your account and we will send you a '
-                      'code to choose a new password.'
-                : 'Enter the 6-digit code sent to ${dispatch.sentTo} and '
-                      'choose a new password.',
+                ? l10n.authResetPasswordIntro
+                : l10n.authResetPasswordCodeIntro(dispatch.sentTo),
             style: VocaboTypography.bodyMd.copyWith(
               color: VocaboColors.neutral600,
             ),
@@ -155,7 +156,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
   }
 
   List<Widget> _emailStep() => [
-    const FieldLabel('Email'),
+    FieldLabel(context.l10n.authFieldEmail),
     VocaboTextField(
       controller: _emailController,
       hint: 'you@example.com',
@@ -170,7 +171,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
     ),
     const SizedBox(height: VocaboSpacing.lg),
     VocaboPrimaryButton(
-      label: 'Send code',
+      label: context.l10n.authSendCode,
       isExpanded: true,
       isLoading: _sending,
       onPressed: _sending ? null : _sendCode,
@@ -181,9 +182,10 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
     final isLoading = ref.watch(passwordResetProvider).isLoading;
     final minutes = _resendIn ~/ 60;
     final seconds = (_resendIn % 60).toString().padLeft(2, '0');
+    final l10n = context.l10n;
 
     return [
-      const FieldLabel('Code'),
+      FieldLabel(l10n.authFieldCode),
       VocaboCodeInput(
         controller: _codeController,
         enabled: !isLoading,
@@ -202,8 +204,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
             borderRadius: VocaboRadius.sm,
           ),
           child: Text(
-            'Delivery is simulated while email is not set up. '
-            'Your code is $debugCode.',
+            l10n.authSimulatedEmailDelivery(debugCode),
             style: VocaboTypography.bodySm.copyWith(
               color: VocaboColors.primary800,
             ),
@@ -213,20 +214,20 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
       const SizedBox(height: VocaboSpacing.sm),
       _resendIn > 0
           ? Text(
-              'Resend code in $minutes:$seconds',
+              l10n.authResendCodeIn('$minutes:$seconds'),
               style: VocaboTypography.bodySm.copyWith(
                 color: VocaboColors.neutral,
               ),
             )
           : VocaboTextButton(
-              label: 'Resend code',
+              label: l10n.authResendCode,
               onPressed: _sending ? null : _sendCode,
             ),
       const SizedBox(height: VocaboSpacing.lg),
-      const FieldLabel('New password'),
+      FieldLabel(l10n.authFieldNewPassword),
       PasswordField(
         controller: _passwordController,
-        hint: 'At least 6 characters',
+        hint: l10n.passwordRuleLength(minPasswordLength),
         isNewPassword: true,
         enabled: !isLoading,
         errorText: _passwordError,
@@ -237,7 +238,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
       PasswordRequirements(password: _passwordController.text),
       const SizedBox(height: VocaboSpacing.xl),
       VocaboPrimaryButton(
-        label: 'Reset password and sign in',
+        label: l10n.authResetPasswordAndSignIn,
         isExpanded: true,
         isLoading: isLoading,
         onPressed: isLoading ? null : _reset,

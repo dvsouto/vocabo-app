@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+
 /// Background and centered card shared by the signup and verification
 /// screens, matching the login screens.
 class AuthScaffold extends StatelessWidget {
@@ -49,7 +51,7 @@ class AuthScaffold extends StatelessWidget {
               top: VocaboSpacing.xl,
               left: VocaboSpacing.lg,
               child: IconButton(
-                tooltip: 'Back',
+                tooltip: context.l10n.commonBack,
                 icon: const Icon(Icons.arrow_back),
                 color: VocaboColors.neutral700,
                 onPressed: onBack,
@@ -79,7 +81,7 @@ class FieldLabel extends StatelessWidget {
           children: [
             if (optional)
               TextSpan(
-                text: '  OPTIONAL',
+                text: '  ${context.l10n.commonOptional.toUpperCase()}',
                 style: VocaboTypography.labelSm.copyWith(
                   color: VocaboColors.neutral,
                   fontWeight: FontWeight.w400,

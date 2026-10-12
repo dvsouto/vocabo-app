@@ -21,11 +21,13 @@ class UserRepository {
     String? name,
     Object? age = _unchanged,
     String? nativeLanguage,
+    String? interfaceLanguage,
   }) => apiCall(
     () => _dataSource.updateProfile({
       if (name != null) 'name': name,
       if (!identical(age, _unchanged)) 'age': age as int?,
       if (nativeLanguage != null) 'native_language': nativeLanguage,
+      if (interfaceLanguage != null) 'interface_language': interfaceLanguage,
     }),
   );
 
@@ -75,8 +77,10 @@ class UserRepository {
     bool? showTranslations,
     bool? dailyReminderEnabled,
     String? dailyReminderTime,
+    String? voiceGender,
   }) => apiCall(
     () => _dataSource.updatePreferences({
+      if (voiceGender != null) 'voice_gender': voiceGender,
       if (showTranslations != null) 'show_translations': showTranslations,
       if (dailyReminderEnabled != null)
         'daily_reminder_enabled': dailyReminderEnabled,

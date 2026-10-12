@@ -105,6 +105,10 @@ class VocabularyStats extends Equatable {
   final List<VocabularyActivityPoint> dailyActivity;
   final List<VocabularyWeeklyActivityPoint> weeklyActivity;
 
+  /// False on the free plan: the weekly history, answers and memory
+  /// strength are left out.
+  final bool fullStats;
+
   const VocabularyStats({
     required this.totalWords,
     required this.wordsToday,
@@ -124,6 +128,7 @@ class VocabularyStats extends Equatable {
     this.stageDistribution = const [],
     required this.dailyActivity,
     required this.weeklyActivity,
+    this.fullStats = true,
   });
 
   factory VocabularyStats.fromJson(Map<String, dynamic> json) {
@@ -157,7 +162,8 @@ class VocabularyStats extends Equatable {
                 VocabularyActivityPoint.fromJson(item as Map<String, dynamic>),
           )
           .toList(),
-      weeklyActivity: (json['weekly_activity'] as List<dynamic>)
+      fullStats: json['full_stats'] as bool? ?? true,
+      weeklyActivity: (json['weekly_activity'] as List<dynamic>? ?? const [])
           .map(
             (item) => VocabularyWeeklyActivityPoint.fromJson(
               item as Map<String, dynamic>,
@@ -192,5 +198,6 @@ class VocabularyStats extends Equatable {
     stageDistribution,
     dailyActivity,
     weeklyActivity,
+    fullStats,
   ];
 }

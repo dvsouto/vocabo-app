@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/pro/paywall_dialog.dart';
+import 'package:vocabo_desktop/src/l10n/memory_strength_label.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
@@ -16,23 +22,10 @@ class WordDetailModal extends ConsumerWidget {
 
   final UserVocabulary userVocabulary;
 
-  String _formatFullDate(DateTime date) {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
+  String _formatFullDate(BuildContext context, DateTime date) =>
+      DateFormat.yMMMMd(
+        Localizations.localeOf(context).toString(),
+      ).format(date);
 
   void _close(WidgetRef ref) {
     ref.read(showWordDetailModalProvider.notifier).state = false;
@@ -85,7 +78,7 @@ class WordDetailModal extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildHeader(ref, vocabulary, flashcard),
+                  _buildHeader(context, ref, vocabulary, flashcard),
                   const SizedBox(height: VocaboSpacing.lg),
                   _buildTermRow(
                     ref,
@@ -96,13 +89,18 @@ class WordDetailModal extends ConsumerWidget {
                     audioState,
                   ),
                   const SizedBox(height: VocaboSpacing.xl),
-                  _buildTopColumns(vocabulary, hasTranslation, examples),
+                  _buildTopColumns(
+                    context,
+                    vocabulary,
+                    hasTranslation,
+                    examples,
+                  ),
                   if (hasMeaning) ...[
                     const SizedBox(height: VocaboSpacing.lg),
-                    _buildMeaningSection(vocabulary),
+                    _buildMeaningSection(context, vocabulary),
                   ],
                   const SizedBox(height: VocaboSpacing.xl),
-                  _buildDateSection(flashcard),
+                  _buildDateSection(context, flashcard),
                   const SizedBox(height: VocaboSpacing.xl),
                   _buildActions(context, ref, flashcard),
                 ],
@@ -115,6 +113,7 @@ class WordDetailModal extends ConsumerWidget {
   }
 
   Widget _buildHeader(
+    BuildContext context,
     WidgetRef ref,
     Vocabulary vocabulary,
     Flashcard? flashcard,
@@ -122,12 +121,12 @@ class WordDetailModal extends ConsumerWidget {
     return Row(
       children: [
         VocaboTagChip(
-          label: vocabulary.wordType.value.toUpperCase(),
+          label: wordTypeLabel(context.l10n, vocabulary.wordType).toUpperCase(),
           variant: TagChipVariant.outlined,
         ),
         if (flashcard != null) ...[
           const SizedBox(width: VocaboSpacing.md),
-          MemoryStrengthDots(
+          LocalizedMemoryStrengthDots(
             strength: MemoryStrength.of(
               stageIndex: flashcard.currentStageIndex,
               status: flashcard.status,
@@ -228,6 +227,7 @@ class WordDetailModal extends ConsumerWidget {
   }
 
   Widget _buildTopColumns(
+    BuildContext context,
     Vocabulary vocabulary,
     bool hasTranslation,
     List<String> examples,
@@ -237,7 +237,7 @@ class WordDetailModal extends ConsumerWidget {
     }
 
     if (examples.isEmpty) {
-      return _buildTranslationColumn(vocabulary, hasTranslation);
+      return _buildTranslationColumn(context, vocabulary, hasTranslation);
     }
 
     return Row(
@@ -245,20 +245,27 @@ class WordDetailModal extends ConsumerWidget {
       children: [
         Expanded(
           flex: 2,
-          child: _buildTranslationColumn(vocabulary, hasTranslation),
+          child: _buildTranslationColumn(context, vocabulary, hasTranslation),
         ),
         const SizedBox(width: VocaboSpacing.xxl),
-        Expanded(flex: 3, child: _buildExamplesSection(examples, vocabulary)),
+        Expanded(
+          flex: 3,
+          child: _buildExamplesSection(context, examples, vocabulary),
+        ),
       ],
     );
   }
 
-  Widget _buildTranslationColumn(Vocabulary vocabulary, bool hasTranslation) {
+  Widget _buildTranslationColumn(
+    BuildContext context,
+    Vocabulary vocabulary,
+    bool hasTranslation,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'TRANSLATION',
+          context.l10n.wordTranslationLabel,
           style: VocaboTypography.labelSm.copyWith(
             color: VocaboColors.neutral,
             fontWeight: FontWeight.w600,
@@ -277,12 +284,12 @@ class WordDetailModal extends ConsumerWidget {
     );
   }
 
-  Widget _buildMeaningSection(Vocabulary vocabulary) {
+  Widget _buildMeaningSection(BuildContext context, Vocabulary vocabulary) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'MEANING',
+          context.l10n.wordMeaningLabel,
           style: VocaboTypography.labelSm.copyWith(
             color: VocaboColors.neutral,
             fontWeight: FontWeight.w600,
@@ -297,12 +304,16 @@ class WordDetailModal extends ConsumerWidget {
     );
   }
 
-  Widget _buildExamplesSection(List<String> examples, Vocabulary vocabulary) {
+  Widget _buildExamplesSection(
+    BuildContext context,
+    List<String> examples,
+    Vocabulary vocabulary,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'EXAMPLE SENTENCES',
+          context.l10n.wordExamplesLabel,
           style: VocaboTypography.labelSm.copyWith(
             color: VocaboColors.neutral,
             fontWeight: FontWeight.w600,
@@ -378,23 +389,24 @@ class WordDetailModal extends ConsumerWidget {
     );
   }
 
-  Widget _buildDateSection(Flashcard? flashcard) {
+  Widget _buildDateSection(BuildContext context, Flashcard? flashcard) {
+    final l10n = context.l10n;
     final lastPracticed = flashcard?.lastEvaluatedAt;
 
     return Row(
       children: [
         _buildDateItem(
           icon: Icons.calendar_today_outlined,
-          label: 'DATE ADDED',
-          value: _formatFullDate(userVocabulary.createdAt),
+          label: l10n.wordDateAdded,
+          value: _formatFullDate(context, userVocabulary.createdAt),
         ),
         const Spacer(),
         _buildDateItem(
           icon: Icons.bolt_outlined,
-          label: 'LAST PRACTICED',
+          label: l10n.wordLastPracticed,
           value: lastPracticed == null
-              ? 'Not yet'
-              : _formatFullDate(lastPracticed.toLocal()),
+              ? l10n.wordNotPracticedYet
+              : _formatFullDate(context, lastPracticed.toLocal()),
         ),
       ],
     );
@@ -445,6 +457,7 @@ class WordDetailModal extends ConsumerWidget {
     Flashcard flashcard,
   ) async {
     final api = ref.read(apiClientProvider);
+    final l10n = context.l10n;
     final archived = flashcard.status == FlashcardStatus.archived;
     try {
       if (archived) {
@@ -460,42 +473,49 @@ class WordDetailModal extends ConsumerWidget {
           SnackBar(
             content: Text(
               archived
-                  ? 'Flashcard restored. It is back in your reviews.'
-                  : 'Flashcard archived. The word stays in your library.',
+                  ? l10n.wordFlashcardRestored
+                  : l10n.wordFlashcardArchived,
             ),
           ),
         );
       }
     } catch (e, st) {
+      if (upgradeReasonFor(e) case final reason?) {
+        if (context.mounted) showPaywall(context, reason);
+        return;
+      }
       appLogger.handle(e, st, 'WordDetail toggleArchive() error');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not update the flashcard.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.wordFlashcardUpdateFailed)));
       }
     }
   }
 
   Future<void> _remove(BuildContext context, WidgetRef ref) async {
-    final term = userVocabulary.vocabulary?.term ?? 'this word';
+    final l10n = context.l10n;
+    final term = userVocabulary.vocabulary?.term;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Remove "$term"?'),
-        content: const Text(
-          'The word leaves your library and its flashcard progress is lost.',
+        title: Text(
+          term == null
+              ? l10n.wordRemoveTitleFallback
+              : l10n.wordRemoveTitle(term),
         ),
+        content: Text(l10n.wordRemoveBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            child: const Text('Remove'),
+            child: Text(l10n.commonRemove),
           ),
         ],
       ),
@@ -512,9 +532,9 @@ class WordDetailModal extends ConsumerWidget {
     } catch (e, st) {
       appLogger.handle(e, st, 'WordDetail remove() error');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not remove the word.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.wordRemoveFailed)));
       }
     }
   }
@@ -524,13 +544,16 @@ class WordDetailModal extends ConsumerWidget {
     WidgetRef ref,
     Flashcard? flashcard,
   ) {
+    final l10n = context.l10n;
     final archived = flashcard?.status == FlashcardStatus.archived;
 
     return Row(
       children: [
         if (flashcard != null)
           VocaboTextButton(
-            label: archived ? 'Restore flashcard' : 'Archive flashcard',
+            label: archived
+                ? l10n.wordRestoreFlashcard
+                : l10n.wordArchiveFlashcard,
             leading: Icon(
               archived ? Icons.unarchive_outlined : Icons.archive_outlined,
             ),
@@ -538,7 +561,7 @@ class WordDetailModal extends ConsumerWidget {
           ),
         const Spacer(),
         VocaboNeutralButton(
-          label: 'Remove',
+          label: l10n.commonRemove,
           leading: const Icon(Icons.delete_outline),
           onPressed: () => _remove(context, ref),
         ),

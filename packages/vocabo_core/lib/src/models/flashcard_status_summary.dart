@@ -110,10 +110,14 @@ class UserPreferences extends Equatable {
   /// Local time of day in 24h `HH:MM` format.
   final String dailyReminderTime;
 
+  /// Voice of the pronunciation audio: `female` or `male`.
+  final String voiceGender;
+
   const UserPreferences({
     this.showTranslations = true,
     this.dailyReminderEnabled = false,
     this.dailyReminderTime = '08:00',
+    this.voiceGender = 'female',
   });
 
   factory UserPreferences.fromJson(Map<String, dynamic> json) {
@@ -121,6 +125,7 @@ class UserPreferences extends Equatable {
       showTranslations: json['show_translations'] as bool? ?? true,
       dailyReminderEnabled: json['daily_reminder_enabled'] as bool? ?? false,
       dailyReminderTime: json['daily_reminder_time'] as String? ?? '08:00',
+      voiceGender: json['voice_gender'] as String? ?? 'female',
     );
   }
 
@@ -128,17 +133,20 @@ class UserPreferences extends Equatable {
     'show_translations': showTranslations,
     'daily_reminder_enabled': dailyReminderEnabled,
     'daily_reminder_time': dailyReminderTime,
+    'voice_gender': voiceGender,
   };
 
   UserPreferences copyWith({
     bool? showTranslations,
     bool? dailyReminderEnabled,
     String? dailyReminderTime,
+    String? voiceGender,
   }) {
     return UserPreferences(
       showTranslations: showTranslations ?? this.showTranslations,
       dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
       dailyReminderTime: dailyReminderTime ?? this.dailyReminderTime,
+      voiceGender: voiceGender ?? this.voiceGender,
     );
   }
 
@@ -147,5 +155,6 @@ class UserPreferences extends Equatable {
     showTranslations,
     dailyReminderEnabled,
     dailyReminderTime,
+    voiceGender,
   ];
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcards_completion.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcards_home.dart';
@@ -85,10 +86,10 @@ class _HomeLayout extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Flashcards', style: VocaboTypography.headlineSm),
+        Text(context.l10n.flashcardsTitle, style: VocaboTypography.headlineSm),
         const SizedBox(height: VocaboSpacing.xs),
         Text(
-          'Spaced repetition keeps your words from fading.',
+          context.l10n.flashcardsTagline,
           style: VocaboTypography.bodyMd.copyWith(color: VocaboColors.neutral),
         ),
         const SizedBox(height: VocaboSpacing.xl),

@@ -7,6 +7,8 @@ import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/app.dart';
 import 'package:vocabo_desktop/src/auth/device_info.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_view.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_panel.dart';
 
@@ -43,9 +45,7 @@ void trayPanelMain() {
 
   runApp(
     ProviderScope(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: VocaboTheme.light(),
+      child: _LocalizedApp(
         home: Scaffold(
           backgroundColor: Colors.transparent,
           body: Container(
@@ -81,15 +81,33 @@ void spotlightMain() {
   initLogger(verbose: kDebugMode);
 
   runApp(
-    ProviderScope(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: VocaboTheme.light(),
-        home: const Scaffold(
+    const ProviderScope(
+      child: _LocalizedApp(
+        home: Scaffold(
           backgroundColor: Colors.transparent,
           body: SpotlightView(),
         ),
       ),
     ),
   );
+}
+
+/// App shell of the secondary engines (menu bar panel and spotlight), in
+/// the interface language.
+class _LocalizedApp extends ConsumerWidget {
+  const _LocalizedApp({required this.home});
+
+  final Widget home;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: VocaboTheme.light(),
+      locale: ref.watch(appLocaleProvider),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: home,
+    );
+  }
 }

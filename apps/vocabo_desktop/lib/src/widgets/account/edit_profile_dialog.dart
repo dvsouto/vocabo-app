@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/config/env.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 import 'package:vocabo_desktop/src/widgets/account/auth_scaffold.dart';
@@ -36,7 +37,8 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
     text: widget.user.age?.toString() ?? '',
   );
   late String _nativeLanguage =
-      NativeLanguage.byCode(widget.user.nativeLanguage)?.code ?? 'en';
+      NativeLanguage.byCode(widget.user.nativeLanguage)?.code ??
+      defaultNativeLanguage;
   Map<String, String> _errors = {};
   bool _saving = false;
   bool _savingPhoto = false;
@@ -64,7 +66,7 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
       ref.invalidate(userProfileProvider);
     } catch (e, st) {
       appLogger.handle(e, st, 'Avatar update failed');
-      _showMessage('Could not save this photo. Try a PNG or JPEG.');
+      if (mounted) _showMessage(context.l10n.authPhotoSaveFailed);
     } finally {
       if (mounted) setState(() => _savingPhoto = false);
     }
@@ -77,7 +79,7 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
       ref.invalidate(userProfileProvider);
     } catch (e, st) {
       appLogger.handle(e, st, 'Avatar removal failed');
-      _showMessage('Could not remove the photo. Please try again.');
+      if (mounted) _showMessage(context.l10n.authPhotoRemoveFailed);
     } finally {
       if (mounted) setState(() => _savingPhoto = false);
     }
@@ -87,10 +89,11 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
     final name = _nameController.text.trim();
     final ageText = _ageController.text.trim();
     final age = ageText.isEmpty ? null : int.tryParse(ageText);
+    final l10n = context.l10n;
     final errors = <String, String>{
-      if (name.isEmpty) 'name': 'Enter your name.',
+      if (name.isEmpty) 'name': l10n.authEnterName,
       if (ageText.isNotEmpty && (age == null || age < 5 || age > 120))
-        'age': 'Enter an age between 5 and 120.',
+        'age': l10n.authInvalidAge(5, 120),
     };
     setState(() => _errors = errors);
     if (errors.isNotEmpty) return;
@@ -105,9 +108,9 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
       if (mounted) Navigator.of(context).pop();
     } catch (e, st) {
       appLogger.handle(e, st, 'Profile update failed');
-      _showMessage(
-        e is AppException ? e.message : 'Could not save. Please try again.',
-      );
+      if (mounted) {
+        _showMessage(e is AppException ? e.message : l10n.authSaveFailed);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -116,10 +119,11 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProfileProvider).valueOrNull ?? widget.user;
+    final l10n = context.l10n;
 
     return AlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
-      title: const Text('Edit profile'),
+      title: Text(l10n.authEditProfileTitle),
       content: SizedBox(
         width: 440,
         child: SingleChildScrollView(
@@ -144,34 +148,34 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
                   else ...[
                     VocaboTextButton(
                       label: user.avatarUrl == null
-                          ? 'Add photo'
-                          : 'Change photo',
+                          ? l10n.authAddPhoto
+                          : l10n.authChangePhoto,
                       onPressed: _changePhoto,
                     ),
                     if (user.avatarUrl != null)
                       VocaboTextButton(
-                        label: 'Remove',
+                        label: l10n.commonRemove,
                         onPressed: _removePhoto,
                       ),
                   ],
                 ],
               ),
               const SizedBox(height: VocaboSpacing.lg),
-              const FieldLabel('Name'),
+              FieldLabel(l10n.authFieldName),
               VocaboTextField(
                 controller: _nameController,
                 errorText: _errors['name'],
                 autofocus: true,
               ),
               const SizedBox(height: VocaboSpacing.md),
-              const FieldLabel('Email'),
+              FieldLabel(l10n.authFieldEmail),
               VocaboTextField(
                 controller: _emailController,
                 readOnly: true,
                 enabled: false,
-                suffix: const Tooltip(
-                  message: 'The email of an account cannot be changed.',
-                  child: Icon(
+                suffix: Tooltip(
+                  message: l10n.authEmailCannotChange,
+                  child: const Icon(
                     Icons.lock_outline,
                     size: 16,
                     color: VocaboColors.neutral,
@@ -179,7 +183,7 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
                 ),
               ),
               const SizedBox(height: VocaboSpacing.md),
-              const FieldLabel('Phone'),
+              FieldLabel(l10n.authFieldPhone),
               Row(
                 children: [
                   Expanded(
@@ -189,7 +193,7 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
                               user.phoneNumber!,
                               isoHint: user.phoneCountry,
                             )
-                          : 'No phone number',
+                          : l10n.authNoPhoneNumber,
                       style: VocaboTypography.bodyMd.copyWith(
                         color: user.hasPhone
                             ? VocaboColors.onSurface
@@ -198,19 +202,21 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
                     ),
                   ),
                   VocaboTextButton(
-                    label: user.hasPhone ? 'Change' : 'Add',
+                    label: user.hasPhone
+                        ? l10n.authChangePhone
+                        : l10n.authAddPhone,
                     onPressed: () => showChangePhoneDialog(context, user: user),
                   ),
                 ],
               ),
               const SizedBox(height: VocaboSpacing.md),
-              const FieldLabel('Native language'),
+              FieldLabel(l10n.authFieldNativeLanguage),
               NativeLanguageField(
                 value: _nativeLanguage,
                 onChanged: (code) => setState(() => _nativeLanguage = code),
               ),
               const SizedBox(height: VocaboSpacing.md),
-              const FieldLabel('Age', optional: true),
+              FieldLabel(l10n.authFieldAge, optional: true),
               SizedBox(
                 width: 120,
                 child: VocaboTextField(
@@ -230,11 +236,11 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
       ),
       actions: [
         VocaboTextButton(
-          label: 'Cancel',
+          label: l10n.commonCancel,
           onPressed: _saving ? null : () => Navigator.of(context).pop(),
         ),
         VocaboPrimaryButton(
-          label: 'Save',
+          label: l10n.commonSave,
           isLoading: _saving,
           onPressed: _saving ? null : _save,
         ),

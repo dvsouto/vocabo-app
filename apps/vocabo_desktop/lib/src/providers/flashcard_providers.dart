@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
@@ -108,6 +111,8 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
   @override
   FlashcardSessionState build() => const FlashcardSessionState();
 
+  AppLocalizations get _l10n => ref.read(appLocalizationsProvider);
+
   /// Loads the in-progress session or composes a new one. [size] limits a
   /// new deck, which the menu bar panel uses for quick sessions.
   Future<void> startSession({int? size}) async {
@@ -126,7 +131,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
       final session = await api.flashcards.getSession(size: size);
 
       if (session == null || session.isEmpty) {
-        _goHome(notice: 'Nothing to review right now.');
+        _goHome(notice: _l10n.flashcardsNothingToReview);
         return;
       }
 
@@ -149,7 +154,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
           );
     } catch (e, st) {
       appLogger.handle(e, st, 'FlashcardSession startSession() error');
-      _goHome(notice: 'Could not load your review session.');
+      _goHome(notice: _l10n.flashcardsSessionLoadFailed);
     }
   }
 
@@ -218,7 +223,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
 
       _advance(updated, completed: result.sessionCompleted);
     } on ConflictException {
-      _notify('Your session changed on another device. Reloading…');
+      _notify(_l10n.flashcardsSessionChangedElsewhere);
       await startSession();
     } catch (e, st) {
       appLogger.handle(e, st, 'FlashcardSession evaluate() error');
@@ -226,7 +231,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
         selectedEvaluation: () => null,
         isSubmitting: false,
       );
-      _notify('Could not save your answer. Please try again.');
+      _notify(_l10n.flashcardsAnswerSaveFailed);
     }
   }
 
@@ -254,7 +259,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
         if (result.sessionCompleted) {
           _complete(remaining);
         } else {
-          _goHome(notice: 'This session is empty.');
+          _goHome(notice: _l10n.flashcardsSessionEmpty);
         }
         return;
       }
@@ -264,12 +269,16 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
         return;
       }
 
-      _notify('Word set aside.');
+      _notify(_l10n.flashcardsWordSetAside);
       _advance(remaining, completed: false);
     } catch (e, st) {
-      appLogger.handle(e, st, 'FlashcardSession archiveCurrent() error');
       state = state.copyWith(isSubmitting: false);
-      _notify('Could not set this word aside. Please try again.');
+      if (upgradeReasonFor(e) case final reason?) {
+        ref.read(upgradePromptProvider.notifier).state = reason;
+        return;
+      }
+      appLogger.handle(e, st, 'FlashcardSession archiveCurrent() error');
+      _notify(_l10n.flashcardsSetAsideFailed);
     }
   }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+
 /// Checklist of the password rules, ticked as the user types.
 class PasswordRequirements extends StatelessWidget {
   const PasswordRequirements({super.key, required this.password});
@@ -15,7 +17,10 @@ class PasswordRequirements extends StatelessWidget {
       runSpacing: VocaboSpacing.xs,
       children: [
         for (final rule in PasswordRequirement.values)
-          _Rule(label: rule.label, met: rule.isMetBy(password)),
+          _Rule(
+            label: context.l10n.passwordRequirementLabel(rule),
+            met: rule.isMetBy(password),
+          ),
       ],
     );
   }

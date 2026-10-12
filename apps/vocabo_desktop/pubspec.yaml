@@ -11,6 +11,9 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   cupertino_icons: ^1.0.8
   dio: ^5.7.0
   flutter_riverpod: ^2.6.1
@@ -36,6 +39,8 @@ dependencies:
   file_selector: ^1.1.0
   package_info_plus: ^9.0.1
   url_launcher: ^6.3.3
+  in_app_purchase: ^3.3.1
+  in_app_purchase_storekit: ^0.4.13+1
 
 dev_dependencies:
   flutter_test:
@@ -46,5 +51,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/

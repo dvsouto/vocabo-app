@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
@@ -33,6 +34,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(userProfileProvider).valueOrNull;
     final api = ref.read(apiClientProvider);
+    final l10n = context.l10n;
 
     return AuthScaffold(
       child: Column(
@@ -54,7 +56,10 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
             ),
           ),
           const SizedBox(height: VocaboSpacing.md),
-          Text('Confirm your account', style: VocaboTypography.headlineSm),
+          Text(
+            l10n.authConfirmAccountTitle,
+            style: VocaboTypography.headlineSm,
+          ),
           const SizedBox(height: VocaboSpacing.lg),
           if (user?.hasPhone ?? false) ...[
             Wrap(
@@ -63,8 +68,8 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
                 for (final channel in VerificationChannel.values)
                   VocaboSelectableChip(
                     label: channel == VerificationChannel.email
-                        ? 'Email'
-                        : 'SMS',
+                        ? l10n.authChannelEmail
+                        : l10n.authChannelSms,
                     isSelected: _channel == channel,
                     onTap: () => setState(() => _channel = channel),
                   ),
@@ -79,13 +84,13 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
           ),
           const SizedBox(height: VocaboSpacing.xl),
           Text(
-            user == null ? '' : 'Signed in as ${user.email}',
+            user == null ? '' : l10n.authSignedInAs(user.email),
             style: VocaboTypography.bodySm.copyWith(
               color: VocaboColors.neutral,
             ),
           ),
           VocaboTextButton(
-            label: 'Use another account',
+            label: l10n.authUseAnotherAccount,
             onPressed: () => ref.read(logoutProvider.notifier).logout(),
           ),
         ],

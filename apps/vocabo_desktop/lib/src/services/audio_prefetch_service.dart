@@ -10,8 +10,12 @@ class AudioPrefetchService {
   AudioPrefetchService({
     required VocabularyAudioRepository audioRepository,
     required AudioCacheService cacheService,
+    required String Function() voice,
   })  : _audioRepository = audioRepository,
-        _cacheService = cacheService;
+        _cacheService = cacheService,
+        _voice = voice;
+
+  final String Function() _voice;
 
   Future<void> prefetch(List<UserVocabulary> vocabularies) async {
     for (final uv in vocabularies) {
@@ -28,29 +32,38 @@ class AudioPrefetchService {
   Future<void> _prefetchOne(Vocabulary? vocab, VocabularyType type) async {
     if (vocab == null) return;
     if (vocab.contentHash == null || vocab.contentHash!.isEmpty) return;
-    if (vocab.audioStatus != 'done') return;
+    final voice = _voice();
+    // Only prefetch recordings that already exist, so browsing the library
+    // never triggers new generation.
+    if (!vocab.audioVoices.contains(voice)) return;
 
     final contentHash = vocab.contentHash!;
 
-    final cached = await _cacheService.getCached(contentHash);
+    final cached = await _cacheService.getCached(contentHash, voice: voice);
     if (cached != null) return;
 
     if (_prefetching.contains(contentHash)) return;
     _prefetching.add(contentHash);
 
-    _fetchAndCache(vocab, type.value).ignore();
+    _fetchAndCache(vocab, type.value, voice).ignore();
   }
 
-  Future<void> _fetchAndCache(Vocabulary vocab, String type) async {
+  Future<void> _fetchAndCache(
+    Vocabulary vocab,
+    String type,
+    String voice,
+  ) async {
     final contentHash = vocab.contentHash!;
     try {
       final response = await _audioRepository.getAudio(
         vocabularyId: vocab.id,
         type: type,
+        voice: voice,
       );
       await _cacheService.cacheAudio(
         contentHash,
         response.bytes,
+        voice: voice,
         contentType: response.contentType,
       );
       appLogger.debug('AudioPrefetch: cached audio for ${vocab.term}');

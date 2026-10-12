@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+
 class SearchAutocompleteDropdown extends StatelessWidget {
   const SearchAutocompleteDropdown({
     super.key,
@@ -33,10 +35,7 @@ class SearchAutocompleteDropdown extends StatelessWidget {
             mouseCursor: SystemMouseCursors.click,
             borderRadius: VocaboRadius.sm,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 children: [
                   Icon(
@@ -57,7 +56,7 @@ class SearchAutocompleteDropdown extends StatelessWidget {
                   ),
                   if (result.score < 1.0)
                     Text(
-                      'fuzzy',
+                      context.l10n.searchFuzzyMatch,
                       style: VocaboTypography.labelSm.copyWith(
                         color: VocaboColors.neutral,
                       ),

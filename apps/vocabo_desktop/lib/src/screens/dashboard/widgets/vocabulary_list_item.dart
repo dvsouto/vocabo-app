@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/memory_strength_label.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
@@ -13,18 +17,21 @@ class VocabularyListItem extends ConsumerWidget {
 
   final UserVocabulary userVocabulary;
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-    if (diff.inDays == 0) return 'Today';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${date.day}/${date.month}/${date.year}';
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = context.l10n;
+    final diff = DateTime.now().difference(date);
+    if (diff.inDays == 0) return l10n.libraryAddedToday;
+    if (diff.inDays == 1) return l10n.libraryAddedYesterday;
+    if (diff.inDays < 7) return l10n.libraryAddedDaysAgo(diff.inDays);
+    return DateFormat.yMd(
+      Localizations.localeOf(context).toString(),
+    ).format(date);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vocabulary = userVocabulary.vocabulary!;
+    final l10n = context.l10n;
     final audioState = ref.watch(audioPlayerStateProvider);
     final isModalOpen = ref.watch(showWordDetailModalProvider);
     final showTranslations = ref.watch(showTranslationsProvider);
@@ -123,7 +130,10 @@ class VocabularyListItem extends ConsumerWidget {
                         Text(vocabulary.term, style: VocaboTypography.titleLg),
                         const SizedBox(width: 8),
                         Text(
-                          vocabulary.wordType.value.toUpperCase(),
+                          wordTypeLabel(
+                            l10n,
+                            vocabulary.wordType,
+                          ).toUpperCase(),
                           style: VocaboTypography.labelSm.copyWith(
                             color: VocaboColors.primary,
                           ),
@@ -167,15 +177,15 @@ class VocabularyListItem extends ConsumerWidget {
                           label:
                               userVocabulary.vocabularyType ==
                                   VocabularyType.custom
-                              ? 'CUSTOM'
-                              : 'LIBRARY',
+                              ? l10n.librarySourceCustom
+                              : l10n.librarySourceLibrary,
                           variant:
                               userVocabulary.vocabularyType ==
                                   VocabularyType.custom
                               ? TagChipVariant.learning
                               : TagChipVariant.outlined,
                         ),
-                        MemoryStrengthDots(
+                        LocalizedMemoryStrengthDots(
                           strength:
                               userVocabulary.flashcard?.strength ??
                               MemoryStrength.of(stageIndex: 0),
@@ -188,7 +198,7 @@ class VocabularyListItem extends ConsumerWidget {
 
               // Date added
               Text(
-                _formatDate(userVocabulary.createdAt),
+                _formatDate(context, userVocabulary.createdAt),
                 style: VocaboTypography.bodySm.copyWith(
                   color: VocaboColors.neutral,
                 ),

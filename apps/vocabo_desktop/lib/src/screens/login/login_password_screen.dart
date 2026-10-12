@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/screens/password_reset/password_reset_screen.dart';
 import 'package:vocabo_desktop/src/widgets/account/password_field.dart';
@@ -45,9 +46,9 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
     if (loginState.hasError && mounted) {
       final error = loginState.error;
       final message = switch (error) {
-        UnauthorizedException() => 'Incorrect email or password.',
+        UnauthorizedException() => context.l10n.authIncorrectCredentials,
         AppException(:final message) => message,
-        _ => 'Could not sign in. Please try again.',
+        _ => context.l10n.authSignInFailed,
       };
       ScaffoldMessenger.of(
         context,
@@ -62,6 +63,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
   Widget build(BuildContext context) {
     final loginState = ref.watch(loginProvider);
     final isLoading = loginState.isLoading;
+    final l10n = context.l10n;
 
     return Scaffold(
       body: Stack(
@@ -110,7 +112,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                   const SizedBox(height: VocaboSpacing.sm),
 
                   Text(
-                    'Enter your password',
+                    l10n.authEnterYourPassword,
                     style: VocaboTypography.bodySm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -140,7 +142,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                   // Password field
                   PasswordField(
                     controller: _passwordController,
-                    hint: 'Your password',
+                    hint: l10n.authYourPasswordHint,
                     autofocus: true,
                     onSubmitted: (_) => _onLogin(),
                   ),
@@ -150,7 +152,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: VocaboPrimaryButton(
-                      label: 'Enter Library',
+                      label: l10n.authEnterLibrary,
                       isExpanded: true,
                       isLoading: isLoading,
                       trailing: const Icon(
@@ -168,11 +170,11 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                     spacing: VocaboSpacing.sm,
                     children: [
                       VocaboTextButton(
-                        label: 'Back',
+                        label: l10n.commonBack,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       VocaboTextButton(
-                        label: 'Forgot password?',
+                        label: l10n.authForgotPassword,
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) =>

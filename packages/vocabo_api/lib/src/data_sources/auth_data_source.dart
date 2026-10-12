@@ -12,6 +12,7 @@ class SignUpRequest {
     required this.email,
     required this.password,
     required this.nativeLanguage,
+    this.interfaceLanguage,
     this.age,
     this.phoneCountry,
     this.phoneNumber,
@@ -21,6 +22,7 @@ class SignUpRequest {
   final String email;
   final String password;
   final String nativeLanguage;
+  final String? interfaceLanguage;
   final int? age;
   final String? phoneCountry;
 
@@ -55,6 +57,8 @@ class AuthDataSource {
         'email': request.email,
         'password': request.password,
         'native_language': request.nativeLanguage,
+        if (request.interfaceLanguage != null)
+          'interface_language': request.interfaceLanguage,
         if (request.age != null) 'age': request.age,
         if (request.phoneNumber != null) ...{
           'phone_country': request.phoneCountry,
@@ -67,11 +71,13 @@ class AuthDataSource {
     return AuthToken.fromJson(response.data!);
   }
 
-  Future<AuthToken> socialLogin({
+  /// Also tells whether this sign in created the account.
+  Future<({AuthToken token, bool created})> socialLogin({
     required SocialAuthProvider provider,
     required String idToken,
     String? name,
     String? nativeLanguage,
+    String? interfaceLanguage,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/auth/${provider.name}',
@@ -79,11 +85,15 @@ class AuthDataSource {
         'id_token': idToken,
         if (name != null) 'name': name,
         if (nativeLanguage != null) 'native_language': nativeLanguage,
+        if (interfaceLanguage != null) 'interface_language': interfaceLanguage,
         'device': _device.toJson(),
       },
     );
 
-    return AuthToken.fromJson(response.data!);
+    return (
+      token: AuthToken.fromJson(response.data!),
+      created: response.data!['created'] as bool? ?? false,
+    );
   }
 
   Future<void> logout() => _dio.post<void>('/auth/logout');

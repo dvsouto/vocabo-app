@@ -10,7 +10,12 @@ class VocabularyAudioRepository {
   Future<AudioResponse> getAudio({
     required String vocabularyId,
     required String type,
+    String? voice,
   }) => apiCall(
-    () => _dataSource.getAudio(vocabularyId: vocabularyId, type: type),
+    () => _dataSource.getAudio(
+      vocabularyId: vocabularyId,
+      type: type,
+      voice: voice,
+    ),
   );
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
@@ -38,6 +40,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
         ref.invalidate(cachedUserVocabularyProvider);
         ref.invalidate(translationAvailabilityProvider);
         ref.invalidate(flashcardStatusProvider);
+        ref.invalidate(interfaceLanguageProvider);
       }
     });
   }
@@ -68,25 +71,24 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
   }
 
   void _confirmQuit() {
+    final l10n = context.l10n;
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Quit Vocabo'),
-        content: const Text('Are you sure you want to quit?'),
+        title: Text(l10n.trayQuitTitle),
+        content: Text(l10n.trayQuitConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               _channel.invokeMethod('quitApp');
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('Quit'),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(l10n.trayQuitAction),
           ),
         ],
       ),
@@ -95,6 +97,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.all(VocaboSpacing.md),
       child: Column(
@@ -107,12 +110,9 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
               IconButton(
                 icon: const Icon(Icons.power_settings_new, size: 20),
                 color: VocaboColors.neutral,
-                tooltip: 'Quit Vocabo',
+                tooltip: l10n.trayQuitTitle,
                 onPressed: _confirmQuit,
-                constraints: const BoxConstraints(
-                  minWidth: 32,
-                  minHeight: 32,
-                ),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
             ],
           ),
@@ -120,17 +120,21 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
           // Tab bar
           VocaboTabBar(
-            tabs: const ['Add Word', 'Translate', 'Flashcards'],
+            tabs: [
+              l10n.trayTabAddWord,
+              l10n.trayTabTranslate,
+              l10n.trayTabFlashcards,
+            ],
             selectedIndex: _selectedTabIndex,
             onTabChanged: (index) {
-                setState(() => _selectedTabIndex = index);
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (index == 0) {
-                    _searchFocusNode.requestFocus();
-                  } else if (index == 1) {
-                    _translateFocusNode.requestFocus();
-                  }
-                });
+              setState(() => _selectedTabIndex = index);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (index == 0) {
+                  _searchFocusNode.requestFocus();
+                } else if (index == 1) {
+                  _translateFocusNode.requestFocus();
+                }
+              });
             },
           ),
           const SizedBox(height: VocaboSpacing.sm),
@@ -153,6 +157,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
   Widget _buildAddWordTab() {
     ref.watch(dictionaryInitProvider);
+    final l10n = context.l10n;
 
     final searchResults = ref.watch(localSearchResultsProvider);
     final query = ref.watch(searchQueryProvider);
@@ -167,10 +172,9 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
         VocaboSearchField(
           controller: _searchController,
           focusNode: _searchFocusNode,
-          hint: 'Search words...',
+          hint: l10n.traySearchHint,
           autofocus: true,
-          onChanged: (v) =>
-              ref.read(searchQueryProvider.notifier).state = v,
+          onChanged: (v) => ref.read(searchQueryProvider.notifier).state = v,
         ),
 
         // Autocomplete suggestions
@@ -194,8 +198,8 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
                 return Center(
                   child: Text(
                     query.isEmpty
-                        ? 'No words yet'
-                        : 'No matching words',
+                        ? l10n.trayNoWordsYet
+                        : l10n.trayNoMatchingWords,
                     style: VocaboTypography.bodySm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -206,7 +210,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recent Words',
+                    l10n.trayRecentWords,
                     style: VocaboTypography.labelSm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -217,9 +221,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
                       padding: EdgeInsets.zero,
                       itemCount: words.length,
                       itemBuilder: (context, index) =>
-                          TrayWordItem(
-                            userVocabulary: words[index],
-                          ),
+                          TrayWordItem(userVocabulary: words[index]),
                     ),
                   ),
                 ],
@@ -234,7 +236,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
             ),
             error: (_, _) => Center(
               child: Text(
-                'Failed to load words',
+                l10n.trayLoadWordsFailed,
                 style: VocaboTypography.bodySm.copyWith(
                   color: VocaboColors.neutral,
                 ),
@@ -246,7 +248,7 @@ class _TrayPanelState extends ConsumerState<TrayPanel> {
 
         // Single conditional button
         VocaboPrimaryButton(
-          label: showAddButton ? 'Add New Word' : 'Dashboard',
+          label: showAddButton ? l10n.trayAddNewWord : l10n.trayDashboard,
           isExpanded: true,
           trailing: showAddButton
               ? const Icon(

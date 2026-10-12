@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
@@ -40,13 +41,13 @@ class StatsSection extends ConsumerWidget {
             const SizedBox(width: VocaboSpacing.sm),
             Expanded(
               child: Text(
-                'Learning insights are temporarily unavailable.',
+                context.l10n.statsInsightsUnavailable,
                 style: VocaboTypography.bodyMd,
               ),
             ),
             TextButton(
               onPressed: () => ref.invalidate(vocabularyStatsProvider),
-              child: const Text('Retry'),
+              child: Text(context.l10n.commonRetry),
             ),
           ],
         ),
@@ -73,14 +74,14 @@ class _DailyProgressCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'DAILY PROGRESS',
+            context.l10n.statsDailyProgress,
             style: VocaboTypography.labelSm.copyWith(
               color: VocaboColors.tertiary,
             ),
           ),
           const SizedBox(height: VocaboSpacing.sm),
           Text(
-            '${countLabel(stats.currentStreak, 'day')} in a row',
+            context.l10n.statsDaysInARow(stats.currentStreak),
             style: VocaboTypography.headlineSm,
           ),
           const SizedBox(height: VocaboSpacing.md),
@@ -104,6 +105,8 @@ class _MiniBarChart extends StatelessWidget {
       (max, point) => math.max(max, activity(point)),
     );
 
+    final l10n = context.l10n;
+
     return SizedBox(
       height: 52,
       child: Row(
@@ -115,9 +118,7 @@ class _MiniBarChart extends StatelessWidget {
               : math.max(10.0, count / maxCount * 48);
           return Expanded(
             child: Tooltip(
-              message:
-                  '${countLabel(point.count, 'word')} added · '
-                  '${countLabel(point.reviews, 'card')} reviewed',
+              message: l10n.statsDayTooltip(point.count, point.reviews),
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
@@ -148,27 +149,29 @@ class _SummaryCard extends StatelessWidget {
 
   final VocabularyStats stats;
 
-  String get _comparisonText {
+  String _comparisonText(AppLocalizations l10n) {
     final change = stats.weeklyChangePercent;
     if (stats.wordsThisWeek == 0) {
       return stats.reviewsThisWeek == 0
-          ? 'Add a word or review your flashcards to start the week.'
-          : 'Add a new word to keep your library growing.';
+          ? l10n.statsStartTheWeek
+          : l10n.statsKeepLibraryGrowing;
     }
     if (stats.wordsLastWeek == 0) {
-      return 'A fresh week is underway. Keep adding words to build a consistent rhythm.';
+      return l10n.statsFreshWeek;
     }
     if (change == 0) {
-      return 'You are matching last week’s pace. One more word puts you ahead.';
+      return l10n.statsMatchingPace;
     }
     final percentage = change.abs().round();
     return change > 0
-        ? 'Your pace is $percentage% higher than last week. Keep the momentum.'
-        : 'Your pace is $percentage% below last week. A short session can close the gap.';
+        ? l10n.statsPaceHigher(percentage)
+        : l10n.statsPaceLower(percentage);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
       decoration: BoxDecoration(
@@ -190,19 +193,19 @@ class _SummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'THIS WEEK',
+                l10n.statsThisWeek,
                 style: VocaboTypography.labelSm.copyWith(color: Colors.white),
               ),
               const SizedBox(height: VocaboSpacing.sm),
               Text(
-                countLabel(stats.wordsThisWeek, 'new word'),
+                l10n.countNewWords(stats.wordsThisWeek),
                 style: VocaboTypography.headlineSm.copyWith(
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: VocaboSpacing.xs),
               Text(
-                '${countLabel(stats.reviewsThisWeek, 'flashcard')} reviewed',
+                l10n.statsFlashcardsReviewed(stats.reviewsThisWeek),
                 style: VocaboTypography.bodyMd.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -210,7 +213,7 @@ class _SummaryCard extends StatelessWidget {
               ),
               const SizedBox(height: VocaboSpacing.sm),
               Text(
-                _comparisonText,
+                _comparisonText(l10n),
                 style: VocaboTypography.bodySm.copyWith(color: Colors.white70),
               ),
             ],

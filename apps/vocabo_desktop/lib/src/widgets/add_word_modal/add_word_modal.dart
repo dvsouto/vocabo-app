@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
@@ -139,7 +140,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
   Widget _buildHeader() {
     return Row(
       children: [
-        Text('Add New Word', style: VocaboTypography.titleLg),
+        Text(context.l10n.addWordTitle, style: VocaboTypography.titleLg),
         const Spacer(),
         IconButton(
           icon: const Icon(Icons.close, size: 20),
@@ -161,7 +162,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'LEARNING LANGUAGE',
+              context.l10n.addWordLearningLanguage,
               style: VocaboTypography.labelSm.copyWith(
                 color: VocaboColors.neutral,
               ),
@@ -181,13 +182,16 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              'ENTRY TYPE',
+              context.l10n.addWordEntryType,
               style: VocaboTypography.labelSm.copyWith(
                 color: VocaboColors.neutral,
               ),
             ),
             const SizedBox(height: 4),
-            Text('Vocabulary Card', style: VocaboTypography.bodyMd),
+            Text(
+              context.l10n.addWordEntryTypeVocabularyCard,
+              style: VocaboTypography.bodyMd,
+            ),
           ],
         ),
       ],
@@ -219,7 +223,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
               color: VocaboColors.primary,
             ),
             decoration: InputDecoration(
-              labelText: 'Enter word or phrase...',
+              labelText: context.l10n.addWordTermHint,
               labelStyle: VocaboTypography.headlineSm.copyWith(
                 color: VocaboColors.primary.withValues(alpha: 0.3),
               ),
@@ -333,7 +337,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'MEANING',
+                    context.l10n.addWordMeaningLabel,
                     style: VocaboTypography.labelSm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -343,7 +347,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                     children: [
                       VocaboTextArea(
                         controller: _meaningController,
-                        hint: 'What does this mean?',
+                        hint: context.l10n.addWordMeaningHint,
                         readOnly: !fieldsEnabled,
                         onChanged: notifier.setMeaning,
                       ),
@@ -361,7 +365,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'PART OF SPEECH',
+                    context.l10n.addWordPartOfSpeechLabel,
                     style: VocaboTypography.labelSm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -381,7 +385,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
 
         // Translation
         Text(
-          'TRANSLATION',
+          context.l10n.addWordTranslationLabel,
           style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
         ),
         const SizedBox(height: 4),
@@ -389,7 +393,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
           children: [
             VocaboTextField(
               controller: _translationController,
-              hint: 'Translation in your language...',
+              hint: context.l10n.addWordTranslationHint,
               readOnly: !fieldsEnabled,
             ),
             if (state.isSearching) Positioned.fill(child: _buildFieldLoader()),
@@ -399,7 +403,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
 
         // Example sentences
         Text(
-          'EXAMPLE SENTENCES',
+          context.l10n.addWordExamplesLabel,
           style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
         ),
         const SizedBox(height: 4),
@@ -407,7 +411,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
           children: [
             VocaboTextArea(
               controller: _exampleController,
-              hint: 'Use it in a sentence to provide context...',
+              hint: context.l10n.addWordExamplesHint,
               readOnly: !fieldsEnabled,
               onChanged: notifier.setExampleSentence,
               minLines: 3,
@@ -452,7 +456,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     return VocaboToggleSwitch(
       value: state.autoDetect,
       onChanged: notifier.toggleAutoDetect,
-      label: 'Auto-detect Language',
+      label: context.l10n.addWordAutoDetect,
     );
   }
 
@@ -468,7 +472,7 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
       children: [
         if (isAlreadyInVocabulary && state.term.trim().isNotEmpty) ...[
           Text(
-            'This word is already in your vocabulary',
+            context.l10n.addWordAlreadyInVocabulary,
             style: VocaboTypography.bodySm.copyWith(
               color: VocaboColors.neutral600,
             ),
@@ -478,10 +482,15 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            VocaboTextButton(label: 'Cancel', onPressed: _close),
+            VocaboTextButton(
+              label: context.l10n.commonCancel,
+              onPressed: _close,
+            ),
             const SizedBox(width: VocaboSpacing.sm),
             VocaboPrimaryButton(
-              label: state.isSaving ? 'Saving...' : 'Save to Library',
+              label: state.isSaving
+                  ? context.l10n.addWordSaving
+                  : context.l10n.addWordSaveToLibrary,
               trailing: state.isSaving
                   ? const SizedBox(
                       width: 16,

@@ -2,7 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_desktop/src/pro/pro_locked_card.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_evaluation_bar.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
@@ -16,6 +19,7 @@ class ProgressContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(vocabularyStatsProvider);
+    final l10n = context.l10n;
 
     return stats.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -25,13 +29,10 @@ class ProgressContent extends ConsumerWidget {
           children: [
             const Icon(Icons.cloud_off_outlined, size: 48),
             const SizedBox(height: VocaboSpacing.md),
-            Text(
-              'Could not load your progress',
-              style: VocaboTypography.titleLg,
-            ),
+            Text(l10n.progressLoadFailed, style: VocaboTypography.titleLg),
             const SizedBox(height: VocaboSpacing.sm),
             VocaboPrimaryButton(
-              label: 'Try Again',
+              label: l10n.commonTryAgain,
               onPressed: () => ref.invalidate(vocabularyStatsProvider),
             ),
           ],
@@ -42,10 +43,10 @@ class ProgressContent extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Learning Progress', style: VocaboTypography.headlineSm),
+            Text(l10n.progressTitle, style: VocaboTypography.headlineSm),
             const SizedBox(height: VocaboSpacing.xs),
             Text(
-              'A clear view of the habit behind your vocabulary.',
+              l10n.progressSubtitle,
               style: VocaboTypography.bodyMd.copyWith(
                 color: VocaboColors.neutral,
               ),
@@ -53,14 +54,20 @@ class ProgressContent extends ConsumerWidget {
             const SizedBox(height: VocaboSpacing.xl),
             _MetricsGrid(stats: data),
             const SizedBox(height: VocaboSpacing.lg),
-            _WeeklyChart(points: data.weeklyActivity),
-            const SizedBox(height: VocaboSpacing.lg),
-            _ResponsivePair(
-              first: _AnswersCard(evaluations: data.evaluations),
-              second: _MemoryStrengthCard(stats: data),
-            ),
-            const SizedBox(height: VocaboSpacing.lg),
-            _DailyActivity(points: data.dailyActivity),
+            if (data.fullStats) ...[
+              _WeeklyChart(points: data.weeklyActivity),
+              const SizedBox(height: VocaboSpacing.lg),
+              _ResponsivePair(
+                first: _AnswersCard(evaluations: data.evaluations),
+                second: _MemoryStrengthCard(stats: data),
+              ),
+              const SizedBox(height: VocaboSpacing.lg),
+              _DailyActivity(points: data.dailyActivity),
+            ] else ...[
+              _DailyActivity(points: data.dailyActivity),
+              const SizedBox(height: VocaboSpacing.lg),
+              const ProLockedCard(),
+            ],
           ],
         ),
       ),
@@ -111,6 +118,7 @@ class _MetricsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final clearRate = (stats.evaluations.clearRate * 100).round();
+    final l10n = context.l10n;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -124,32 +132,32 @@ class _MetricsGrid extends StatelessWidget {
             _MetricCard(
               width: width,
               icon: Icons.auto_stories_outlined,
-              label: 'WORDS IN LIBRARY',
+              label: l10n.progressWordsInLibrary,
               value: '${stats.totalWords}',
-              caption: '${stats.wordsThisWeek} added this week',
+              caption: l10n.progressAddedThisWeek(stats.wordsThisWeek),
             ),
             _MetricCard(
               width: width,
               icon: Icons.local_fire_department_outlined,
-              label: 'CURRENT STREAK',
-              value: countLabel(stats.currentStreak, 'day'),
-              caption: 'Best: ${countLabel(stats.longestStreak, 'day')}',
+              label: l10n.progressCurrentStreak,
+              value: l10n.countDays(stats.currentStreak),
+              caption: l10n.progressBestStreak(stats.longestStreak),
             ),
             _MetricCard(
               width: width,
               icon: Icons.style_outlined,
-              label: 'FLASHCARDS REVIEWED',
+              label: l10n.progressFlashcardsReviewed,
               value: '${stats.reviewsTotal}',
               caption: stats.evaluations.total == 0
-                  ? '${stats.reviewsThisWeek} this week'
-                  : '$clearRate% answered clear',
+                  ? l10n.progressReviewsThisWeek(stats.reviewsThisWeek)
+                  : l10n.progressClearRate(clearRate),
             ),
             _MetricCard(
               width: width,
               icon: Icons.workspace_premium_outlined,
-              label: 'WORDS MASTERED',
+              label: l10n.progressWordsMastered,
               value: '${stats.cardsMastered}',
-              caption: '${stats.cardsInRotation} in rotation',
+              caption: l10n.progressInRotation(stats.cardsInRotation),
             ),
           ],
         );
@@ -260,6 +268,10 @@ class _WeeklyChart extends StatelessWidget {
 
     double barHeight(int value) =>
         value == 0 ? 3 : math.max(8, value / maxCount * _barsHeight);
+    final l10n = context.l10n;
+    final dateFormat = DateFormat.Md(
+      Localizations.localeOf(context).toString(),
+    );
 
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),
@@ -277,27 +289,38 @@ class _WeeklyChart extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('LAST 12 WEEKS', style: VocaboTypography.labelSm),
+                    Text(
+                      l10n.progressLast12Weeks,
+                      style: VocaboTypography.labelSm,
+                    ),
                     const SizedBox(height: VocaboSpacing.xs),
-                    Text('Weekly activity', style: VocaboTypography.titleLg),
+                    Text(
+                      l10n.progressWeeklyActivity,
+                      style: VocaboTypography.titleLg,
+                    ),
                   ],
                 ),
               ),
-              const _Legend(color: VocaboColors.primary, label: 'Words added'),
+              _Legend(
+                color: VocaboColors.primary,
+                label: l10n.progressLegendWordsAdded,
+              ),
               const SizedBox(width: VocaboSpacing.md),
-              const _Legend(color: _reviewsColor, label: 'Reviews'),
+              _Legend(color: _reviewsColor, label: l10n.progressLegendReviews),
             ],
           ),
           const SizedBox(height: VocaboSpacing.lg),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: points.map((point) {
+              final weekLabel = dateFormat.format(point.weekStart);
               return Expanded(
                 child: Tooltip(
-                  message:
-                      'Week of ${point.weekStart.day}/${point.weekStart.month}: '
-                      '${countLabel(point.count, 'word')} added, '
-                      '${countLabel(point.reviews, 'review')}',
+                  message: l10n.progressWeekTooltip(
+                    weekLabel,
+                    point.count,
+                    point.reviews,
+                  ),
                   child: Column(
                     children: [
                       SizedBox(
@@ -324,7 +347,7 @@ class _WeeklyChart extends StatelessWidget {
                       ),
                       const SizedBox(height: VocaboSpacing.sm),
                       Text(
-                        '${point.weekStart.day}/${point.weekStart.month}',
+                        weekLabel,
                         maxLines: 1,
                         style: VocaboTypography.labelSm.copyWith(
                           color: VocaboColors.neutral,
@@ -470,14 +493,14 @@ class _AnswersCard extends StatelessWidget {
       FlashcardEvaluation.medium: evaluations.fuzzy,
       FlashcardEvaluation.easy: evaluations.clear,
     };
+    final l10n = context.l10n;
 
     return _BreakdownCard(
-      overline: 'FLASHCARD ANSWERS',
-      title: 'How clear your recall is',
+      overline: l10n.progressFlashcardAnswers,
+      title: l10n.progressRecallTitle,
       child: evaluations.total == 0
           ? Text(
-              'Review your flashcards to see how clearly you remember '
-              'your words.',
+              l10n.progressAnswersEmpty,
               style: VocaboTypography.bodySm.copyWith(
                 color: VocaboColors.neutral,
               ),
@@ -491,7 +514,7 @@ class _AnswersCard extends StatelessWidget {
                       color: evaluationPalette(context, entry.key).foreground,
                       size: 14,
                     ),
-                    label: clarityLabelOf(entry.key),
+                    label: l10n.clarityLabel(entry.key),
                     value: entry.value,
                     total: evaluations.total,
                     color: evaluationPalette(context, entry.key).foreground,
@@ -512,13 +535,14 @@ class _MemoryStrengthCard extends StatelessWidget {
     final stages = stats.stageDistribution;
     final total =
         stages.fold<int>(0, (sum, count) => sum + count) + stats.cardsMastered;
+    final l10n = context.l10n;
 
     return _BreakdownCard(
-      overline: 'MEMORY STRENGTH',
-      title: 'Where your words are',
+      overline: l10n.progressMemoryStrength,
+      title: l10n.progressMemoryTitle,
       child: total == 0
           ? Text(
-              'Add words to your library to start building memory.',
+              l10n.progressMemoryEmpty,
               style: VocaboTypography.bodySm.copyWith(
                 color: VocaboColors.neutral,
               ),
@@ -527,11 +551,9 @@ class _MemoryStrengthCard extends StatelessWidget {
               children: [
                 for (var index = 0; index < stages.length; index++)
                   _BreakdownRow(
-                    label:
-                        MemoryStrength.stageNames[math.min(
-                          index,
-                          MemoryStrength.stageNames.length - 1,
-                        )],
+                    label: l10n.memoryStageName(
+                      math.min(index, MemoryStrength.stageNames.length - 1),
+                    ),
                     value: stages[index],
                     total: total,
                     color: VocaboColors.primary.withValues(
@@ -539,7 +561,7 @@ class _MemoryStrengthCard extends StatelessWidget {
                     ),
                   ),
                 _BreakdownRow(
-                  label: MemoryStrength.masteredName,
+                  label: l10n.memoryMastered,
                   value: stats.cardsMastered,
                   total: total,
                   color: _reviewsColor,
@@ -555,14 +577,17 @@ class _DailyActivity extends StatelessWidget {
 
   final List<VocabularyActivityPoint> points;
 
-  static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final weekdayFormat = DateFormat.E(
+      Localizations.localeOf(context).toString(),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('LAST 7 DAYS', style: VocaboTypography.labelSm),
+        Text(l10n.progressLast7Days, style: VocaboTypography.labelSm),
         const SizedBox(height: VocaboSpacing.md),
         Row(
           children: points.map((point) {
@@ -570,9 +595,7 @@ class _DailyActivity extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(right: VocaboSpacing.sm),
                 child: Tooltip(
-                  message:
-                      '${countLabel(point.count, 'word')} added, '
-                      '${countLabel(point.reviews, 'review')}',
+                  message: l10n.progressDayTooltip(point.count, point.reviews),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: VocaboSpacing.xs,
@@ -587,7 +610,7 @@ class _DailyActivity extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          _weekdays[point.date.weekday - 1],
+                          weekdayFormat.format(point.date),
                           style: VocaboTypography.labelSm.copyWith(
                             color: VocaboColors.neutral,
                           ),
@@ -595,7 +618,7 @@ class _DailyActivity extends StatelessWidget {
                         const SizedBox(height: VocaboSpacing.sm),
                         Text('${point.count}', style: VocaboTypography.titleLg),
                         Text(
-                          '${point.reviews} rev.',
+                          l10n.progressReviewsShort(point.reviews),
                           maxLines: 1,
                           style: VocaboTypography.labelSm.copyWith(
                             color: point.reviews > 0

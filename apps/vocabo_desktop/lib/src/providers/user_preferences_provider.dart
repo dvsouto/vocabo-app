@@ -42,6 +42,20 @@ class UserPreferencesNotifier extends AsyncNotifier<UserPreferences> {
     }
   }
 
+  Future<void> setVoiceGender(String voice) async {
+    final previous = state.valueOrNull ?? const UserPreferences();
+    state = AsyncData(previous.copyWith(voiceGender: voice));
+
+    try {
+      final api = ref.read(apiClientProvider);
+      final saved = await api.user.updatePreferences(voiceGender: voice);
+      state = AsyncData(saved);
+    } catch (e, st) {
+      appLogger.handle(e, st, 'UserPreferences setVoiceGender() error');
+      state = AsyncData(previous);
+    }
+  }
+
   Future<void> toggleShowTranslations() {
     final current = state.valueOrNull?.showTranslations ?? true;
     return setShowTranslations(!current);

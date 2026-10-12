@@ -1,4 +1,5 @@
-/// A native language offered at signup. Mirrors the API list.
+/// A native language offered at signup. Mirrors the API list. English is
+/// not one: it is the language being learned.
 class NativeLanguage {
   const NativeLanguage(this.code, this.englishName, this.nativeName);
 
@@ -9,9 +10,8 @@ class NativeLanguage {
   /// Name written in the language itself, e.g. `Português`.
   final String nativeName;
 
-  String get displayName => code == 'en' || englishName == nativeName
-      ? englishName
-      : '$nativeName · $englishName';
+  String get displayName =>
+      englishName == nativeName ? englishName : '$nativeName · $englishName';
 
   static NativeLanguage? byCode(String code) {
     for (final language in nativeLanguages) {
@@ -38,8 +38,33 @@ const nativeLanguages = [
   NativeLanguage('vi', 'Vietnamese', 'Tiếng Việt'),
   NativeLanguage('id', 'Indonesian', 'Bahasa Indonesia'),
   NativeLanguage('pl', 'Polish', 'Polski'),
-  NativeLanguage('en', 'English', 'English'),
 ];
+
+/// Used when the system gives no hint of a supported native language.
+const defaultNativeLanguage = 'pt';
+
+const _english = NativeLanguage('en', 'English', 'English');
+
+/// Languages the app interface can be shown in: English plus every native
+/// language.
+const interfaceLanguages = [_english, ...nativeLanguages];
+
+NativeLanguage? interfaceLanguageByCode(String code) {
+  for (final language in interfaceLanguages) {
+    if (language.code == code) return language;
+  }
+  return null;
+}
+
+/// The interface language matching the system's preferred languages, or
+/// English.
+String suggestInterfaceLanguage(List<String> preferredLanguageCodes) {
+  for (final code in preferredLanguageCodes) {
+    final language = code.split(RegExp('[-_]')).first.toLowerCase();
+    if (interfaceLanguageByCode(language) != null) return language;
+  }
+  return 'en';
+}
 
 const _regionLanguages = {
   'BR': 'pt',
@@ -92,9 +117,9 @@ const _regionLanguages = {
 /// Guesses the native language from the system's preferred languages.
 ///
 /// Many people keep the system in English while their native language comes
-/// later in the list, so the first supported non-English language wins. With
-/// only English configured, the region of the locale decides (e.g. `en_BR`).
-/// The user always confirms the choice at signup.
+/// later in the list, so the first supported language wins. With only
+/// English configured, the region of the locale decides (e.g. `en_BR`), then
+/// [defaultNativeLanguage]. The user always confirms the choice.
 String suggestNativeLanguage(
   List<({String languageCode, String? countryCode})> preferredLocales,
 ) {
@@ -102,7 +127,7 @@ String suggestNativeLanguage(
 
   for (final locale in preferredLocales) {
     final code = locale.languageCode.toLowerCase();
-    if (code != 'en' && isSupported(code)) return code;
+    if (isSupported(code)) return code;
   }
 
   for (final locale in preferredLocales) {
@@ -110,5 +135,5 @@ String suggestNativeLanguage(
     if (region != null) return region;
   }
 
-  return 'en';
+  return defaultNativeLanguage;
 }

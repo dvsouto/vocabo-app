@@ -1,0 +1,1374 @@
+{
+  "@@locale": "en",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonRetry": "Retry",
+  "commonTryAgain": "Try again",
+  "commonClose": "Close",
+  "commonBack": "Back",
+  "commonContinue": "Continue",
+  "commonRemove": "Remove",
+  "commonDone": "Done",
+  "commonOptional": "Optional",
+  "commonNoConnection": "No connection. Check your internet and try again.",
+  "commonSomethingWrong": "Something went wrong. Please try again.",
+  "countDays": "{count, plural, =0{{count} days} =1{1 day} other{{count} days}}",
+  "@countDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countWords": "{count, plural, =0{{count} words} =1{1 word} other{{count} words}}",
+  "@countWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countNewWords": "{count, plural, =0{{count} new words} =1{1 new word} other{{count} new words}}",
+  "@countNewWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countCards": "{count, plural, =0{{count} cards} =1{1 card} other{{count} cards}}",
+  "@countCards": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countFlashcards": "{count, plural, =0{{count} flashcards} =1{1 flashcard} other{{count} flashcards}}",
+  "@countFlashcards": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countReviews": "{count, plural, =0{{count} reviews} =1{1 review} other{{count} reviews}}",
+  "@countReviews": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoryStageNew": "New",
+  "memoryStageFresh": "Fresh",
+  "memoryStageFamiliar": "Familiar",
+  "memoryStageSettling": "Settling",
+  "memoryStageAnchored": "Anchored",
+  "memoryStageDeep": "Deep",
+  "memoryStageLasting": "Lasting",
+  "memoryMastered": "Mastered",
+  "memoryArchived": "Archived",
+  "clarityBlank": "Blank",
+  "clarityFuzzy": "Fuzzy",
+  "clarityClear": "Clear",
+  "nextReviewToday": "today",
+  "nextReviewTomorrow": "tomorrow",
+  "nextReviewInDays": "{count, plural, =0{in {count} days} =1{in 1 day} other{in {count} days}}",
+  "@nextReviewInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nextReviewMastered": "mastered",
+  "passwordRuleLength": "At least {count} characters",
+  "@passwordRuleLength": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "passwordRuleLetter": "One letter",
+  "passwordRuleNumber": "One number",
+  "planFree": "FREE",
+  "planPro": "PRO",
+  "authLoginTagline": "Refine your vocabulary in the digital\nworkshop of a polymath.",
+  "@authLoginTagline": {
+    "description": "Subtitle under the app name on the sign-in screen. The line break is intentional."
+  },
+  "authFieldEmail": "Email",
+  "@authFieldEmail": {
+    "description": "Label above the email field (shown uppercase)."
+  },
+  "authFieldPassword": "Password",
+  "@authFieldPassword": {
+    "description": "Label above, or placeholder of, a password field."
+  },
+  "authFieldCurrentPassword": "Current password",
+  "authFieldNewPassword": "New password",
+  "authFieldName": "Name",
+  "authFieldPhoto": "Photo",
+  "@authFieldPhoto": {
+    "description": "Label of the profile photo section (shown uppercase)."
+  },
+  "authFieldNativeLanguage": "Native language",
+  "authFieldPhone": "Phone",
+  "authFieldAge": "Age",
+  "authFieldCode": "Code",
+  "@authFieldCode": {
+    "description": "Label above the verification code input."
+  },
+  "authNameHint": "Alex Morgan",
+  "@authNameHint": {
+    "description": "Sample full name used as the placeholder of the name field. Use a common name for the language."
+  },
+  "authInvalidEmail": "Enter a valid email address.",
+  "authContinueToLibrary": "Continue to Library",
+  "authOrAuthenticateVia": "Or authenticate via",
+  "@authOrAuthenticateVia": {
+    "description": "Divider above the Google and Apple sign-in buttons (shown uppercase)."
+  },
+  "authForgotPassword": "Forgot password?",
+  "authCreateAccount": "Create account",
+  "@authCreateAccount": {
+    "description": "Button or link that creates a new account."
+  },
+  "authSocialNotConfiguredOnServer": "Sign in with {provider} is not set up on the server yet.",
+  "@authSocialNotConfiguredOnServer": {
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Google"
+      }
+    }
+  },
+  "authEmailTakenUsePassword": "This email already has an account. Sign in with your password.",
+  "authSocialSignInFailed": "Could not sign in with {provider}. Please try again.",
+  "@authSocialSignInFailed": {
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Google"
+      }
+    }
+  },
+  "authSocialSignInFailedDetail": "Could not sign in with {provider}: {detail}",
+  "@authSocialSignInFailedDetail": {
+    "description": "The detail is an untranslated error text returned by the provider.",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Google"
+      },
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "authSocialNotSetUp": "Sign in with {provider} is not set up yet.",
+  "@authSocialNotSetUp": {
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Google"
+      }
+    }
+  },
+  "authSocialMissingToken": "{provider} did not return an ID token.",
+  "@authSocialMissingToken": {
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Apple"
+      }
+    }
+  },
+  "authSocialUnavailable": "Sign in with {provider} is not available in this build.",
+  "@authSocialUnavailable": {
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Apple"
+      }
+    }
+  },
+  "authEnterYourPassword": "Enter your password",
+  "@authEnterYourPassword": {
+    "description": "Subtitle of the password step of sign-in."
+  },
+  "authYourPasswordHint": "Your password",
+  "authEnterLibrary": "Enter Library",
+  "@authEnterLibrary": {
+    "description": "Sign-in button on the password step."
+  },
+  "authIncorrectCredentials": "Incorrect email or password.",
+  "authSignInFailed": "Could not sign in. Please try again.",
+  "authAvatarReadFailed": "Could not read this image. Try a PNG or JPEG.",
+  "authEnterName": "Enter your name.",
+  "authPasswordRulesNotMet": "The password does not meet the rules below.",
+  "authInvalidPhone": "Enter a valid mobile number.",
+  "authInvalidAge": "Enter an age between {min} and {max}.",
+  "@authInvalidAge": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "authEmailTakenSignIn": "An account with this email already exists. Sign in.",
+  "authSignUpFailed": "Could not create the account. Please try again.",
+  "authSignUpTitle": "Create your account",
+  "authSignUpSubtitle": "Start free. We will confirm your email or phone with a code.",
+  "authChoosePhoto": "Choose photo",
+  "authChangePhoto": "Change photo",
+  "authAddPhoto": "Add photo",
+  "authNativeLanguageSuggested": "Suggested from your system languages.",
+  "authHaveAccount": "I already have an account",
+  "authLegalConsentContinuing": "By continuing you agree to the {terms} and the {privacy}.",
+  "@authLegalConsentContinuing": {
+    "description": "Consent line under the sign-in buttons. {terms} and {privacy} become links with the authTermsOfService and authPrivacyPolicy texts.",
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "privacy": {
+        "type": "String"
+      }
+    }
+  },
+  "authLegalConsentCreatingAccount": "By creating an account you agree to the {terms} and the {privacy}.",
+  "@authLegalConsentCreatingAccount": {
+    "description": "Consent line above the create account button. {terms} and {privacy} become links with the authTermsOfService and authPrivacyPolicy texts.",
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "privacy": {
+        "type": "String"
+      }
+    }
+  },
+  "authTermsOfService": "Terms of Service",
+  "authPrivacyPolicy": "Privacy Policy",
+  "authConfirmAccountTitle": "Confirm your account",
+  "authChannelEmail": "Email",
+  "@authChannelEmail": {
+    "description": "Chip to receive the verification code by email."
+  },
+  "authChannelSms": "SMS",
+  "@authChannelSms": {
+    "description": "Chip to receive the verification code by text message."
+  },
+  "authSignedInAs": "Signed in as {email}",
+  "@authSignedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authUseAnotherAccount": "Use another account",
+  "authResetPasswordTitle": "Reset your password",
+  "authResetPasswordIntro": "Enter the email of your account and we will send you a code to choose a new password.",
+  "authResetPasswordCodeIntro": "Enter the 6-digit code sent to {target} and choose a new password.",
+  "@authResetPasswordCodeIntro": {
+    "placeholders": {
+      "target": {
+        "type": "String",
+        "example": "a***@example.com"
+      }
+    }
+  },
+  "authEnterSixDigitCode": "Enter the 6-digit code.",
+  "authSendCode": "Send code",
+  "authResendCode": "Resend code",
+  "authResendCodeIn": "Resend code in {time}",
+  "@authResendCodeIn": {
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "0:45"
+      }
+    }
+  },
+  "authSimulatedEmailDelivery": "Delivery is simulated while email is not set up. Your code is {code}.",
+  "@authSimulatedEmailDelivery": {
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "123456"
+      }
+    }
+  },
+  "authSimulatedDelivery": "Delivery is simulated while SMS and email are not set up. Your code is {code}.",
+  "@authSimulatedDelivery": {
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "123456"
+      }
+    }
+  },
+  "authResetPasswordAndSignIn": "Reset password and sign in",
+  "authCodeInvalid": "That code is not right. Check it and try again.",
+  "authCodeExpired": "This code has expired. Send a new one.",
+  "authPhoneMissing": "Add a phone number first.",
+  "authSendingCode": "Sending your code…",
+  "authWillSendCode": "We will send you a code.",
+  "authCodeSentTo": "Enter the 6-digit code sent to {target}.",
+  "@authCodeSentTo": {
+    "placeholders": {
+      "target": {
+        "type": "String",
+        "example": "+55 11 9****-4321"
+      }
+    }
+  },
+  "authEnterCurrentPassword": "Enter your current password.",
+  "authCurrentPasswordIncorrect": "The current password is incorrect.",
+  "authChangePasswordFailed": "Could not change the password. Please try again.",
+  "authChangePasswordTitle": "Change password",
+  "authSetPasswordTitle": "Set a password",
+  "authChangePasswordNotice": "Your other devices will be signed out.",
+  "authSetPasswordNotice": "Sign in with your email and this password, besides Google or Apple.",
+  "authPhoneAlreadyYours": "This is already your number.",
+  "authChangePhoneTitle": "Change phone number",
+  "authConfirmNewPhoneTitle": "Confirm your new number",
+  "authChangePhoneIntro": "We will send a code to the new number to confirm it.",
+  "authUseAnotherNumber": "Use another number",
+  "authPasswordIncorrect": "The password is incorrect.",
+  "authDeleteAccountFailed": "Could not delete the account. Please try again.",
+  "authDeleteAccountTitle": "Delete account",
+  "@authDeleteAccountTitle": {
+    "description": "Title and confirm button of the delete account dialog."
+  },
+  "authDeleteAccountWarning": "This permanently deletes your account, your library, your flashcards and progress, your translation history and your photo. It cannot be undone.",
+  "authConfirmWithPassword": "Confirm with your password",
+  "authTypeWordToConfirm": "Type {word} to confirm",
+  "@authTypeWordToConfirm": {
+    "description": "The word is the fixed English confirmation word DELETE; keep the placeholder.",
+    "placeholders": {
+      "word": {
+        "type": "String",
+        "example": "DELETE"
+      }
+    }
+  },
+  "authPhotoSaveFailed": "Could not save this photo. Try a PNG or JPEG.",
+  "authPhotoRemoveFailed": "Could not remove the photo. Please try again.",
+  "authSaveFailed": "Could not save. Please try again.",
+  "authEditProfileTitle": "Edit profile",
+  "authEmailCannotChange": "The email of an account cannot be changed.",
+  "authNoPhoneNumber": "No phone number",
+  "authChangePhone": "Change",
+  "@authChangePhone": {
+    "description": "Button next to the phone number in the profile editor."
+  },
+  "authAddPhone": "Add",
+  "@authAddPhone": {
+    "description": "Button to add a phone number in the profile editor."
+  },
+  "authNativeLanguagePromptTitle": "What is your native language?",
+  "authNativeLanguagePromptBody": "Every word you learn will be translated into it. You can change it later in Settings.",
+  "authHidePassword": "Hide password",
+  "authShowPassword": "Show password",
+  "authPhoneNumberHint": "Phone number",
+  "authCountryPickerTitle": "Country",
+  "authCountrySearchHint": "Search country or code",
+  "authNoCountryFound": "No country found",
+  "authAccountDeletedNotice": "Your account and all of its data were deleted.",
+  "authSessionLimitNotice": "{count, plural, =0{You were signed out because your account was used on more than {count} devices.} =1{You were signed out because your account was used on more than 1 device.} other{You were signed out because your account was used on more than {count} devices.}}",
+  "@authSessionLimitNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authSessionRevokedNotice": "This session was ended. Sign in again.",
+  "settingsTitle": "Account Settings",
+  "settingsSubtitle": "Curate your learning environment and profile",
+  "settingsSignOut": "Sign Out",
+  "@settingsSignOut": {
+    "description": "Sign-out button, confirmation dialog title and confirm action."
+  },
+  "settingsSignOutConfirm": "Are you sure you want to sign out?",
+  "settingsEditProfile": "Edit profile",
+  "settingsCurrentStreak": "CURRENT STREAK",
+  "@settingsCurrentStreak": {
+    "description": "Uppercase stat label on the profile card."
+  },
+  "settingsReviewedThisWeek": "REVIEWED THIS WEEK",
+  "@settingsReviewedThisWeek": {
+    "description": "Uppercase stat label on the profile card; value is a card count."
+  },
+  "settingsAccountInfo": "Account Info",
+  "settingsEmailAddress": "EMAIL ADDRESS",
+  "settingsPhone": "PHONE",
+  "settingsPhoneNotAdded": "Not added",
+  "@settingsPhoneNotAdded": {
+    "description": "Shown instead of a phone number when none is set."
+  },
+  "settingsSignInMethods": "SIGN IN",
+  "@settingsSignInMethods": {
+    "description": "Uppercase label above the list of sign-in methods (Password · Apple · Google)."
+  },
+  "settingsSignInPassword": "Password",
+  "@settingsSignInPassword": {
+    "description": "Sign-in method name."
+  },
+  "settingsVerified": "Verified",
+  "settingsDevicesTitle": "Signed-in devices",
+  "settingsDevicesLoadFailed": "Could not load devices. Retry",
+  "settingsUnknownDevice": "Unknown device",
+  "settingsThisDevice": "This device",
+  "settingsSignOutDevice": "Sign out",
+  "@settingsSignOutDevice": {
+    "description": "Button that signs out another device."
+  },
+  "settingsSignOutDeviceFailed": "Could not sign out that device.",
+  "settingsLastSeenNow": "Active now",
+  "settingsLastSeenMinutes": "{count, plural, =0{{count} min ago} other{{count} min ago}}",
+  "@settingsLastSeenMinutes": {
+    "description": "Abbreviated time since a device was last seen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLastSeenHours": "{count, plural, =0{{count} h ago} other{{count} h ago}}",
+  "@settingsLastSeenHours": {
+    "description": "Abbreviated time since a device was last seen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLastSeenDays": "{count, plural, =0{{count} d ago} other{{count} d ago}}",
+  "@settingsLastSeenDays": {
+    "description": "Abbreviated time since a device was last seen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDevicesLimit": "{count, plural, =0{Up to {count} devices stay signed in. Signing in on another one signs out the oldest.} =1{Only 1 device stays signed in. Signing in on another one signs out the previous one.} other{Up to {count} devices stay signed in. Signing in on another one signs out the oldest.}}",
+  "@settingsDevicesLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsNotificationsTitle": "Notifications",
+  "settingsNotificationsDenied": "Allow notifications for Vocabo in System Settings to get daily reminders.",
+  "settingsDailyReminder": "Daily Reminder",
+  "settingsDailyReminderSubtitle": "Flashcards waiting, every day at {time}",
+  "@settingsDailyReminderSubtitle": {
+    "description": "time is a 24h HH:mm value.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsChangeTime": "Change time",
+  "settingsShortcutsTitle": "Shortcuts",
+  "settingsSpotlightTitle": "Translation spotlight",
+  "settingsSpotlightSubtitle": "Press Control + Option + Space anywhere to translate a word",
+  "@settingsSpotlightSubtitle": {
+    "description": "Control, Option and Space are macOS key names."
+  },
+  "settingsLanguageTitle": "Language",
+  "settingsAppLanguage": "APP LANGUAGE",
+  "settingsNativeLanguage": "NATIVE LANGUAGE",
+  "settingsNativeLanguageHint": "New words are translated into your native language.",
+  "settingsLanguageChangeFailed": "Could not change the language.",
+  "settingsSecurityTitle": "Account security",
+  "settingsChangePassword": "Change password",
+  "settingsSetPassword": "Set a password",
+  "settingsPasswordSaved": "Password saved.",
+  "settingsDeleteAccount": "Delete account",
+  "settingsSupportTitle": "Support",
+  "settingsContactSupport": "Contact support",
+  "settingsSupportEmailSubject": "Vocabo support",
+  "@settingsSupportEmailSubject": {
+    "description": "Subject of the support email draft."
+  },
+  "settingsWriteToUs": "Write to us at {email}.",
+  "@settingsWriteToUs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTermsOfService": "Terms of Service",
+  "settingsPrivacyPolicy": "Privacy Policy",
+  "settingsAboutApp": "About Vocabo",
+  "progressLoadFailed": "Could not load your progress",
+  "progressTitle": "Learning Progress",
+  "progressSubtitle": "A clear view of the habit behind your vocabulary.",
+  "progressWordsInLibrary": "WORDS IN LIBRARY",
+  "progressAddedThisWeek": "{count, plural, =0{{count} added this week} other{{count} added this week}}",
+  "@progressAddedThisWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressCurrentStreak": "CURRENT STREAK",
+  "progressBestStreak": "{count, plural, =0{Best: {count} days} =1{Best: 1 day} other{Best: {count} days}}",
+  "@progressBestStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressFlashcardsReviewed": "FLASHCARDS REVIEWED",
+  "progressReviewsThisWeek": "{count, plural, =0{{count} this week} other{{count} this week}}",
+  "@progressReviewsThisWeek": {
+    "description": "Number of flashcard reviews this week.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressClearRate": "{percent}% answered clear",
+  "@progressClearRate": {
+    "description": "Share of flashcard answers rated Clear.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWordsMastered": "WORDS MASTERED",
+  "progressInRotation": "{count, plural, =0{{count} in rotation} other{{count} in rotation}}",
+  "@progressInRotation": {
+    "description": "Number of flashcards still being reviewed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressLast12Weeks": "LAST 12 WEEKS",
+  "progressWeeklyActivity": "Weekly activity",
+  "progressLegendWordsAdded": "Words added",
+  "progressLegendReviews": "Reviews",
+  "progressWeekTooltip": "Week of {date}: {words, plural, =0{{words} words} =1{1 word} other{{words} words}} added, {reviews, plural, =0{{reviews} reviews} =1{1 review} other{{reviews} reviews}}",
+  "@progressWeekTooltip": {
+    "description": "date is a short month/day date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "words": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "progressDayTooltip": "{words, plural, =0{{words} words} =1{1 word} other{{words} words}} added, {reviews, plural, =0{{reviews} reviews} =1{1 review} other{{reviews} reviews}}",
+  "@progressDayTooltip": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "reviews": {
+        "type": "int"
+      }
+    }
+  },
+  "progressFlashcardAnswers": "FLASHCARD ANSWERS",
+  "progressRecallTitle": "How clear your recall is",
+  "progressAnswersEmpty": "Review your flashcards to see how clearly you remember your words.",
+  "progressMemoryStrength": "MEMORY STRENGTH",
+  "progressMemoryTitle": "Where your words are",
+  "progressMemoryEmpty": "Add words to your library to start building memory.",
+  "progressLast7Days": "LAST 7 DAYS",
+  "progressReviewsShort": "{count, plural, =0{{count} rev.} other{{count} rev.}}",
+  "@progressReviewsShort": {
+    "description": "Very short count of reviews in a day tile (abbreviation of reviews).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsInsightsUnavailable": "Learning insights are temporarily unavailable.",
+  "statsDailyProgress": "DAILY PROGRESS",
+  "statsDaysInARow": "{count, plural, =0{{count} days in a row} =1{1 day in a row} other{{count} days in a row}}",
+  "@statsDaysInARow": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsDayTooltip": "{words, plural, =0{{words} words} =1{1 word} other{{words} words}} added · {cards, plural, =0{{cards} cards} =1{1 card} other{{cards} cards}} reviewed",
+  "@statsDayTooltip": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "cards": {
+        "type": "int"
+      }
+    }
+  },
+  "statsThisWeek": "THIS WEEK",
+  "statsFlashcardsReviewed": "{count, plural, =0{{count} flashcards reviewed} =1{1 flashcard reviewed} other{{count} flashcards reviewed}}",
+  "@statsFlashcardsReviewed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsStartTheWeek": "Add a word or review your flashcards to start the week.",
+  "statsKeepLibraryGrowing": "Add a new word to keep your library growing.",
+  "statsFreshWeek": "A fresh week is underway. Keep adding words to build a consistent rhythm.",
+  "statsMatchingPace": "You are matching last week’s pace. One more word puts you ahead.",
+  "statsPaceHigher": "Your pace is {percent}% higher than last week. Keep the momentum.",
+  "@statsPaceHigher": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "statsPaceLower": "Your pace is {percent}% below last week. A short session can close the gap.",
+  "@statsPaceLower": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "sidebarLibrary": "Library",
+  "sidebarFlashcards": "Flashcards",
+  "sidebarProgress": "Progress",
+  "sidebarSettings": "Settings",
+  "sidebarPersonalWorkspace": "PERSONAL WORKSPACE",
+  "sidebarAddNewWord": "Add New Word",
+  "legalLastUpdated": "Last updated {date}",
+  "@legalLastUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderNotificationTitle": "Your flashcards are ready",
+  "reminderNotificationBody": "{count, plural, =0{{count} words are waiting to be recalled.} =1{1 word is waiting to be recalled.} other{{count} words are waiting to be recalled.}}",
+  "@reminderNotificationBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryTitle": "My Library",
+  "librarySubtitle": "Curating your intellectual vocabulary.",
+  "librarySearchHint": "Quick search words...",
+  "libraryHideMeanings": "Hide meanings",
+  "@libraryHideMeanings": {
+    "description": "Tooltip of the button that blurs word meanings in the library list."
+  },
+  "libraryShowMeanings": "Show meanings",
+  "@libraryShowMeanings": {
+    "description": "Tooltip of the button that reveals word meanings in the library list."
+  },
+  "libraryLoadFailed": "Failed to load vocabulary",
+  "libraryColumnWord": "WORD",
+  "@libraryColumnWord": {
+    "description": "Uppercase column header of the library list."
+  },
+  "libraryColumnMeaning": "MEANING & USAGE",
+  "@libraryColumnMeaning": {
+    "description": "Uppercase column header of the library list."
+  },
+  "libraryColumnAdded": "ADDED",
+  "@libraryColumnAdded": {
+    "description": "Uppercase column header of the library list: date the word was added."
+  },
+  "libraryEmptyTitle": "Your library is empty",
+  "libraryEmptyBody": "Add your first word with \"{buttonLabel}\", or press Control + Option + Space anywhere on your Mac to translate one.",
+  "@libraryEmptyBody": {
+    "description": "Empty library hint. buttonLabel is the Add New Word button caption; Control + Option + Space is the macOS shortcut.",
+    "placeholders": {
+      "buttonLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryAddedToday": "Today",
+  "@libraryAddedToday": {
+    "description": "Date a word was added, in the library list."
+  },
+  "libraryAddedYesterday": "Yesterday",
+  "@libraryAddedYesterday": {
+    "description": "Date a word was added, in the library list."
+  },
+  "libraryAddedDaysAgo": "{count, plural, =0{{count}d ago} =1{1d ago} other{{count}d ago}}",
+  "@libraryAddedDaysAgo": {
+    "description": "Compact relative date a word was added, for 2 to 6 days.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "librarySourceCustom": "CUSTOM",
+  "@librarySourceCustom": {
+    "description": "Uppercase tag for a word the user created manually."
+  },
+  "librarySourceLibrary": "LIBRARY",
+  "@librarySourceLibrary": {
+    "description": "Uppercase tag for a word that comes from the shared Vocabo dictionary."
+  },
+  "wordTranslationLabel": "TRANSLATION",
+  "@wordTranslationLabel": {
+    "description": "Uppercase section label in the word detail modal."
+  },
+  "wordMeaningLabel": "MEANING",
+  "@wordMeaningLabel": {
+    "description": "Uppercase section label in the word detail modal."
+  },
+  "wordExamplesLabel": "EXAMPLE SENTENCES",
+  "@wordExamplesLabel": {
+    "description": "Uppercase section label in the word detail modal."
+  },
+  "wordDateAdded": "DATE ADDED",
+  "@wordDateAdded": {
+    "description": "Uppercase label in the word detail modal."
+  },
+  "wordLastPracticed": "LAST PRACTICED",
+  "@wordLastPracticed": {
+    "description": "Uppercase label in the word detail modal."
+  },
+  "wordNotPracticedYet": "Not yet",
+  "@wordNotPracticedYet": {
+    "description": "Value of LAST PRACTICED when the flashcard was never reviewed."
+  },
+  "wordFlashcardRestored": "Flashcard restored. It is back in your reviews.",
+  "wordFlashcardArchived": "Flashcard archived. The word stays in your library.",
+  "wordFlashcardUpdateFailed": "Could not update the flashcard.",
+  "wordRemoveTitle": "Remove \"{term}\"?",
+  "@wordRemoveTitle": {
+    "description": "Confirmation dialog title; term is the vocabulary word.",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "wordRemoveTitleFallback": "Remove this word?",
+  "wordRemoveBody": "The word leaves your library and its flashcard progress is lost.",
+  "wordRemoveFailed": "Could not remove the word.",
+  "wordRestoreFlashcard": "Restore flashcard",
+  "wordArchiveFlashcard": "Archive flashcard",
+  "addWordTitle": "Add New Word",
+  "@addWordTitle": {
+    "description": "Title of the add word modal and caption of the button that opens it."
+  },
+  "addWordLearningLanguage": "LEARNING LANGUAGE",
+  "@addWordLearningLanguage": {
+    "description": "Uppercase label above the language the word belongs to."
+  },
+  "addWordEntryType": "ENTRY TYPE",
+  "@addWordEntryType": {
+    "description": "Uppercase label."
+  },
+  "addWordEntryTypeVocabularyCard": "Vocabulary Card",
+  "addWordTermHint": "Enter word or phrase...",
+  "addWordMeaningLabel": "MEANING",
+  "@addWordMeaningLabel": {
+    "description": "Uppercase field label."
+  },
+  "addWordMeaningHint": "What does this mean?",
+  "addWordPartOfSpeechLabel": "PART OF SPEECH",
+  "@addWordPartOfSpeechLabel": {
+    "description": "Uppercase field label."
+  },
+  "addWordTranslationLabel": "TRANSLATION",
+  "@addWordTranslationLabel": {
+    "description": "Uppercase field label."
+  },
+  "addWordTranslationHint": "Translation in your language...",
+  "addWordExamplesLabel": "EXAMPLE SENTENCES",
+  "@addWordExamplesLabel": {
+    "description": "Uppercase field label."
+  },
+  "addWordExamplesHint": "Use it in a sentence to provide context...",
+  "addWordAutoDetect": "Auto-detect Language",
+  "addWordAlreadyInVocabulary": "This word is already in your vocabulary",
+  "addWordSaving": "Saving...",
+  "addWordSaveToLibrary": "Save to Library",
+  "addWordSearchFailed": "Search failed. Please try again.",
+  "addWordInvalidTerm": "Not a valid word or phrase",
+  "addWordSaveFailed": "Failed to save. Please try again.",
+  "searchFuzzyMatch": "fuzzy",
+  "@searchFuzzyMatch": {
+    "description": "Small tag next to a search suggestion that is an approximate, not exact, match."
+  },
+  "wordTypeNoun": "Noun",
+  "wordTypeVerb": "Verb",
+  "wordTypeAdjective": "Adjective",
+  "wordTypeAdverb": "Adverb",
+  "wordTypeNounShort": "NOUN",
+  "@wordTypeNounShort": {
+    "description": "Uppercase abbreviated part of speech for compact chips."
+  },
+  "wordTypeVerbShort": "VERB",
+  "@wordTypeVerbShort": {
+    "description": "Uppercase abbreviated part of speech for compact chips."
+  },
+  "wordTypeAdjectiveShort": "ADJ",
+  "@wordTypeAdjectiveShort": {
+    "description": "Uppercase abbreviated part of speech for compact chips (adjective)."
+  },
+  "wordTypeAdverbShort": "ADV",
+  "@wordTypeAdverbShort": {
+    "description": "Uppercase abbreviated part of speech for compact chips (adverb)."
+  },
+  "flashcardsTitle": "Flashcards",
+  "@flashcardsTitle": {
+    "description": "Title of the flashcards section"
+  },
+  "flashcardsTagline": "Spaced repetition keeps your words from fading.",
+  "flashcardsLoadFailed": "Could not load your flashcards",
+  "flashcardsEmptyTitle": "No flashcards yet",
+  "flashcardsEmptySubtitle": "Words you save will return here, right before you'd forget them.",
+  "flashcardsContinueReviewing": "Continue reviewing",
+  "flashcardsReviewNow": "Review now",
+  "flashcardsWaitingTitle": "Your memory is in good shape.",
+  "flashcardsWaitingSubtitle": "Your next words return in",
+  "@flashcardsWaitingSubtitle": {
+    "description": "Followed by a countdown shown below it"
+  },
+  "flashcardsAllMasteredTitle": "Every word is mastered.",
+  "flashcardsAllMasteredSubtitle": "Save new words to your library to keep growing.",
+  "flashcardsSessionWaiting": "Your session is waiting for you",
+  "flashcardsWordsWaiting": "{count, plural, =0{{count} words are waiting to be recalled} =1{1 word is waiting to be recalled} other{{count} words are waiting to be recalled}}",
+  "@flashcardsWordsWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsPickUpWhereYouLeft": "Pick up right where you left off.",
+  "flashcardsAboutMinutes": "{count, plural, =0{About {count} minutes} =1{About 1 minute} other{About {count} minutes}}",
+  "@flashcardsAboutMinutes": {
+    "description": "Estimated session duration",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDueNew": "{count, plural, =0{{count} new} other{{count} new}}",
+  "@flashcardsDueNew": {
+    "description": "Number of new words due; shown in a comma-separated list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDueReturning": "{count, plural, =0{{count} returning} other{{count} returning}}",
+  "@flashcardsDueReturning": {
+    "description": "Number of returning words due; shown in a comma-separated list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsDueLongTerm": "{count, plural, =0{{count} long-term} other{{count} long-term}}",
+  "@flashcardsDueLongTerm": {
+    "description": "Number of long-term words due; shown in a comma-separated list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsInRotation": "{count, plural, =0{{count} in rotation} other{{count} in rotation}}",
+  "@flashcardsInRotation": {
+    "description": "Number of words currently being reviewed",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsMasteredCount": "{count, plural, =0{{count} mastered} other{{count} mastered}}",
+  "@flashcardsMasteredCount": {
+    "description": "Number of mastered words",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsArchivedButton": "Archived",
+  "@flashcardsArchivedButton": {
+    "description": "Button that opens the list of archived cards"
+  },
+  "flashcardsArchivedWithCount": "Archived ({count})",
+  "@flashcardsArchivedWithCount": {
+    "description": "Button that opens the list of archived cards, with how many there are",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsArchivedTitle": "Archived cards",
+  "flashcardsArchivedRestoreHint": "Restoring a card puts it back in rotation from D+0.",
+  "@flashcardsArchivedRestoreHint": {
+    "description": "D+0 is the first review stage (day zero)"
+  },
+  "flashcardsArchivedLoadFailed": "Could not load archived cards.",
+  "flashcardsArchivedEmpty": "No archived cards.",
+  "flashcardsArchivedOn": "Archived {date}",
+  "@flashcardsArchivedOn": {
+    "description": "When a card was archived; date is already formatted, e.g. 'Oct 3, 2026'",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "flashcardsRestore": "Restore",
+  "@flashcardsRestore": {
+    "description": "Button that puts an archived card back into reviews"
+  },
+  "flashcardsRestoreFailed": "Could not restore this flashcard.",
+  "flashcardsSetAside": "Set aside",
+  "@flashcardsSetAside": {
+    "description": "Removes a word from reviews (archives it)"
+  },
+  "flashcardsSetAsideTitle": "Set this word aside?",
+  "flashcardsSetAsideBody": "It leaves your reviews and its progress is reset. The word stays in your library, and you can bring it back anytime from Archived.",
+  "flashcardsHideMeaning": "Hide meaning",
+  "flashcardsShowMeaning": "Show meaning",
+  "flashcardsListen": "Listen",
+  "@flashcardsListen": {
+    "description": "Tooltip of the button that plays the pronunciation"
+  },
+  "flashcardsWhichEnglishWordLabel": "WHICH ENGLISH WORD IS THIS?",
+  "@flashcardsWhichEnglishWordLabel": {
+    "description": "Uppercase section label on reverse cards; English is the language being learned"
+  },
+  "flashcardsTranslationLabel": "TRANSLATION",
+  "@flashcardsTranslationLabel": {
+    "description": "Uppercase section label"
+  },
+  "flashcardsMeaningLabel": "MEANING",
+  "@flashcardsMeaningLabel": {
+    "description": "Uppercase section label"
+  },
+  "flashcardsExamplesLabel": "EXAMPLES",
+  "@flashcardsExamplesLabel": {
+    "description": "Uppercase section label"
+  },
+  "flashcardsStrengthSemantics": "{name}, {level} of {total}",
+  "@flashcardsStrengthSemantics": {
+    "description": "Accessibility label of the memory strength dots, e.g. 'Familiar, 3 of 8'",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsReviewSession": "Review session",
+  "flashcardsBackToFlashcardsTooltip": "Back to flashcards ({key})",
+  "@flashcardsBackToFlashcardsTooltip": {
+    "description": "Tooltip; key is the keyboard shortcut name (flashcardsKeyEsc)",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "flashcardsHowClearPrompt": "How clear was it?",
+  "@flashcardsHowClearPrompt": {
+    "description": "Asked after the card is flipped"
+  },
+  "flashcardsReversePrompt": "Which English word means this?",
+  "@flashcardsReversePrompt": {
+    "description": "Asked on reverse cards; English is the language being learned"
+  },
+  "flashcardsForwardPrompt": "What does it mean to you?",
+  "@flashcardsForwardPrompt": {
+    "description": "Asked on forward cards"
+  },
+  "flashcardsKeySpace": "Space",
+  "@flashcardsKeySpace": {
+    "description": "Keyboard key cap for the space bar"
+  },
+  "flashcardsKeyEnter": "Enter",
+  "@flashcardsKeyEnter": {
+    "description": "Keyboard key cap for the Enter/Return key"
+  },
+  "flashcardsKeyEsc": "Esc",
+  "@flashcardsKeyEsc": {
+    "description": "Keyboard key cap for the Escape key"
+  },
+  "flashcardsSessionNote": "SESSION NOTE",
+  "@flashcardsSessionNote": {
+    "description": "Uppercase eyebrow label on the end-of-session card"
+  },
+  "flashcardsSessionComplete": "Session complete",
+  "flashcardsSummaryRecalled": "{count, plural, =0{You recalled {count} words.} =1{You recalled 1 word.} other{You recalled {count} words.}}",
+  "@flashcardsSummaryRecalled": {
+    "description": "First sentence of the end-of-session summary",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsSummaryNoneClear": "None felt clear yet, and that is what practice is for.",
+  "@flashcardsSummaryNoneClear": {
+    "description": "Second sentence of the session summary when no word felt clear"
+  },
+  "flashcardsSummaryAllClear": "All of them felt clear.",
+  "@flashcardsSummaryAllClear": {
+    "description": "Second sentence of the session summary when every reviewed word (2 or more) felt clear"
+  },
+  "flashcardsSummaryOneClear": "It felt clear.",
+  "@flashcardsSummaryOneClear": {
+    "description": "Second sentence of the session summary when the single reviewed word felt clear"
+  },
+  "flashcardsSummarySomeClear": "{count, plural, =0{{count} felt clear.} other{{count} felt clear.}}",
+  "@flashcardsSummarySomeClear": {
+    "description": "Second sentence of the session summary: how many words felt clear",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardsComingBackLaterToday": "COMING BACK LATER TODAY",
+  "@flashcardsComingBackLaterToday": {
+    "description": "Uppercase label above the words that return later today"
+  },
+  "flashcardsBackToFlashcards": "Back to flashcards",
+  "flashcardsSeeProgress": "See progress",
+  "flashcardsNothingToReview": "Nothing to review right now.",
+  "flashcardsSessionLoadFailed": "Could not load your review session.",
+  "flashcardsSessionChangedElsewhere": "Your session changed on another device. Reloading…",
+  "flashcardsAnswerSaveFailed": "Could not save your answer. Please try again.",
+  "flashcardsSessionEmpty": "This session is empty.",
+  "flashcardsWordSetAside": "Word set aside.",
+  "flashcardsSetAsideFailed": "Could not set this word aside. Please try again.",
+  "trayQuitTitle": "Quit Vocabo",
+  "@trayQuitTitle": {
+    "description": "Quit confirmation dialog title and quit button tooltip in the menu bar panel"
+  },
+  "trayQuitConfirm": "Are you sure you want to quit?",
+  "trayQuitAction": "Quit",
+  "@trayQuitAction": {
+    "description": "Confirm button in the quit dialog"
+  },
+  "trayTabAddWord": "Add Word",
+  "trayTabTranslate": "Translate",
+  "trayTabFlashcards": "Flashcards",
+  "traySearchHint": "Search words...",
+  "trayNoWordsYet": "No words yet",
+  "trayNoMatchingWords": "No matching words",
+  "trayRecentWords": "Recent Words",
+  "trayLoadWordsFailed": "Failed to load words",
+  "trayAddNewWord": "Add New Word",
+  "trayDashboard": "Dashboard",
+  "@trayDashboard": {
+    "description": "Button that opens the main app window"
+  },
+  "trayFlashcardsUnavailable": "Flashcards are unavailable",
+  "trayFlashcardsCheckConnection": "Check your connection and try again.",
+  "trayFlashcardsWordsWaiting": "{count, plural, =0{{count} words are waiting} =1{1 word is waiting} other{{count} words are waiting}}",
+  "@trayFlashcardsWordsWaiting": {
+    "description": "Number of words due for review",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trayFlashcardsSessionInProgress": "You have a session in progress",
+  "trayFlashcardsResumeHint": "Pick up right where you left off.",
+  "trayFlashcardsQuickRoundHint": "{count, plural, =0{A quick round of up to {count} words.} =1{A quick round of 1 word.} other{A quick round of up to {count} words.}}",
+  "@trayFlashcardsQuickRoundHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trayFlashcardsContinueReviewing": "Continue reviewing",
+  "trayFlashcardsQuickSession": "Quick session",
+  "trayFlashcardsMemoryGood": "Your memory is in good shape.",
+  "trayFlashcardsNextWordsIn": "Your next words return in",
+  "@trayFlashcardsNextWordsIn": {
+    "description": "Shown above a countdown timer (e.g. 2 days or 03:12:45)"
+  },
+  "trayFlashcardsEmptyTitle": "No flashcards yet",
+  "trayFlashcardsEmptyBody": "Words you save will return here, right before you'd forget them.",
+  "trayFlashcardsOpen": "Open Flashcards",
+  "trayFlashcardsStop": "Stop",
+  "@trayFlashcardsStop": {
+    "description": "Tooltip of the button that leaves a flashcard session"
+  },
+  "trayFlashcardsRoundComplete": "Round complete",
+  "translateNoTranslationNeeded": "Your native language is English, so words come with definitions instead of translations. Look them up with Control + Option + Space.",
+  "@translateNoTranslationNeeded": {
+    "description": "Control + Option + Space is the macOS keyboard shortcut that opens the spotlight"
+  },
+  "translateSetupRequiredTitle": "Translation Setup Required",
+  "translateSetupRequiredBody": "Download translation languages in\nSystem Settings to enable offline translation.",
+  "@translateSetupRequiredBody": {
+    "description": "System Settings is the macOS settings app"
+  },
+  "translateOpenSettings": "Open Settings",
+  "translateInputHint": "Enter text to translate...",
+  "translateSaveToVocabulary": "Save to Vocabulary",
+  "translatePlaceholder": "Translation will appear here",
+  "translateErrorUnsupportedPair": "Unsupported language pair",
+  "translateErrorFailed": "Translation failed: {error}",
+  "@translateErrorFailed": {
+    "description": "error is a technical error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "spotlightSectionRecent": "Recent",
+  "@spotlightSectionRecent": {
+    "description": "Spotlight list section label; shown in uppercase"
+  },
+  "spotlightSectionLibrary": "Your library",
+  "@spotlightSectionLibrary": {
+    "description": "Spotlight list section label; shown in uppercase"
+  },
+  "spotlightSectionDictionary": "Dictionary",
+  "@spotlightSectionDictionary": {
+    "description": "Spotlight list section label; shown in uppercase"
+  },
+  "spotlightSectionTranslate": "Translate",
+  "@spotlightSectionTranslate": {
+    "description": "Spotlight list section label; shown in uppercase"
+  },
+  "spotlightSearchHint": "Translate a word…",
+  "spotlightTranslateTerm": "Translate “{term}”",
+  "@spotlightTranslateTerm": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "spotlightTranslatingTerm": "Translating “{term}”…",
+  "@spotlightTranslatingTerm": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "spotlightQuickTranslation": "Quick translation",
+  "@spotlightQuickTranslation": {
+    "description": "Label above an on-device translation preview; shown in uppercase"
+  },
+  "spotlightPressEnterHint": "Press Enter for the meaning, examples and audio.",
+  "spotlightLookedUpCount": "{count, plural, =0{Looked up {count} times} =1{Looked up once} other{Looked up {count} times}}",
+  "@spotlightLookedUpCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "spotlightSuggestSave": "{count, plural, =0{You've looked this up {count} times. Save it?} =1{You've looked this up once. Save it?} other{You've looked this up {count} times. Save it?}}",
+  "@spotlightSuggestSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "spotlightEmptyHint": "Words you translate here show up next time, on every device.",
+  "spotlightHintTranslate": "Translate",
+  "@spotlightHintTranslate": {
+    "description": "Footer keyboard hint: action of the Enter key"
+  },
+  "spotlightHintCopy": "Copy",
+  "@spotlightHintCopy": {
+    "description": "Footer keyboard hint: action of the Enter key"
+  },
+  "spotlightHintSave": "Save",
+  "@spotlightHintSave": {
+    "description": "Footer keyboard hint: action of Cmd+Enter"
+  },
+  "spotlightHintListen": "Listen",
+  "@spotlightHintListen": {
+    "description": "Footer keyboard hint: action of Cmd+P"
+  },
+  "spotlightHintOpen": "Open",
+  "@spotlightHintOpen": {
+    "description": "Footer keyboard hint: action of Cmd+O"
+  },
+  "spotlightNoticeAlreadySaved": "Already in your library.",
+  "spotlightNoticeSaved": "Saved to your library.",
+  "spotlightNoticeSaveFailed": "Could not save. Please try again.",
+  "spotlightNoticeInvalidWord": "Not a valid word or phrase.",
+  "spotlightNoticeTranslationFailed": "Translation failed. Please try again.",
+  "trayMenuOpen": "Open Vocabo",
+  "@trayMenuOpen": {
+    "description": "Native menu bar icon menu item"
+  },
+  "trayMenuQuit": "Quit",
+  "@trayMenuQuit": {
+    "description": "Native menu bar icon menu item"
+  },
+  "proPaywallTitle": "Learn without limits",
+  "proPaywallSubtitle": "Vocabo Pro unlocks everything, on all your devices.",
+  "proLimitLibrary": "{max, plural, =0{Your free library holds {max} words} =1{Your free library holds 1 word} other{Your free library holds {max} words}}",
+  "@proLimitLibrary": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "proLimitDailyLookups": "{max, plural, =0{You translated {max} new words today, the free limit} =1{You translated 1 new word today, the free limit} other{You translated {max} new words today, the free limit}}",
+  "@proLimitDailyLookups": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "proFeatureLocked": "This is part of Vocabo Pro",
+  "proLimitUpgradeInApp": "{message}. Upgrade to Pro in the Vocabo window.",
+  "@proLimitUpgradeInApp": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "proBenefitUnlimitedWords": "Unlimited words in your library",
+  "proBenefitUnlimitedLookups": "Unlimited translations every day",
+  "proBenefitDevices": "Use Vocabo on up to 3 devices at once",
+  "proBenefitStats": "Full history, answer breakdown and memory strength",
+  "proBenefitArchive": "Archive flashcards and review with reverse cards",
+  "proBenefitExport": "Export your library to CSV or Anki",
+  "proPlanMonthly": "Monthly",
+  "proPlanYearly": "Yearly",
+  "proPricePerMonth": "{price} per month",
+  "@proPricePerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proPricePerYear": "{price} per year",
+  "@proPricePerYear": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proYearlySaving": "Save {percent}%",
+  "@proYearlySaving": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "proStartTrial": "Start 3-day free trial",
+  "proTrialDisclosure": "New subscribers get 3 days free, then {price}. The subscription renews automatically unless you cancel it at least 24 hours before the end of the period, in your store account settings.",
+  "@proTrialDisclosure": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proRestorePurchases": "Restore purchases",
+  "proRestoreRequested": "Checking your purchases…",
+  "proStoreUnavailable": "Purchases are not available right now. Try again later.",
+  "proPurchasePending": "Waiting for the store to confirm your purchase…",
+  "proPurchaseFailed": "The purchase could not be completed. You were not charged.",
+  "proWelcome": "Welcome to Vocabo Pro!",
+  "proAlreadyPro": "You already have Vocabo Pro. Thank you!",
+  "proManageSubscription": "Manage subscription",
+  "proUpgradeButton": "Upgrade to Pro",
+  "proStatsLockedTitle": "See your full progress with Pro",
+  "proStatsLockedBody": "Weekly history, how clearly you recall your words and where each word is in your memory.",
+  "proPlanFreeTitle": "Free plan",
+  "proPlanProTitle": "Vocabo Pro",
+  "proUsageWords": "Words in your library",
+  "proUsageLookupsToday": "New words translated today",
+  "proGrantedNote": "Pro is active on your account.",
+  "proTrialUntil": "Free trial until {date}",
+  "@proTrialUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "proRenewsOn": "Renews on {date}",
+  "@proRenewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "proEndsOn": "Ends on {date}",
+  "@proEndsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "proExportLibrary": "Export library (CSV)",
+  "proExportDone": "Library exported.",
+  "proExportFailed": "Could not export the library.",
+  "settingsVoiceLabel": "PRONUNCIATION VOICE",
+  "settingsVoiceFemale": "Female",
+  "settingsVoiceMale": "Male"
+}

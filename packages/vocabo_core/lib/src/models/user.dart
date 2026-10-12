@@ -28,6 +28,9 @@ class User extends Equatable {
   /// Path relative to the API, e.g. `/storage/avatars/...`.
   final String? avatarUrl;
   final String nativeLanguage;
+
+  /// Language of the app interface: English or a native language.
+  final String interfaceLanguage;
   final UserPlan plan;
   final bool emailVerified;
   final bool phoneVerified;
@@ -48,7 +51,8 @@ class User extends Equatable {
     this.phoneNumber,
     this.age,
     this.avatarUrl,
-    this.nativeLanguage = 'en',
+    this.nativeLanguage = 'pt',
+    this.interfaceLanguage = 'en',
     this.plan = UserPlan.free,
     this.emailVerified = false,
     this.phoneVerified = false,
@@ -67,7 +71,8 @@ class User extends Equatable {
       phoneNumber: json['phone_number'] as String?,
       age: json['age'] as int?,
       avatarUrl: json['avatar_url'] as String?,
-      nativeLanguage: json['native_language'] as String? ?? 'en',
+      nativeLanguage: json['native_language'] as String? ?? 'pt',
+      interfaceLanguage: json['interface_language'] as String? ?? 'en',
       plan: UserPlan.fromJson(json['plan'] as String?),
       emailVerified: json['email_verified'] as bool? ?? false,
       phoneVerified: json['phone_verified'] as bool? ?? false,
@@ -92,6 +97,7 @@ class User extends Equatable {
     age,
     avatarUrl,
     nativeLanguage,
+    interfaceLanguage,
     plan,
     emailVerified,
     phoneVerified,

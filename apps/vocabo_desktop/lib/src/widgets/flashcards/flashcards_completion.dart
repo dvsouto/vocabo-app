@@ -4,21 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/claim_focus.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_evaluation_bar.dart';
 
 /// Builds the one-line summary shown at the end of a session.
-String sessionSummary({required int reviewed, required int clear}) {
-  final words = reviewed == 1 ? '1 word' : '$reviewed words';
+String sessionSummary(
+  AppLocalizations l10n, {
+  required int reviewed,
+  required int clear,
+}) {
   final clearPart = switch (clear) {
-    0 => 'None felt clear yet, and that is what practice is for.',
-    _ when clear == reviewed && reviewed > 1 => 'All of them felt clear.',
-    _ when clear == reviewed => 'It felt clear.',
-    _ => '$clear felt clear.',
+    0 => l10n.flashcardsSummaryNoneClear,
+    _ when clear == reviewed && reviewed > 1 => l10n.flashcardsSummaryAllClear,
+    _ when clear == reviewed => l10n.flashcardsSummaryOneClear,
+    _ => l10n.flashcardsSummarySomeClear(clear),
   };
-  return 'You recalled $words. $clearPart';
+  return '${l10n.flashcardsSummaryRecalled(reviewed)} $clearPart';
 }
 
 /// End of session note: what was reviewed, how clear it felt and which
@@ -30,6 +34,7 @@ class FlashcardsCompletion extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(flashcardSessionProvider);
     final notifier = ref.read(flashcardSessionProvider.notifier);
+    final l10n = context.l10n;
     final cards = state.session?.cards ?? const <FlashcardSessionCard>[];
     final blankTerms = cards
         .where((card) => card.evaluation == FlashcardEvaluation.hard)
@@ -70,17 +75,21 @@ class FlashcardsCompletion extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'SESSION NOTE',
+                    l10n.flashcardsSessionNote,
                     style: VocaboTypography.labelSm.copyWith(
                       color: VocaboColors.neutral,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: VocaboSpacing.sm),
-                  Text('Session complete', style: VocaboTypography.headlineSm),
+                  Text(
+                    l10n.flashcardsSessionComplete,
+                    style: VocaboTypography.headlineSm,
+                  ),
                   const SizedBox(height: VocaboSpacing.sm),
                   Text(
                     sessionSummary(
+                      l10n,
                       reviewed: state.evaluatedCount,
                       clear: state.countOf(FlashcardEvaluation.easy),
                     ),
@@ -106,7 +115,7 @@ class FlashcardsCompletion extends ConsumerWidget {
                   if (blankTerms.isNotEmpty) ...[
                     const SizedBox(height: VocaboSpacing.xl),
                     Text(
-                      'COMING BACK LATER TODAY',
+                      l10n.flashcardsComingBackLaterToday,
                       style: VocaboTypography.labelSm.copyWith(
                         color: VocaboColors.neutral,
                         fontWeight: FontWeight.w600,
@@ -142,10 +151,10 @@ class FlashcardsCompletion extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: VocaboPrimaryButton(
-                          label: 'Back to flashcards',
+                          label: l10n.flashcardsBackToFlashcards,
                           isExpanded: true,
-                          trailing: const VocaboKeyCap(
-                            'Enter',
+                          trailing: VocaboKeyCap(
+                            l10n.flashcardsKeyEnter,
                             color: VocaboColors.onPrimary,
                           ),
                           onPressed: notifier.finishCompletion,
@@ -153,7 +162,7 @@ class FlashcardsCompletion extends ConsumerWidget {
                       ),
                       const SizedBox(width: VocaboSpacing.md),
                       VocaboTextButton(
-                        label: 'See progress',
+                        label: l10n.flashcardsSeeProgress,
                         onPressed: seeProgress,
                       ),
                     ],
@@ -198,7 +207,7 @@ class _ClarityCount extends StatelessWidget {
           const SizedBox(width: VocaboSpacing.xs),
           Flexible(
             child: Text(
-              clarityLabelOf(evaluation),
+              context.l10n.clarityLabel(evaluation),
               overflow: TextOverflow.ellipsis,
               style: VocaboTypography.bodySm.copyWith(
                 color: palette.foreground,

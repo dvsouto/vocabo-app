@@ -12,10 +12,18 @@ class MemoryStrengthDots extends StatelessWidget {
     this.showLabel = true,
     this.dotSize = 6,
     this.color,
+    this.label,
+    this.semanticsLabel,
   });
 
   final MemoryStrength strength;
   final bool showLabel;
+
+  /// Display name of the strength. Defaults to [MemoryStrength.name].
+  final String? label;
+
+  /// Accessibility description. Defaults to an English level summary.
+  final String? semanticsLabel;
   final double dotSize;
   final Color? color;
 
@@ -27,7 +35,8 @@ class MemoryStrengthDots extends StatelessWidget {
 
     return Semantics(
       label:
-          '${strength.name}, ${strength.level} of ${MemoryStrength.totalLevels}',
+          semanticsLabel ??
+          '${label ?? strength.name}, ${strength.level} of ${MemoryStrength.totalLevels}',
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -47,7 +56,7 @@ class MemoryStrengthDots extends StatelessWidget {
           if (showLabel) ...[
             SizedBox(width: dotSize * 1.5),
             Text(
-              strength.name.toUpperCase(),
+              (label ?? strength.name).toUpperCase(),
               style: VocaboTypography.labelSm.copyWith(
                 color: VocaboColors.neutral600,
                 fontWeight: FontWeight.w600,

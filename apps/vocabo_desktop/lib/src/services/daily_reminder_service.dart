@@ -6,6 +6,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+
 /// Remembers the last day the reminder fired so it shows once per day,
 /// even across app restarts.
 abstract interface class ReminderStateStore {
@@ -53,6 +55,7 @@ class DailyReminderService {
     required this.loadPreferences,
     required this.loadStatus,
     required this.onOpen,
+    required this.loadLocalizations,
     FlutterLocalNotificationsPlugin? notifications,
     ReminderStateStore? stateStore,
     this.checkInterval = const Duration(minutes: 1),
@@ -64,6 +67,10 @@ class DailyReminderService {
 
   /// Called when the user clicks the notification.
   final void Function() onOpen;
+
+  /// Translations in the current interface language, read when the
+  /// notification fires.
+  final AppLocalizations Function() loadLocalizations;
   final Duration checkInterval;
 
   static const _notificationId = 1001;
@@ -116,13 +123,12 @@ class DailyReminderService {
       await _stateStore.writeLastNotifiedOn(moment);
       if (status.dueCount == 0) return;
 
+      final l10n = loadLocalizations();
       await _initialize();
       await _notifications.show(
         id: _notificationId,
-        title: 'Your flashcards are ready',
-        body: status.dueCount == 1
-            ? '1 word is waiting to be recalled.'
-            : '${status.dueCount} words are waiting to be recalled.',
+        title: l10n.reminderNotificationTitle,
+        body: l10n.reminderNotificationBody(status.dueCount),
         notificationDetails: const NotificationDetails(
           macOS: DarwinNotificationDetails(),
         ),

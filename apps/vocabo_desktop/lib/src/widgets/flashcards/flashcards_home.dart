@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/pro/paywall_dialog.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/archived_flashcards_dialog.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/claim_focus.dart';
@@ -25,12 +28,12 @@ class FlashcardsHome extends ConsumerWidget {
             const Icon(Icons.cloud_off_outlined, size: 48),
             const SizedBox(height: VocaboSpacing.md),
             Text(
-              'Could not load your flashcards',
+              context.l10n.flashcardsLoadFailed,
               style: VocaboTypography.titleLg,
             ),
             const SizedBox(height: VocaboSpacing.sm),
             VocaboPrimaryButton(
-              label: 'Try Again',
+              label: context.l10n.commonTryAgain,
               onPressed: () => ref.invalidate(flashcardStatusProvider),
             ),
           ],
@@ -81,7 +84,7 @@ class _HomeBody extends ConsumerWidget {
               child: _buildState(context, ref),
             ),
             const SizedBox(height: VocaboSpacing.lg),
-            _buildFooter(context),
+            _buildFooter(context, ref),
           ],
         ),
       ),
@@ -89,24 +92,30 @@ class _HomeBody extends ConsumerWidget {
   }
 
   Widget _buildState(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+
     if (!summary.hasCards && summary.completedCount == 0) {
-      return const _HeroContent(
+      return _HeroContent(
         icon: Icons.style_outlined,
-        title: 'No flashcards yet',
-        subtitle:
-            "Words you save will return here, right before you'd forget them.",
+        title: l10n.flashcardsEmptyTitle,
+        subtitle: l10n.flashcardsEmptySubtitle,
       );
     }
 
     if (summary.canStartSession) {
       return _HeroContent(
         icon: Icons.style_outlined,
-        title: _readyTitle(),
-        subtitle: _readySubtitle(),
+        title: _readyTitle(l10n),
+        subtitle: _readySubtitle(l10n),
         action: VocaboPrimaryButton(
-          label: summary.hasActiveSession ? 'Continue reviewing' : 'Review now',
+          label: summary.hasActiveSession
+              ? l10n.flashcardsContinueReviewing
+              : l10n.flashcardsReviewNow,
           isExpanded: true,
-          trailing: const VocaboKeyCap('Enter', color: VocaboColors.onPrimary),
+          trailing: VocaboKeyCap(
+            l10n.flashcardsKeyEnter,
+            color: VocaboColors.onPrimary,
+          ),
           onPressed: () =>
               ref.read(flashcardSessionProvider.notifier).startSession(),
         ),
@@ -116,8 +125,8 @@ class _HomeBody extends ConsumerWidget {
     if (summary.isWaiting) {
       return _HeroContent(
         icon: Icons.nights_stay_outlined,
-        title: 'Your memory is in good shape.',
-        subtitle: 'Your next words return in',
+        title: l10n.flashcardsWaitingTitle,
+        subtitle: l10n.flashcardsWaitingSubtitle,
         action: FlashcardCountdown(
           target: summary.nextReviewAt!,
           onFinished: () => ref.invalidate(flashcardStatusProvider),
@@ -125,38 +134,40 @@ class _HomeBody extends ConsumerWidget {
       );
     }
 
-    return const _HeroContent(
+    return _HeroContent(
       icon: Icons.workspace_premium_outlined,
-      title: 'Every word is mastered.',
-      subtitle: 'Save new words to your library to keep growing.',
+      title: l10n.flashcardsAllMasteredTitle,
+      subtitle: l10n.flashcardsAllMasteredSubtitle,
     );
   }
 
-  String _readyTitle() {
-    if (summary.dueCount == 0) return 'Your session is waiting for you';
-    return summary.dueCount == 1
-        ? '1 word is waiting to be recalled'
-        : '${summary.dueCount} words are waiting to be recalled';
+  String _readyTitle(AppLocalizations l10n) {
+    if (summary.dueCount == 0) return l10n.flashcardsSessionWaiting;
+    return l10n.flashcardsWordsWaiting(summary.dueCount);
   }
 
-  String _readySubtitle() {
+  String _readySubtitle(AppLocalizations l10n) {
     final minutes = summary.estimatedMinutes();
     final parts = <String>[
-      if (summary.dueNew > 0) '${summary.dueNew} new',
-      if (summary.dueReturning > 0) '${summary.dueReturning} returning',
-      if (summary.dueLongTerm > 0) '${summary.dueLongTerm} long-term',
+      if (summary.dueNew > 0) l10n.flashcardsDueNew(summary.dueNew),
+      if (summary.dueReturning > 0)
+        l10n.flashcardsDueReturning(summary.dueReturning),
+      if (summary.dueLongTerm > 0)
+        l10n.flashcardsDueLongTerm(summary.dueLongTerm),
     ];
 
-    if (minutes == 0) return 'Pick up right where you left off.';
+    if (minutes == 0) return l10n.flashcardsPickUpWhereYouLeft;
 
-    final duration = minutes == 1 ? 'About 1 minute' : 'About $minutes minutes';
+    final duration = l10n.flashcardsAboutMinutes(minutes);
     return parts.isEmpty ? duration : '$duration · ${parts.join(', ')}';
   }
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final parts = <String>[
-      '${summary.totalActive} in rotation',
-      if (summary.completedCount > 0) '${summary.completedCount} mastered',
+      l10n.flashcardsInRotation(summary.totalActive),
+      if (summary.completedCount > 0)
+        l10n.flashcardsMasteredCount(summary.completedCount),
     ];
 
     return Row(
@@ -168,7 +179,16 @@ class _HomeBody extends ConsumerWidget {
         ),
         const SizedBox(width: VocaboSpacing.sm),
         TextButton(
-          onPressed: () => showArchivedFlashcardsDialog(context),
+          onPressed: () {
+            final canArchive =
+                ref.read(planStatusProvider).valueOrNull?.limits.archive ??
+                true;
+            if (canArchive) {
+              showArchivedFlashcardsDialog(context);
+            } else {
+              showPaywall(context, const UpgradeReason(UpgradeTrigger.feature));
+            }
+          },
           style: TextButton.styleFrom(
             foregroundColor: VocaboColors.neutral,
             minimumSize: const Size(44, 32),
@@ -180,8 +200,8 @@ class _HomeBody extends ConsumerWidget {
           ),
           child: Text(
             summary.archivedCount > 0
-                ? 'Archived (${summary.archivedCount})'
-                : 'Archived',
+                ? l10n.flashcardsArchivedWithCount(summary.archivedCount)
+                : l10n.flashcardsArchivedButton,
           ),
         ),
       ],

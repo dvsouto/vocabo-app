@@ -4,6 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
@@ -82,6 +85,8 @@ class SpotlightController extends Notifier<SpotlightState> {
 
   SpotlightHost get _host => ref.read(spotlightHostProvider);
 
+  AppLocalizations get _l10n => ref.read(appLocalizationsProvider);
+
   /// Called every time the panel opens: starts clean and refreshes the
   /// synced history and the local library cache.
   Future<void> onShown() async {
@@ -150,7 +155,7 @@ class SpotlightController extends Notifier<SpotlightState> {
     var item = state.selected;
     if (item == null || state.isSaving) return;
     if (item.isInLibrary) {
-      state = state.copyWith(notice: () => 'Already in your library.');
+      state = state.copyWith(notice: () => _l10n.spotlightNoticeAlreadySaved);
       return;
     }
 
@@ -183,18 +188,18 @@ class SpotlightController extends Notifier<SpotlightState> {
       await _record(vocabulary.id, item.vocabularyType);
       state = state.copyWith(
         isSaving: false,
-        notice: () => 'Saved to your library.',
+        notice: () => _l10n.spotlightNoticeSaved,
       );
     } on ConflictException {
       state = state.copyWith(
         isSaving: false,
-        notice: () => 'Already in your library.',
+        notice: () => _l10n.spotlightNoticeAlreadySaved,
       );
     } catch (e, st) {
       appLogger.handle(e, st, 'Spotlight saveSelected() error');
       state = state.copyWith(
         isSaving: false,
-        notice: () => 'Could not save. Please try again.',
+        notice: () => _planNotice(e) ?? _l10n.spotlightNoticeSaveFailed,
       );
     }
   }
@@ -239,6 +244,14 @@ class SpotlightController extends Notifier<SpotlightState> {
       state = state.copyWith(lookups: previous);
       _rebuildItems(keepSelection: true);
     }
+  }
+
+  /// The free plan limit, phrased for the spotlight, which has no room for
+  /// the upgrade offer: it points to the app instead.
+  String? _planNotice(Object error) {
+    final reason = upgradeReasonFor(error);
+    if (reason == null) return null;
+    return _l10n.proLimitUpgradeInApp(reason.headline(_l10n));
   }
 
   /// Escape: clears the query first, closes on the second press.
@@ -287,13 +300,13 @@ class SpotlightController extends Notifier<SpotlightState> {
     } on UnprocessableException {
       state = state.copyWith(
         resolvingKey: () => null,
-        notice: () => 'Not a valid word or phrase.',
+        notice: () => _l10n.spotlightNoticeInvalidWord,
       );
     } catch (e, st) {
       appLogger.handle(e, st, 'Spotlight resolve() error');
       state = state.copyWith(
         resolvingKey: () => null,
-        notice: () => 'Translation failed. Please try again.',
+        notice: () => _planNotice(e) ?? _l10n.spotlightNoticeTranslationFailed,
       );
     }
     return null;

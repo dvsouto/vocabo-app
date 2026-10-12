@@ -5,6 +5,7 @@ import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_translation/vocabo_translation.dart';
 
 import 'package:vocabo_desktop/src/auth/device_info.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 import 'package:vocabo_desktop/src/services/translation_preferences_service.dart';
 
@@ -223,7 +224,8 @@ class TranslationNotifier extends Notifier<TranslationState> {
       if (sourceLang == null || targetLang == null) {
         state = state.copyWith(
           isTranslating: false,
-          errorMessage: () => 'Unsupported language pair',
+          errorMessage: () =>
+              ref.read(appLocalizationsProvider).translateErrorUnsupportedPair,
         );
         return;
       }
@@ -251,7 +253,8 @@ class TranslationNotifier extends Notifier<TranslationState> {
     } catch (e) {
       state = state.copyWith(
         isTranslating: false,
-        errorMessage: () => 'Translation failed: $e',
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).translateErrorFailed('$e'),
       );
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
@@ -17,17 +18,17 @@ class DashboardSidebar extends ConsumerWidget {
 
   static const _sidebarBackground = Color(0xFF1A1B2E);
 
-  static const _navItems = [
-    (icon: Icons.auto_stories, label: 'Library'),
-    (icon: Icons.style_outlined, label: 'Flashcards'),
-    (icon: Icons.trending_up, label: 'Progress'),
-    (icon: Icons.settings_outlined, label: 'Settings'),
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dueCount =
         ref.watch(flashcardStatusProvider).valueOrNull?.dueCount ?? 0;
+    final l10n = context.l10n;
+    final navItems = [
+      (icon: Icons.auto_stories, label: l10n.sidebarLibrary),
+      (icon: Icons.style_outlined, label: l10n.sidebarFlashcards),
+      (icon: Icons.trending_up, label: l10n.sidebarProgress),
+      (icon: Icons.settings_outlined, label: l10n.sidebarSettings),
+    ];
 
     return Container(
       width: 240,
@@ -58,12 +59,12 @@ class DashboardSidebar extends ConsumerWidget {
           ),
           const SizedBox(height: VocaboSpacing.xl),
           Text(
-            'PERSONAL WORKSPACE',
+            l10n.sidebarPersonalWorkspace,
             style: VocaboTypography.labelSm.copyWith(color: Colors.white54),
           ),
           const SizedBox(height: VocaboSpacing.md),
-          ...List.generate(_navItems.length, (i) {
-            final item = _navItems[i];
+          ...List.generate(navItems.length, (i) {
+            final item = navItems[i];
             final isFlashcards = i == DashboardSection.flashcards.index;
             return Padding(
               padding: const EdgeInsets.only(bottom: 4),
@@ -78,7 +79,7 @@ class DashboardSidebar extends ConsumerWidget {
           }),
           const Spacer(),
           VocaboPrimaryButton(
-            label: 'Add New Word',
+            label: l10n.sidebarAddNewWord,
             isExpanded: true,
             onPressed: () {
               ref.read(addWordInitialTermProvider.notifier).state = '';

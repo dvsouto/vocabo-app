@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
@@ -53,6 +54,7 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
     final query = ref.watch(searchQueryProvider);
     final vocabList = ref.watch(userVocabularyListProvider);
     final showTranslations = ref.watch(showTranslationsProvider);
+    final l10n = context.l10n;
 
     return Column(
       children: [
@@ -65,10 +67,10 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('My Library', style: VocaboTypography.headlineSm),
+                    Text(l10n.libraryTitle, style: VocaboTypography.headlineSm),
                     const SizedBox(height: VocaboSpacing.xs),
                     Text(
-                      'Curating your intellectual vocabulary.',
+                      l10n.librarySubtitle,
                       style: VocaboTypography.bodyMd.copyWith(
                         color: VocaboColors.neutral,
                       ),
@@ -84,7 +86,7 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                     VocaboSearchField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
-                      hint: 'Quick search words...',
+                      hint: l10n.librarySearchHint,
                       onChanged: (v) =>
                           ref.read(searchQueryProvider.notifier).state = v,
                       suffixActions: Row(
@@ -92,8 +94,8 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                         children: [
                           IconButton(
                             tooltip: showTranslations
-                                ? 'Hide meanings'
-                                : 'Show meanings',
+                                ? l10n.libraryHideMeanings
+                                : l10n.libraryShowMeanings,
                             icon: Icon(
                               showTranslations
                                   ? Icons.visibility_outlined
@@ -152,7 +154,7 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(
               child: Text(
-                'Failed to load vocabulary',
+                l10n.libraryLoadFailed,
                 style: VocaboTypography.bodyMd.copyWith(
                   color: VocaboColors.neutral,
                 ),

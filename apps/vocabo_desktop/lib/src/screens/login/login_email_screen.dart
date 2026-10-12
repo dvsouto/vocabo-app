@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/widgets/account/interface_language_menu.dart';
 import 'package:vocabo_desktop/src/widgets/legal/legal_consent_text.dart';
 import 'package:vocabo_desktop/src/auth/social_sign_in.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/screens/login/login_password_screen.dart';
 import 'package:vocabo_desktop/src/screens/password_reset/password_reset_screen.dart';
@@ -31,7 +33,7 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
   void _onContinue() {
     final email = _emailController.text.trim();
     if (!isValidEmail(email)) {
-      setState(() => _emailError = 'Enter a valid email address.');
+      setState(() => _emailError = context.l10n.authInvalidEmail);
       return;
     }
 
@@ -71,15 +73,23 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
 
     final error = ref.read(socialLoginProvider).error;
     if (error == null) return;
+    final l10n = context.l10n;
+    final label = provider.label;
     final message = switch (error) {
-      SocialSignInException(:final message) => message,
+      SocialSignInException(failure: SocialSignInFailure.notConfigured) =>
+        l10n.authSocialNotSetUp(label),
+      SocialSignInException(failure: SocialSignInFailure.missingToken) =>
+        l10n.authSocialMissingToken(label),
+      SocialSignInException(failure: SocialSignInFailure.unavailable) =>
+        l10n.authSocialUnavailable(label),
+      SocialSignInException(:final detail?) =>
+        l10n.authSocialSignInFailedDetail(label, detail),
       AppException(code: 'provider_not_configured') =>
-        'Sign in with ${provider.label} is not set up on the server yet.',
-      AppException(code: 'email_taken') =>
-        'This email already has an account. Sign in with your password.',
-      NetworkException() => 'No connection. Check your internet and try again.',
+        l10n.authSocialNotConfiguredOnServer(label),
+      AppException(code: 'email_taken') => l10n.authEmailTakenUsePassword,
+      NetworkException() => l10n.commonNoConnection,
       AppException(:final message) => message,
-      _ => 'Could not sign in with ${provider.label}. Please try again.',
+      _ => l10n.authSocialSignInFailed(label),
     };
     ScaffoldMessenger.of(
       context,
@@ -88,6 +98,8 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -138,7 +150,7 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
 
                     // Subtitle
                     Text(
-                      'Refine your vocabulary in the digital\nworkshop of a polymath.',
+                      l10n.authLoginTagline,
                       style: VocaboTypography.bodySm.copyWith(
                         color: VocaboColors.neutral,
                       ),
@@ -149,7 +161,10 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                     // Email
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text('EMAIL', style: VocaboTypography.labelSm),
+                      child: Text(
+                        l10n.authFieldEmail.toUpperCase(),
+                        style: VocaboTypography.labelSm,
+                      ),
                     ),
                     const SizedBox(height: VocaboSpacing.sm),
                     VocaboTextField(
@@ -170,7 +185,7 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: VocaboPrimaryButton(
-                        label: 'Continue to Library',
+                        label: l10n.authContinueToLibrary,
                         isExpanded: true,
                         trailing: const Icon(
                           Icons.arrow_forward,
@@ -184,7 +199,7 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
 
                     // Divider
                     Text(
-                      'OR AUTHENTICATE VIA',
+                      l10n.authOrAuthenticateVia.toUpperCase(),
                       style: VocaboTypography.labelSm.copyWith(
                         color: VocaboColors.neutral,
                       ),
@@ -226,7 +241,9 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                       ],
                     ),
                     const SizedBox(height: VocaboSpacing.md),
-                    const LegalConsentText(action: 'continuing'),
+                    const LegalConsentText(
+                      action: LegalConsentAction.continuing,
+                    ),
                     const SizedBox(height: VocaboSpacing.md),
 
                     // Bottom links
@@ -235,12 +252,12 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                       spacing: VocaboSpacing.sm,
                       children: [
                         VocaboTextButton(
-                          label: 'Forgot password?',
+                          label: l10n.authForgotPassword,
                           uppercase: true,
                           onPressed: _openPasswordReset,
                         ),
                         VocaboTextButton(
-                          label: 'Create Account',
+                          label: l10n.authCreateAccount,
                           uppercase: true,
                           onPressed: _openSignUp,
                         ),
@@ -250,6 +267,11 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                 ),
               ),
             ),
+          ),
+          const Positioned(
+            top: VocaboSpacing.lg,
+            right: VocaboSpacing.lg,
+            child: InterfaceLanguageMenu(),
           ),
         ],
       ),

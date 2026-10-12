@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
@@ -17,6 +18,7 @@ final dailyReminderServiceProvider = Provider<DailyReminderService>((ref) {
       windowManager.show();
       windowManager.focus();
     },
+    loadLocalizations: () => ref.read(appLocalizationsProvider),
   );
 
   // Re-check as soon as the preferences load or change, not only on the

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
 import 'package:vocabo_desktop/src/widgets/account/auth_scaffold.dart';
 import 'package:vocabo_desktop/src/widgets/account/password_field.dart';
@@ -56,13 +57,12 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
       Navigator.of(context).popUntil((route) => route.isFirst);
       return;
     }
+    final l10n = context.l10n;
     setState(() {
       _error = switch (error) {
-        AppException(code: 'incorrect_password') =>
-          'The password is incorrect.',
-        NetworkException() =>
-          'No connection. Check your internet and try again.',
-        _ => 'Could not delete the account. Please try again.',
+        AppException(code: 'incorrect_password') => l10n.authPasswordIncorrect,
+        NetworkException() => l10n.commonNoConnection,
+        _ => l10n.authDeleteAccountFailed,
       };
     });
   }
@@ -70,10 +70,11 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
   @override
   Widget build(BuildContext context) {
     final deleting = ref.watch(deleteAccountProvider).isLoading;
+    final l10n = context.l10n;
 
     return AlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
-      title: const Text('Delete account'),
+      title: Text(l10n.authDeleteAccountTitle),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -81,19 +82,17 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'This permanently deletes your account, your library, your '
-              'flashcards and progress, your translation history and your '
-              'photo. It cannot be undone.',
+              l10n.authDeleteAccountWarning,
               style: VocaboTypography.bodyMd.copyWith(
                 color: VocaboColors.neutral700,
               ),
             ),
             const SizedBox(height: VocaboSpacing.lg),
             if (_hasPassword) ...[
-              const FieldLabel('Confirm with your password'),
+              FieldLabel(l10n.authConfirmWithPassword),
               PasswordField(
                 controller: _controller,
-                hint: 'Password',
+                hint: l10n.authFieldPassword,
                 autofocus: true,
                 enabled: !deleting,
                 errorText: _error,
@@ -101,7 +100,7 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
                 onSubmitted: (_) => _delete(),
               ),
             ] else ...[
-              const FieldLabel('Type $_confirmationWord to confirm'),
+              FieldLabel(l10n.authTypeWordToConfirm(_confirmationWord)),
               VocaboTextField(
                 controller: _controller,
                 hint: _confirmationWord,
@@ -117,7 +116,7 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
       ),
       actions: [
         VocaboTextButton(
-          label: 'Cancel',
+          label: l10n.commonCancel,
           onPressed: deleting ? null : () => Navigator.of(context).pop(),
         ),
         FilledButton(
@@ -135,7 +134,7 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
                     color: VocaboColors.onPrimary,
                   ),
                 )
-              : const Text('Delete account'),
+              : Text(l10n.authDeleteAccountTitle),
         ),
       ],
     );

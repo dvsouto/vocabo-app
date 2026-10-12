@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
+import 'package:vocabo_desktop/src/l10n/memory_strength_label.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_controller.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_host.dart';
@@ -49,6 +53,7 @@ class _SpotlightViewState extends ConsumerState<SpotlightView> {
   }
 
   void _onShown() {
+    ref.invalidate(interfaceLanguageProvider);
     _inputController.clear();
     ref.read(spotlightControllerProvider.notifier).onShown();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -249,7 +254,7 @@ class _SearchField extends StatelessWidget {
               ),
               cursorColor: VocaboColors.primary,
               decoration: InputDecoration(
-                hintText: 'Translate a word…',
+                hintText: context.l10n.spotlightSearchHint,
                 hintStyle: VocaboTypography.titleLg.copyWith(
                   color: VocaboColors.neutral,
                   fontWeight: FontWeight.w400,
@@ -305,7 +310,7 @@ class _ResultList extends StatelessWidget {
           item: item,
           sectionLabel: previous?.section == item.section
               ? null
-              : item.section.label,
+              : item.section.label(context.l10n),
           isSelected: index == state.selectedIndex,
           isResolving: state.resolvingKey == item.key,
           quickTranslation: state.quickTranslations[item.term.toLowerCase()],
@@ -374,7 +379,9 @@ class _ResultRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isTranslateRow ? 'Translate “${item.term}”' : item.term,
+                      isTranslateRow
+                          ? context.l10n.spotlightTranslateTerm(item.term)
+                          : item.term,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: VocaboTypography.bodyMd.copyWith(
@@ -429,7 +436,7 @@ class _Preview extends StatelessWidget {
     if (state.resolvingKey == item.key) {
       return Center(
         child: Text(
-          'Translating “${item.term}”…',
+          context.l10n.spotlightTranslatingTerm(item.term),
           style: VocaboTypography.bodySm.copyWith(color: VocaboColors.neutral),
         ),
       );
@@ -464,7 +471,7 @@ class _QuickPreview extends StatelessWidget {
           const SizedBox(height: VocaboSpacing.md),
           if (translation != null) ...[
             Text(
-              'QUICK TRANSLATION',
+              context.l10n.spotlightQuickTranslation.toUpperCase(),
               style: VocaboTypography.labelSm.copyWith(
                 color: VocaboColors.neutral,
                 fontWeight: FontWeight.w600,
@@ -480,7 +487,7 @@ class _QuickPreview extends StatelessWidget {
             const SizedBox(height: VocaboSpacing.lg),
           ],
           Text(
-            'Press Enter for the meaning, examples and audio.',
+            context.l10n.spotlightPressEnterHint,
             style: VocaboTypography.bodySm.copyWith(
               color: VocaboColors.neutral,
             ),
@@ -532,7 +539,9 @@ class _FullPreview extends StatelessWidget {
             ],
           ),
           const SizedBox(height: VocaboSpacing.xs),
-          VocaboTagChip(label: vocabulary.wordType.value),
+          VocaboTagChip(
+            label: wordTypeLabel(context.l10n, vocabulary.wordType),
+          ),
           const SizedBox(height: VocaboSpacing.md),
           Text(
             vocabulary.translation ?? '—',
@@ -561,12 +570,10 @@ class _FullPreview extends StatelessWidget {
           ],
           const SizedBox(height: VocaboSpacing.lg),
           if (flashcard != null)
-            MemoryStrengthDots(strength: flashcard.strength)
+            LocalizedMemoryStrengthDots(strength: flashcard.strength)
           else if (lookupCount > 0)
             Text(
-              lookupCount == 1
-                  ? 'Looked up once'
-                  : 'Looked up $lookupCount times',
+              context.l10n.spotlightLookedUpCount(lookupCount),
               style: VocaboTypography.bodySm.copyWith(
                 color: VocaboColors.neutral,
               ),
@@ -583,7 +590,7 @@ class _FullPreview extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      "You've looked this up $lookupCount times. Save it?",
+                      context.l10n.spotlightSuggestSave(lookupCount),
                       style: VocaboTypography.bodySm.copyWith(
                         color: VocaboColors.primary,
                         fontWeight: FontWeight.w600,
@@ -616,7 +623,7 @@ class _EmptyHint extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          'Words you translate here show up next time, on every device.',
+          context.l10n.spotlightEmptyHint,
           style: VocaboTypography.bodySm.copyWith(color: VocaboColors.neutral),
         ),
       ),
@@ -631,14 +638,18 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final item = state.selected;
     final hints = <(String, String)>[
-      if (item != null && !item.isResolved) ('Enter', 'Translate'),
-      if (item != null && item.isResolved) ('Enter', 'Copy'),
-      if (item != null && !item.isInLibrary) ('⌘ Enter', 'Save'),
-      if (item?.vocabulary?.contentHash != null) ('⌘ P', 'Listen'),
-      if (item != null) ('⌘ O', 'Open'),
-      ('Esc', 'Close'),
+      if (item != null && !item.isResolved)
+        ('Enter', l10n.spotlightHintTranslate),
+      if (item != null && item.isResolved) ('Enter', l10n.spotlightHintCopy),
+      if (item != null && !item.isInLibrary)
+        ('⌘ Enter', l10n.spotlightHintSave),
+      if (item?.vocabulary?.contentHash != null)
+        ('⌘ P', l10n.spotlightHintListen),
+      if (item != null) ('⌘ O', l10n.spotlightHintOpen),
+      ('Esc', l10n.commonClose),
     ];
 
     return Container(

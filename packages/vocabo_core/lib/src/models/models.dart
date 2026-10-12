@@ -7,6 +7,7 @@ export 'flashcard_session.dart';
 export 'flashcard_status_summary.dart';
 export 'flashcard_summary.dart';
 export 'paginated_response.dart';
+export 'plan_status.dart';
 export 'translation_lookup.dart';
 export 'usage_examples.dart';
 export 'user.dart';

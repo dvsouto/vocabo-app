@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
+
 class PartOfSpeechSelector extends StatelessWidget {
   const PartOfSpeechSelector({
     super.key,
@@ -14,21 +17,15 @@ class PartOfSpeechSelector extends StatelessWidget {
   final ValueChanged<WordType>? onSelected;
   final bool enabled;
 
-  static const _labels = {
-    WordType.noun: 'NOUN',
-    WordType.verb: 'VERB',
-    WordType.adjective: 'ADJ',
-    WordType.adverb: 'ADV',
-  };
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: WordType.values.map((type) {
         return VocaboSelectableChip(
-          label: _labels[type] ?? type.value,
+          label: wordTypeShortLabel(l10n, type),
           isSelected: selected == type,
           enabled: enabled,
           onTap: () => onSelected?.call(type),

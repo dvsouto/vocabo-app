@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_archive_dialog.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_card.dart';
@@ -86,6 +87,7 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
   Widget build(BuildContext context) {
     final state = ref.watch(flashcardSessionProvider);
     final notifier = ref.read(flashcardSessionProvider.notifier);
+    final l10n = context.l10n;
     final card = state.currentCard;
     final stages =
         ref.watch(flashcardConfigProvider).valueOrNull?.stages ??
@@ -111,7 +113,9 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
               Row(
                 children: [
                   IconButton(
-                    tooltip: 'Back to flashcards (Esc)',
+                    tooltip: l10n.flashcardsBackToFlashcardsTooltip(
+                      l10n.flashcardsKeyEsc,
+                    ),
                     icon: const Icon(Icons.arrow_back, size: 20),
                     color: VocaboColors.neutral,
                     onPressed: notifier.leaveSession,
@@ -122,7 +126,10 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
                     ),
                   ),
                   const SizedBox(width: VocaboSpacing.xs),
-                  Text('Review session', style: VocaboTypography.titleLg),
+                  Text(
+                    l10n.flashcardsReviewSession,
+                    style: VocaboTypography.titleLg,
+                  ),
                 ],
               ),
               SizedBox(height: gap),
@@ -138,10 +145,10 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
                 duration: const Duration(milliseconds: 200),
                 child: Text(
                   state.isFlipped
-                      ? 'How clear was it?'
+                      ? l10n.flashcardsHowClearPrompt
                       : card.flashcard.direction == FlashcardDirection.reverse
-                      ? 'Which English word means this?'
-                      : 'What does it mean to you?',
+                      ? l10n.flashcardsReversePrompt
+                      : l10n.flashcardsForwardPrompt,
                   key: ValueKey(state.isFlipped),
                   style: VocaboTypography.bodyMd.copyWith(
                     color: VocaboColors.neutral,
@@ -189,9 +196,9 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
                         )
                       : VocaboPrimaryButton(
                           key: ValueKey('continue-${card.id}'),
-                          label: 'Continue',
-                          trailing: const VocaboKeyCap(
-                            'Space',
+                          label: l10n.commonContinue,
+                          trailing: VocaboKeyCap(
+                            l10n.flashcardsKeySpace,
                             color: VocaboColors.onPrimary,
                           ),
                           isExpanded: true,

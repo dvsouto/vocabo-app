@@ -4,7 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:vocabo_core/vocabo_core.dart' show appLogger;
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/pro/paywall_dialog.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/auth_providers.dart';
+import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
+import 'package:vocabo_desktop/src/widgets/account/native_language_prompt.dart';
 import 'package:vocabo_desktop/src/screens/dashboard/dashboard_screen.dart';
 import 'package:vocabo_desktop/src/screens/login/login_email_screen.dart';
 import 'package:vocabo_desktop/src/screens/verification/verification_screen.dart';
@@ -23,6 +29,21 @@ class VocaboDesktopApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authStatus = ref.watch(authStatusProvider);
 
+    ref.listen(userProfileProvider, (_, next) {
+      final user = next.valueOrNull;
+      if (user == null || !ref.read(confirmNativeLanguageProvider)) return;
+      ref.read(confirmNativeLanguageProvider.notifier).state = false;
+      final context = _navigatorKey.currentContext;
+      if (context != null) showNativeLanguagePrompt(context, user);
+    });
+
+    ref.listen(upgradePromptProvider, (_, reason) {
+      if (reason == null) return;
+      ref.read(upgradePromptProvider.notifier).state = null;
+      final context = _navigatorKey.currentContext;
+      if (context != null) showPaywall(context, reason);
+    });
+
     ref.listen(sessionNoticeProvider, (_, notice) {
       if (notice == null) return;
       _messengerKey.currentState?.showSnackBar(
@@ -35,6 +56,9 @@ class VocaboDesktopApp extends ConsumerWidget {
       title: 'Vocabo',
       debugShowCheckedModeBanner: false,
       theme: VocaboTheme.light(),
+      locale: ref.watch(appLocaleProvider),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       navigatorKey: _navigatorKey,
       scaffoldMessengerKey: _messengerKey,
       home: Shortcuts(

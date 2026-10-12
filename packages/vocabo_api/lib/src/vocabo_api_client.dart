@@ -6,6 +6,7 @@ import 'package:vocabo_api/src/data_sources/auth_data_source.dart';
 import 'package:vocabo_api/src/data_sources/dictionary_data_source.dart';
 import 'package:vocabo_api/src/data_sources/flashcards_data_source.dart';
 import 'package:vocabo_api/src/data_sources/lookups_data_source.dart';
+import 'package:vocabo_api/src/data_sources/subscriptions_data_source.dart';
 import 'package:vocabo_api/src/data_sources/user_data_source.dart';
 import 'package:vocabo_api/src/data_sources/user_vocabulary_data_source.dart';
 import 'package:vocabo_api/src/data_sources/vocabulary_audio_data_source.dart';
@@ -14,6 +15,7 @@ import 'package:vocabo_api/src/repositories/auth_repository.dart';
 import 'package:vocabo_api/src/repositories/dictionary_repository.dart';
 import 'package:vocabo_api/src/repositories/flashcards_repository.dart';
 import 'package:vocabo_api/src/repositories/lookups_repository.dart';
+import 'package:vocabo_api/src/repositories/subscriptions_repository.dart';
 import 'package:vocabo_api/src/repositories/user_repository.dart';
 import 'package:vocabo_api/src/repositories/user_vocabulary_repository.dart';
 import 'package:vocabo_api/src/repositories/vocabulary_audio_repository.dart';
@@ -28,6 +30,7 @@ class VocaboApiClient {
   final VocabularyAudioRepository vocabularyAudio;
   final FlashcardsRepository flashcards;
   final LookupsRepository lookups;
+  final SubscriptionsRepository subscriptions;
 
   VocaboApiClient._({
     required this.auth,
@@ -38,6 +41,7 @@ class VocaboApiClient {
     required this.vocabularyAudio,
     required this.flashcards,
     required this.lookups,
+    required this.subscriptions,
   });
 
   factory VocaboApiClient({
@@ -78,6 +82,9 @@ class VocaboApiClient {
       ),
       flashcards: FlashcardsRepository(dataSource: flashcardsDataSource),
       lookups: LookupsRepository(dataSource: lookupsDataSource),
+      subscriptions: SubscriptionsRepository(
+        dataSource: SubscriptionsDataSource(dio),
+      ),
     );
   }
 }

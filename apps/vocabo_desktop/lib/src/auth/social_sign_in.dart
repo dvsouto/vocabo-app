@@ -15,13 +15,20 @@ class SocialCredential {
   final String? name;
 }
 
-class SocialSignInException implements Exception {
-  const SocialSignInException(this.message);
+enum SocialSignInFailure { notConfigured, missingToken, failed, unavailable }
 
-  final String message;
+/// A provider sign in that failed; the UI words it from [failure].
+class SocialSignInException implements Exception {
+  const SocialSignInException(this.failure, {this.detail});
+
+  final SocialSignInFailure failure;
+
+  /// Untranslated error text from the provider, when it gives one.
+  final String? detail;
 
   @override
-  String toString() => message;
+  String toString() =>
+      'SocialSignInException(${failure.name}${detail == null ? '' : ': $detail'})';
 }
 
 /// A native sign in flow (Google, Apple) that produces an ID token for the
@@ -48,9 +55,7 @@ class GoogleSocialSignIn implements SocialSignIn {
   @override
   Future<SocialCredential?> signIn() async {
     if (_clientId.isEmpty) {
-      throw const SocialSignInException(
-        'Sign in with Google is not set up yet.',
-      );
+      throw const SocialSignInException(SocialSignInFailure.notConfigured);
     }
 
     try {
@@ -60,13 +65,14 @@ class GoogleSocialSignIn implements SocialSignIn {
       final account = await GoogleSignIn.instance.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null) {
-        throw const SocialSignInException('Google did not return an ID token.');
+        throw const SocialSignInException(SocialSignInFailure.missingToken);
       }
       return SocialCredential(idToken: idToken, name: account.displayName);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       throw SocialSignInException(
-        'Could not sign in with Google${e.description == null ? '' : ': ${e.description}'}',
+        SocialSignInFailure.failed,
+        detail: e.description,
       );
     }
   }
@@ -90,7 +96,7 @@ class AppleSocialSignIn implements SocialSignIn {
       );
       final idToken = credential.identityToken;
       if (idToken == null) {
-        throw const SocialSignInException('Apple did not return an ID token.');
+        throw const SocialSignInException(SocialSignInFailure.missingToken);
       }
       final name = [
         credential.givenName,
@@ -102,13 +108,9 @@ class AppleSocialSignIn implements SocialSignIn {
       );
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) return null;
-      throw const SocialSignInException(
-        'Sign in with Apple is not available in this build.',
-      );
+      throw const SocialSignInException(SocialSignInFailure.unavailable);
     } on PlatformException {
-      throw const SocialSignInException(
-        'Sign in with Apple is not available in this build.',
-      );
+      throw const SocialSignInException(SocialSignInFailure.unavailable);
     }
   }
 }

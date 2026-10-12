@@ -12,11 +12,19 @@ class AudioCacheService {
     await Directory(_cacheDirPath!).create(recursive: true);
   }
 
-  Future<File?> getCached(String contentHash) async {
+  /// Files cached before voices were selectable hold the female voice.
+  List<String> _names(String contentHash, String voice) => [
+    '$contentHash-$voice',
+    if (voice == 'female') contentHash,
+  ];
+
+  Future<File?> getCached(String contentHash, {required String voice}) async {
     if (_cacheDirPath == null) await init();
-    for (final ext in ['ogg', 'mp3']) {
-      final file = File('$_cacheDirPath/$contentHash.$ext');
-      if (await file.exists()) return file;
+    for (final name in _names(contentHash, voice)) {
+      for (final ext in ['ogg', 'mp3']) {
+        final file = File('$_cacheDirPath/$name.$ext');
+        if (await file.exists()) return file;
+      }
     }
     return null;
   }
@@ -24,11 +32,12 @@ class AudioCacheService {
   Future<File> cacheAudio(
     String contentHash,
     Uint8List bytes, {
+    required String voice,
     String? contentType,
   }) async {
     if (_cacheDirPath == null) await init();
     final ext = _extensionFromContentType(contentType);
-    final file = File('$_cacheDirPath/$contentHash.$ext');
+    final file = File('$_cacheDirPath/$contentHash-$voice.$ext');
     await file.writeAsBytes(bytes);
     return file;
   }

@@ -47,6 +47,14 @@ class UserVocabularyDataSource {
     });
   }
 
+  Future<String> exportCsv() async {
+    final response = await _dio.get<String>(
+      '/user-vocabulary/export',
+      options: Options(responseType: ResponseType.plain),
+    );
+    return response.data!;
+  }
+
   Future<void> remove(String id) => _dio.delete<void>('/user-vocabulary/$id');
 
   Future<VocabularyStats> getStats({required int timezoneOffsetMinutes}) async {

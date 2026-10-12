@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 
@@ -146,19 +148,29 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
   }
 
   Widget _buildTopRow() {
+    final l10n = context.l10n;
+    final strength = MemoryStrength.of(
+      stageIndex: _flashcard.currentStageIndex,
+      status: _flashcard.status,
+    );
+    final strengthName = l10n.memoryStrengthName(strength);
+
     return Row(
       children: [
         MemoryStrengthDots(
-          strength: MemoryStrength.of(
-            stageIndex: _flashcard.currentStageIndex,
-            status: _flashcard.status,
+          strength: strength,
+          label: strengthName,
+          semanticsLabel: l10n.flashcardsStrengthSemantics(
+            strengthName,
+            strength.level,
+            MemoryStrength.totalLevels,
           ),
           dotSize: _compact ? 5 : 6,
         ),
         const Spacer(),
         if (widget.onSetAside != null)
           IconButton(
-            tooltip: 'Set aside',
+            tooltip: l10n.flashcardsSetAside,
             icon: const Icon(Icons.archive_outlined, size: 20),
             color: VocaboColors.neutral,
             onPressed: widget.enabled ? widget.onSetAside : null,
@@ -186,7 +198,9 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
           SizedBox(width: _compact ? VocaboSpacing.md : VocaboSpacing.lg),
         ],
         _RoundIconButton(
-          tooltip: meaningActive ? 'Hide meaning' : 'Show meaning',
+          tooltip: meaningActive
+              ? context.l10n.flashcardsHideMeaning
+              : context.l10n.flashcardsShowMeaning,
           icon: Icons.translate,
           isActive: meaningActive,
           size: _compact ? 36 : 44,
@@ -234,7 +248,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
       if (vocabulary != null) ...[
         const SizedBox(height: VocaboSpacing.sm),
         Text(
-          vocabulary.wordType.value.toUpperCase(),
+          wordTypeLabel(context.l10n, vocabulary.wordType).toUpperCase(),
           style: VocaboTypography.labelSm.copyWith(color: VocaboColors.primary),
         ),
       ],
@@ -243,7 +257,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
 
   List<Widget> _buildReversePrompt() {
     return [
-      const _SectionLabel('WHICH ENGLISH WORD IS THIS?'),
+      _SectionLabel(context.l10n.flashcardsWhichEnglishWordLabel),
       const SizedBox(height: VocaboSpacing.sm),
       Text(
         _reversePrompt,
@@ -255,7 +269,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
       if (_vocabulary != null) ...[
         const SizedBox(height: VocaboSpacing.sm),
         Text(
-          _vocabulary!.wordType.value.toUpperCase(),
+          wordTypeLabel(context.l10n, _vocabulary!.wordType).toUpperCase(),
           style: VocaboTypography.labelSm.copyWith(color: VocaboColors.primary),
         ),
       ],
@@ -296,7 +310,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
               ),
             ),
             const SizedBox(height: VocaboSpacing.md),
-            const _SectionLabel('TRANSLATION'),
+            _SectionLabel(context.l10n.flashcardsTranslationLabel),
             const SizedBox(height: VocaboSpacing.xs),
             Text(
               hasTranslation ? translation : '—',
@@ -315,7 +329,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
           if (widget.isExpanded) ...[
             if (hasMeaning && !(_isReverse && !hasTranslation)) ...[
               const SizedBox(height: VocaboSpacing.lg),
-              const _SectionLabel('MEANING'),
+              _SectionLabel(context.l10n.flashcardsMeaningLabel),
               const SizedBox(height: VocaboSpacing.xs),
               Text(
                 meaning,
@@ -325,7 +339,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
             ],
             if (examples.isNotEmpty) ...[
               const SizedBox(height: VocaboSpacing.lg),
-              const _SectionLabel('EXAMPLES'),
+              _SectionLabel(context.l10n.flashcardsExamplesLabel),
               const SizedBox(height: VocaboSpacing.sm),
               ...examples.map(
                 (example) => Padding(
@@ -437,7 +451,7 @@ class _AudioButton extends ConsumerWidget {
         audioState.status == AudioPlayerStatus.playing;
 
     return Tooltip(
-      message: 'Listen',
+      message: context.l10n.flashcardsListen,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

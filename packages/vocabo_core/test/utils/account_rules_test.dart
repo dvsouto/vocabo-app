@@ -38,12 +38,19 @@ void main() {
       );
     });
 
-    test('falls back to English', () {
+    test('never suggests English', () {
       expect(
         suggestNativeLanguage([(languageCode: 'en', countryCode: 'US')]),
-        'en',
+        defaultNativeLanguage,
       );
-      expect(suggestNativeLanguage([]), 'en');
+      expect(suggestNativeLanguage([]), defaultNativeLanguage);
+      expect(NativeLanguage.byCode('en'), isNull);
+    });
+
+    test('interface languages include English', () {
+      expect(interfaceLanguages.first.code, 'en');
+      expect(suggestInterfaceLanguage(['pt-BR', 'en']), 'pt');
+      expect(suggestInterfaceLanguage(['nl']), 'en');
     });
 
     test('ignores unsupported languages', () {

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+
 class _EvaluationOption {
   const _EvaluationOption({
     required this.evaluation,
-    required this.label,
     required this.clarity,
     required this.shortcut,
   });
 
   final FlashcardEvaluation evaluation;
-  final String label;
   final Clarity clarity;
   final String shortcut;
 }
@@ -19,19 +19,16 @@ class _EvaluationOption {
 const _options = [
   _EvaluationOption(
     evaluation: FlashcardEvaluation.hard,
-    label: 'Blank',
     clarity: Clarity.blank,
     shortcut: '1',
   ),
   _EvaluationOption(
     evaluation: FlashcardEvaluation.medium,
-    label: 'Fuzzy',
     clarity: Clarity.fuzzy,
     shortcut: '2',
   ),
   _EvaluationOption(
     evaluation: FlashcardEvaluation.easy,
-    label: 'Clear',
     clarity: Clarity.clear,
     shortcut: '3',
   ),
@@ -65,9 +62,6 @@ evaluationPalette(BuildContext context, FlashcardEvaluation evaluation) {
 Clarity clarityOf(FlashcardEvaluation evaluation) =>
     _options.firstWhere((option) => option.evaluation == evaluation).clarity;
 
-String clarityLabelOf(FlashcardEvaluation evaluation) =>
-    _options.firstWhere((option) => option.evaluation == evaluation).label;
-
 class FlashcardEvaluationBar extends StatelessWidget {
   const FlashcardEvaluationBar({
     super.key,
@@ -90,6 +84,8 @@ class FlashcardEvaluationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Row(
       children: [
         for (var i = 0; i < _options.length; i++) ...[
@@ -99,7 +95,7 @@ class FlashcardEvaluationBar extends StatelessWidget {
             child: _EvaluationButton(
               index: i,
               option: _options[i],
-              caption: describeNextReview(
+              caption: l10n.nextReviewCaption(
                 _options[i].evaluation,
                 stageIndex: stageIndex,
                 stages: stages,
@@ -181,7 +177,7 @@ class _EvaluationButton extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            option.label,
+                            context.l10n.clarityLabel(option.evaluation),
                             overflow: TextOverflow.ellipsis,
                             style: VocaboTypography.bodyMd.copyWith(
                               color: palette.foreground,

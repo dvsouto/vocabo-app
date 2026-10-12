@@ -13,6 +13,7 @@ export 'src/repositories/auth_repository.dart';
 export 'src/repositories/dictionary_repository.dart';
 export 'src/repositories/flashcards_repository.dart';
 export 'src/repositories/lookups_repository.dart';
+export 'src/repositories/subscriptions_repository.dart';
 export 'src/repositories/user_repository.dart';
 export 'src/repositories/user_vocabulary_repository.dart';
 export 'src/data_sources/vocabulary_audio_data_source.dart' show AudioResponse;

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 
@@ -199,21 +201,46 @@ class AddWordNotifier extends Notifier<AddWordState> {
       state = state.copyWith(
         isSearching: false,
         isValid: false,
-        errorMessage: () => 'Search failed. Please try again.',
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordSearchFailed,
       );
     } on UnprocessableException {
       state = state.copyWith(
         isSearching: false,
         isValid: false,
-        errorMessage: () => 'Not a valid word or phrase',
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordInvalidTerm,
       );
+    } on ForbiddenException catch (e) {
+      _showPlanLimit(e, isSearching: false);
     } catch (e) {
       appLogger.error('AddWord search() error', e);
       state = state.copyWith(
         isSearching: false,
         isValid: false,
-        errorMessage: () => 'Search failed. Please try again.',
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordSearchFailed,
       );
+    }
+  }
+
+  /// Explains the free plan limit and opens the upgrade offer.
+  void _showPlanLimit(
+    ForbiddenException error, {
+    bool? isSearching,
+    bool? isSaving,
+  }) {
+    final reason = upgradeReasonFor(error);
+    state = state.copyWith(
+      isSearching: isSearching,
+      isSaving: isSaving,
+      isValid: false,
+      errorMessage: () => reason == null
+          ? ref.read(appLocalizationsProvider).addWordSaveFailed
+          : reason.headline(ref.read(appLocalizationsProvider)),
+    );
+    if (reason != null) {
+      ref.read(upgradePromptProvider.notifier).state = reason;
     }
   }
 
@@ -266,18 +293,23 @@ class AddWordNotifier extends Notifier<AddWordState> {
 
       state = state.copyWith(isSaving: false);
       return true;
+    } on ForbiddenException catch (e) {
+      _showPlanLimit(e, isSaving: false);
+      return false;
     } on ConflictException catch (e) {
       appLogger.warning('AddWord save() conflict: $e');
       state = state.copyWith(
         isSaving: false,
-        errorMessage: () => 'This word is already in your vocabulary',
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordAlreadyInVocabulary,
       );
       return false;
     } catch (e, st) {
       appLogger.handle(e, st, 'AddWord save() error');
       state = state.copyWith(
         isSaving: false,
-        errorMessage: () => 'Failed to save. Please try again.',
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordSaveFailed,
       );
       return false;
     }

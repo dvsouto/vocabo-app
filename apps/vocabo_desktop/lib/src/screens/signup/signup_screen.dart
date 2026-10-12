@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/widgets/account/password_field.dart';
 import 'package:vocabo_desktop/src/widgets/legal/legal_consent_text.dart';
 import 'package:vocabo_desktop/src/auth/device_info.dart';
@@ -65,7 +67,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (png != null) setState(() => _avatar = png);
     } catch (e, st) {
       appLogger.handle(e, st, 'Avatar pick failed');
-      _showMessage('Could not read this image. Try a PNG or JPEG.');
+      if (mounted) _showMessage(context.l10n.authAvatarReadFailed);
     }
   }
 
@@ -76,25 +78,26 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   Map<String, String> _validate() {
+    final l10n = context.l10n;
     final errors = <String, String>{};
     if (_nameController.text.trim().isEmpty) {
-      errors['name'] = 'Enter your name.';
+      errors['name'] = l10n.authEnterName;
     }
     if (!isValidEmail(_emailController.text.trim())) {
-      errors['email'] = 'Enter a valid email address.';
+      errors['email'] = l10n.authInvalidEmail;
     }
     if (!isValidPassword(_passwordController.text)) {
-      errors['password'] = 'The password does not meet the rules below.';
+      errors['password'] = l10n.authPasswordRulesNotMet;
     }
     final phone = _phoneController.text.trim();
     if (phone.isNotEmpty && !isValidPhone(_phoneCountry.isoCode, phone)) {
-      errors['phone_number'] = 'Enter a valid mobile number.';
+      errors['phone_number'] = l10n.authInvalidPhone;
     }
     final age = _ageController.text.trim();
     if (age.isNotEmpty) {
       final value = int.tryParse(age);
       if (value == null || value < 5 || value > 120) {
-        errors['age'] = 'Enter an age between 5 and 120.';
+        errors['age'] = l10n.authInvalidAge(5, 120);
       }
     }
     return errors;
@@ -116,6 +119,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
             nativeLanguage: _nativeLanguage,
+            interfaceLanguage: ref.read(interfaceLanguageProvider).valueOrNull,
             age: age.isEmpty ? null : int.parse(age),
             phoneCountry: phone.isEmpty ? null : _phoneCountry.isoCode,
             phoneNumber: phone.isEmpty
@@ -133,13 +137,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
 
+    final l10n = context.l10n;
     switch (state.error) {
       case AppException(code: 'email_taken'):
-        setState(
-          () => _errors = {
-            'email': 'An account with this email already exists. Sign in.',
-          },
-        );
+        setState(() => _errors = {'email': l10n.authEmailTakenSignIn});
       case AppException(:final details) when details.isNotEmpty:
         setState(
           () => _errors = {
@@ -147,11 +148,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           },
         );
       case NetworkException():
-        _showMessage('No connection. Check your internet and try again.');
+        _showMessage(l10n.commonNoConnection);
       case AppException(:final message):
         _showMessage(message);
       default:
-        _showMessage('Could not create the account. Please try again.');
+        _showMessage(l10n.authSignUpFailed);
     }
   }
 
@@ -160,6 +161,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final isLoading = ref.watch(signUpProvider).isLoading;
     final name = _nameController.text;
     final wide = MediaQuery.sizeOf(context).width >= 760;
+    final l10n = context.l10n;
 
     return AuthScaffold(
       width: wide ? 640 : 480,
@@ -169,10 +171,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Create your account', style: VocaboTypography.headlineSm),
+            Text(l10n.authSignUpTitle, style: VocaboTypography.headlineSm),
             const SizedBox(height: VocaboSpacing.xs),
             Text(
-              'Start free. We will confirm your email or phone with a code.',
+              l10n.authSignUpSubtitle,
               style: VocaboTypography.bodySm.copyWith(
                 color: VocaboColors.neutral,
               ),
@@ -191,19 +193,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const FieldLabel('Photo', optional: true),
+                      FieldLabel(l10n.authFieldPhoto, optional: true),
                       Wrap(
                         spacing: VocaboSpacing.sm,
                         children: [
                           VocaboTextButton(
                             label: _avatar == null
-                                ? 'Choose photo'
-                                : 'Change photo',
+                                ? l10n.authChoosePhoto
+                                : l10n.authChangePhoto,
                             onPressed: isLoading ? null : _pickAvatar,
                           ),
                           if (_avatar != null)
                             VocaboTextButton(
-                              label: 'Remove',
+                              label: l10n.commonRemove,
                               onPressed: isLoading
                                   ? null
                                   : () => setState(() => _avatar = null),
@@ -222,10 +224,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const FieldLabel('Name'),
+                  FieldLabel(l10n.authFieldName),
                   VocaboTextField(
                     controller: _nameController,
-                    hint: 'Alex Morgan',
+                    hint: l10n.authNameHint,
                     autofocus: true,
                     autofillHints: const [AutofillHints.name],
                     errorText: _errors['name'],
@@ -240,7 +242,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const FieldLabel('Email'),
+                  FieldLabel(l10n.authFieldEmail),
                   VocaboTextField(
                     controller: _emailController,
                     hint: 'alex@atelier.io',
@@ -260,10 +262,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const FieldLabel('Password'),
+                  FieldLabel(l10n.authFieldPassword),
                   PasswordField(
                     controller: _passwordController,
-                    hint: 'At least 6 characters',
+                    hint: l10n.passwordRuleLength(minPasswordLength),
                     isNewPassword: true,
                     errorText: _errors['password'],
                     textInputAction: TextInputAction.next,
@@ -279,7 +281,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const FieldLabel('Native language'),
+                  FieldLabel(l10n.authFieldNativeLanguage),
                   NativeLanguageField(
                     value: _nativeLanguage,
                     enabled: !isLoading,
@@ -287,7 +289,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   const SizedBox(height: VocaboSpacing.xs),
                   Text(
-                    'Suggested from your system languages.',
+                    l10n.authNativeLanguageSuggested,
                     style: VocaboTypography.bodySm.copyWith(
                       color: VocaboColors.neutral,
                     ),
@@ -304,9 +306,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const FieldLabel('Phone', optional: true),
+                      FieldLabel(l10n.authFieldPhone, optional: true),
                       VocaboPhoneField(
                         country: _phoneCountry,
+                        hint: l10n.authPhoneNumberHint,
+                        countryPickerTitle: l10n.authCountryPickerTitle,
+                        countrySearchHint: l10n.authCountrySearchHint,
+                        noCountryFoundText: l10n.authNoCountryFound,
                         controller: _phoneController,
                         errorText: _errors['phone_number'],
                         enabled: !isLoading,
@@ -325,7 +331,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const FieldLabel('Age', optional: true),
+                      FieldLabel(l10n.authFieldAge, optional: true),
                       VocaboTextField(
                         controller: _ageController,
                         hint: '30',
@@ -345,10 +351,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             ),
             const SizedBox(height: VocaboSpacing.xl),
 
-            const LegalConsentText(action: 'creating an account'),
+            const LegalConsentText(action: LegalConsentAction.creatingAccount),
             const SizedBox(height: VocaboSpacing.md),
             VocaboPrimaryButton(
-              label: 'Create account',
+              label: l10n.authCreateAccount,
               isExpanded: true,
               isLoading: isLoading,
               onPressed: isLoading ? null : _submit,
@@ -356,7 +362,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             const SizedBox(height: VocaboSpacing.md),
             Center(
               child: VocaboTextButton(
-                label: 'I already have an account',
+                label: l10n.authHaveAccount,
                 onPressed: isLoading ? null : () => Navigator.of(context).pop(),
               ),
             ),
