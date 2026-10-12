@@ -96,6 +96,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Privacy Policy'), findsWidgets);
-    expect(find.text('What we collect'), findsOneWidget);
+    expect(find.text('1. Data we collect'), findsOneWidget);
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/providers/translation_providers.dart';
@@ -67,7 +68,10 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
     return availabilityAsync.when(
       data: (isAvailable) {
         if (!isAvailable) {
-          return _buildSetupRequired();
+          final native = ref.watch(nativeTranslationLanguageProvider);
+          return native.valueOrNull == TranslationLanguage.english
+              ? _buildNoTranslationNeeded()
+              : _buildSetupRequired();
         }
         return directionAsync.when(
           data: (direction) => _buildContent(direction, translationState),
@@ -78,8 +82,7 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
           ),
-          error: (_, _) =>
-              _buildContent(const TranslationDirection(), translationState),
+          error: (_, _) => _buildSetupRequired(),
         );
       },
       loading: () => const Center(
@@ -90,6 +93,23 @@ class _TrayTranslateTabState extends ConsumerState<TrayTranslateTab> {
         ),
       ),
       error: (_, _) => _buildSetupRequired(),
+    );
+  }
+
+  /// Native English speakers have no translation language; the word
+  /// definitions in the library and the spotlight serve them instead.
+  Widget _buildNoTranslationNeeded() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: VocaboSpacing.md),
+        child: Text(
+          'Your native language is English, so words come with definitions '
+          'instead of translations. Look them up with Control + Option + '
+          'Space.',
+          style: VocaboTypography.bodySm.copyWith(color: VocaboColors.neutral),
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 

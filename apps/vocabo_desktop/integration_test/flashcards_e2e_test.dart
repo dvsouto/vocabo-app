@@ -193,7 +193,6 @@ Future<void> _addWords(List<String> terms) async {
   for (final term in terms) {
     final vocabulary = await _api.vocabulary.search(
       sourceLang: 'English',
-      targetLang: 'Portuguese',
       term: term,
     );
     _vocabularies[term] = vocabulary;

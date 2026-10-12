@@ -752,7 +752,7 @@ class _SupportCard extends StatelessWidget {
       context: context,
       applicationName: 'Vocabo',
       applicationVersion: '${info.version} (${info.buildNumber})',
-      applicationLegalese: '© ${DateTime.now().year} Vocabo',
+      applicationLegalese: '© ${DateTime.now().year} $companyName',
     );
   }
 
@@ -764,11 +764,6 @@ class _SupportCard extends StatelessWidget {
       title: 'Support',
       child: Column(
         children: [
-          _SupportRow(
-            label: 'Help & FAQ',
-            onTap: () => showLegalDocument(context, helpCenter),
-          ),
-          const Divider(height: 1),
           _SupportRow(
             label: 'Contact support',
             onTap: () => _contactSupport(context),

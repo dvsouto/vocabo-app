@@ -4,17 +4,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_translation/vocabo_translation.dart';
 
+import 'package:vocabo_desktop/src/auth/device_info.dart';
+import 'package:vocabo_desktop/src/providers/user_profile_provider.dart';
 import 'package:vocabo_desktop/src/services/translation_preferences_service.dart';
 
 // Service providers
 final translationPreferencesServiceProvider =
     Provider<TranslationPreferencesService>(
-        (ref) => TranslationPreferencesService());
+      (ref) => TranslationPreferencesService(),
+    );
 
 final translationServiceProvider = Provider<TranslationService>((ref) {
   final service = TranslationServiceFactory.create();
   ref.onDispose(() => service.dispose());
   return service;
+});
+
+// --- Native Language ---
+
+/// The language English words are translated into: the user's native one,
+/// or the system language while the profile is unavailable.
+final nativeTranslationLanguageProvider = FutureProvider<TranslationLanguage>((
+  ref,
+) async {
+  String code;
+  try {
+    code = (await ref.watch(userProfileProvider.future)).nativeLanguage;
+  } catch (_) {
+    code = systemNativeLanguage();
+  }
+  return TranslationLanguage.fromCode(code) ?? TranslationLanguage.english;
 });
 
 // --- Translation Availability ---
@@ -26,12 +45,16 @@ final translationAvailabilityProvider = FutureProvider<bool>((ref) async {
   if (!isAvailable) return false;
 
   final direction = await ref.watch(translationDirectionProvider.future);
-  final sourceLang =
-      TranslationLanguage.fromDisplayName(direction.sourceLanguage);
-  final targetLang =
-      TranslationLanguage.fromDisplayName(direction.targetLanguage);
+  final sourceLang = TranslationLanguage.fromDisplayName(
+    direction.sourceLanguage,
+  );
+  final targetLang = TranslationLanguage.fromDisplayName(
+    direction.targetLanguage,
+  );
 
   if (sourceLang == null || targetLang == null) return false;
+  // Native English speakers read definitions instead of translations.
+  if (sourceLang == targetLang) return false;
 
   return service.isLanguagePairInstalled(
     source: sourceLang,
@@ -47,28 +70,28 @@ class TranslationDirection {
 
   const TranslationDirection({
     this.sourceLanguage = 'English',
-    this.targetLanguage = 'Portuguese',
+    required this.targetLanguage,
   });
 
   TranslationDirection swap() => TranslationDirection(
-        sourceLanguage: targetLanguage,
-        targetLanguage: sourceLanguage,
-      );
+    sourceLanguage: targetLanguage,
+    targetLanguage: sourceLanguage,
+  );
 }
 
-class TranslationDirectionNotifier
-    extends AsyncNotifier<TranslationDirection> {
+class TranslationDirectionNotifier extends AsyncNotifier<TranslationDirection> {
+  /// English to the native language, unless the user swapped that pair.
   @override
   Future<TranslationDirection> build() async {
+    final native = await ref.watch(nativeTranslationLanguageProvider.future);
+    final direction = TranslationDirection(targetLanguage: native.displayName);
+
     final prefs = ref.watch(translationPreferencesServiceProvider);
     final saved = await prefs.load();
-    if (saved != null) {
-      return TranslationDirection(
-        sourceLanguage: saved.sourceLanguage,
-        targetLanguage: saved.targetLanguage,
-      );
-    }
-    return const TranslationDirection();
+    final swapped =
+        saved?.sourceLanguage == direction.targetLanguage &&
+        saved?.targetLanguage == direction.sourceLanguage;
+    return swapped ? direction.swap() : direction;
   }
 
   Future<void> swapLanguages() async {
@@ -86,9 +109,10 @@ class TranslationDirectionNotifier
   }
 }
 
-final translationDirectionProvider = AsyncNotifierProvider<
-    TranslationDirectionNotifier,
-    TranslationDirection>(TranslationDirectionNotifier.new);
+final translationDirectionProvider =
+    AsyncNotifierProvider<TranslationDirectionNotifier, TranslationDirection>(
+      TranslationDirectionNotifier.new,
+    );
 
 // --- Translation State ---
 
@@ -122,14 +146,15 @@ class TranslationState {
   }) {
     return TranslationState(
       inputText: inputText ?? this.inputText,
-      translatedText:
-          translatedText != null ? translatedText() : this.translatedText,
-      pronunciation:
-          pronunciation != null ? pronunciation() : this.pronunciation,
+      translatedText: translatedText != null
+          ? translatedText()
+          : this.translatedText,
+      pronunciation: pronunciation != null
+          ? pronunciation()
+          : this.pronunciation,
       isTranslating: isTranslating ?? this.isTranslating,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
-      needsLanguageInstall:
-          needsLanguageInstall ?? this.needsLanguageInstall,
+      needsLanguageInstall: needsLanguageInstall ?? this.needsLanguageInstall,
     );
   }
 }
@@ -178,10 +203,7 @@ class TranslationNotifier extends Notifier<TranslationState> {
     final input = state.inputText.trim();
     if (input.isEmpty) return;
 
-    state = state.copyWith(
-      isTranslating: true,
-      errorMessage: () => null,
-    );
+    state = state.copyWith(isTranslating: true, errorMessage: () => null);
 
     try {
       final service = ref.read(translationServiceProvider);
@@ -191,10 +213,12 @@ class TranslationNotifier extends Notifier<TranslationState> {
         return;
       }
 
-      final sourceLang =
-          TranslationLanguage.fromDisplayName(direction.sourceLanguage);
-      final targetLang =
-          TranslationLanguage.fromDisplayName(direction.targetLanguage);
+      final sourceLang = TranslationLanguage.fromDisplayName(
+        direction.sourceLanguage,
+      );
+      final targetLang = TranslationLanguage.fromDisplayName(
+        direction.targetLanguage,
+      );
 
       if (sourceLang == null || targetLang == null) {
         state = state.copyWith(
@@ -218,10 +242,7 @@ class TranslationNotifier extends Notifier<TranslationState> {
         pronunciation: () => result.pronunciation,
       );
     } on TranslationUnavailableException {
-      state = state.copyWith(
-        isTranslating: false,
-        needsLanguageInstall: true,
-      );
+      state = state.copyWith(isTranslating: false, needsLanguageInstall: true);
     } on AppException catch (e) {
       state = state.copyWith(
         isTranslating: false,
@@ -243,4 +264,5 @@ class TranslationNotifier extends Notifier<TranslationState> {
 
 final translationNotifierProvider =
     NotifierProvider<TranslationNotifier, TranslationState>(
-        TranslationNotifier.new);
+      TranslationNotifier.new,
+    );

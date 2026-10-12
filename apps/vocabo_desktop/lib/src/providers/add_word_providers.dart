@@ -79,19 +79,22 @@ class AddWordState {
       meaning: meaning != null ? meaning() : this.meaning,
       translation: translation != null ? translation() : this.translation,
       wordType: wordType != null ? wordType() : this.wordType,
-      pronunciation:
-          pronunciation != null ? pronunciation() : this.pronunciation,
+      pronunciation: pronunciation != null
+          ? pronunciation()
+          : this.pronunciation,
       ttsPronunciation: ttsPronunciation != null
           ? ttsPronunciation()
           : this.ttsPronunciation,
-      exampleSentence:
-          exampleSentence != null ? exampleSentence() : this.exampleSentence,
+      exampleSentence: exampleSentence != null
+          ? exampleSentence()
+          : this.exampleSentence,
       autoDetect: autoDetect ?? this.autoDetect,
       isSearching: isSearching ?? this.isSearching,
       isValid: isValid ?? this.isValid,
       backendHash: backendHash != null ? backendHash() : this.backendHash,
-      backendResult:
-          backendResult != null ? backendResult() : this.backendResult,
+      backendResult: backendResult != null
+          ? backendResult()
+          : this.backendResult,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       isSaving: isSaving ?? this.isSaving,
     );
@@ -168,16 +171,12 @@ class AddWordNotifier extends Notifier<AddWordState> {
     _cancelToken?.cancel();
     _cancelToken = CancelToken();
 
-    state = state.copyWith(
-      isSearching: true,
-      errorMessage: () => null,
-    );
+    state = state.copyWith(isSearching: true, errorMessage: () => null);
 
     try {
       final api = ref.read(apiClientProvider);
       final result = await api.vocabulary.search(
         sourceLang: state.language,
-        targetLang: 'Portuguese',
         term: term,
         cancelToken: _cancelToken,
       );
@@ -259,11 +258,11 @@ class AddWordNotifier extends Notifier<AddWordState> {
       };
 
       appLogger.debug('AddWord save() - sending data: $data');
-      appLogger.debug('AddWord save() - autoDetect: ${state.autoDetect}, backendHash: ${state.backendHash}, currentHash: $currentHash');
+      appLogger.debug(
+        'AddWord save() - autoDetect: ${state.autoDetect}, backendHash: ${state.backendHash}, currentHash: $currentHash',
+      );
 
-      await ref
-          .read(userVocabularyListProvider.notifier)
-          .addVocabulary(data);
+      await ref.read(userVocabularyListProvider.notifier).addVocabulary(data);
 
       state = state.copyWith(isSaving: false);
       return true;
@@ -311,5 +310,6 @@ class AddWordNotifier extends Notifier<AddWordState> {
   }
 }
 
-final addWordNotifierProvider =
-    NotifierProvider<AddWordNotifier, AddWordState>(AddWordNotifier.new);
+final addWordNotifierProvider = NotifierProvider<AddWordNotifier, AddWordState>(
+  AddWordNotifier.new,
+);

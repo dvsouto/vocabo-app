@@ -8,17 +8,12 @@ class VocabularyDataSource {
 
   Future<Vocabulary> search({
     required String sourceLang,
-    required String targetLang,
     required String term,
     CancelToken? cancelToken,
   }) async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/vocabulary/search',
-      queryParameters: {
-        'source_lang': sourceLang,
-        'target_lang': targetLang,
-        'term': term,
-      },
+      queryParameters: {'source_lang': sourceLang, 'term': term},
       cancelToken: cancelToken,
     );
 

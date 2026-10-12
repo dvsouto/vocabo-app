@@ -13,7 +13,6 @@ import 'package:vocabo_desktop/src/spotlight/spotlight_host.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_items.dart';
 
 const _sourceLanguage = TranslationLanguage.english;
-const _targetLanguage = TranslationLanguage.portuguese;
 
 class SpotlightState {
   const SpotlightState({
@@ -259,11 +258,7 @@ class SpotlightController extends Notifier<SpotlightState> {
       final vocabulary = await ref
           .read(apiClientProvider)
           .vocabulary
-          .search(
-            sourceLang: _sourceLanguage.displayName,
-            targetLang: _targetLanguage.displayName,
-            term: item.term,
-          );
+          .search(sourceLang: _sourceLanguage.displayName, term: item.term);
       final lookup = await _record(vocabulary.id, 'system');
       state = state.copyWith(resolvingKey: () => null);
       _rebuildItems();
@@ -370,13 +365,16 @@ class SpotlightController extends Notifier<SpotlightState> {
     try {
       final available = await ref.read(translationAvailabilityProvider.future);
       if (!available) return;
+      final targetLanguage = await ref.read(
+        nativeTranslationLanguageProvider.future,
+      );
 
       final result = await ref
           .read(translationServiceProvider)
           .translate(
             text: term,
             sourceLanguage: _sourceLanguage,
-            targetLanguage: _targetLanguage,
+            targetLanguage: targetLanguage,
           );
       state = state.copyWith(
         quickTranslations: {

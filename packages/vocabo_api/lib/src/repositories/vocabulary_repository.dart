@@ -10,15 +10,15 @@ class VocabularyRepository {
   VocabularyRepository({required VocabularyDataSource dataSource})
     : _dataSource = dataSource;
 
+  /// Finds or translates the term. Translations follow the signed-in
+  /// user's native language.
   Future<Vocabulary> search({
     required String sourceLang,
-    required String targetLang,
     required String term,
     CancelToken? cancelToken,
   }) => apiCall(
     () => _dataSource.search(
       sourceLang: sourceLang,
-      targetLang: targetLang,
       term: term,
       cancelToken: cancelToken,
     ),

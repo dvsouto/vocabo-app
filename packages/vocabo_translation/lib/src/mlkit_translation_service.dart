@@ -70,14 +70,12 @@ class MlKitTranslationService implements TranslationService {
     TranslateLanguage source,
     TranslateLanguage target,
   ) async {
-    final sourceReady =
-        await _modelManager.isModelDownloaded(source.bcpCode);
+    final sourceReady = await _modelManager.isModelDownloaded(source.bcpCode);
     if (!sourceReady) {
       await _modelManager.downloadModel(source.bcpCode);
     }
 
-    final targetReady =
-        await _modelManager.isModelDownloaded(target.bcpCode);
+    final targetReady = await _modelManager.isModelDownloaded(target.bcpCode);
     if (!targetReady) {
       await _modelManager.downloadModel(target.bcpCode);
     }
@@ -91,8 +89,16 @@ class MlKitTranslationService implements TranslationService {
       TranslationLanguage.french => TranslateLanguage.french,
       TranslationLanguage.german => TranslateLanguage.german,
       TranslationLanguage.italian => TranslateLanguage.italian,
+      TranslationLanguage.russian => TranslateLanguage.russian,
+      TranslationLanguage.turkish => TranslateLanguage.turkish,
+      TranslationLanguage.arabic => TranslateLanguage.arabic,
+      TranslationLanguage.hindi => TranslateLanguage.hindi,
+      TranslationLanguage.chinese => TranslateLanguage.chinese,
       TranslationLanguage.japanese => TranslateLanguage.japanese,
       TranslationLanguage.korean => TranslateLanguage.korean,
+      TranslationLanguage.vietnamese => TranslateLanguage.vietnamese,
+      TranslationLanguage.indonesian => TranslateLanguage.indonesian,
+      TranslationLanguage.polish => TranslateLanguage.polish,
     };
   }
 }

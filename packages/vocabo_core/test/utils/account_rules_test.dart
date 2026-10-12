@@ -94,4 +94,16 @@ void main() {
     expect(countLabel(0, 'day'), '0 days');
     expect(countLabel(2, 'entry', plural: 'entries'), '2 entries');
   });
+
+  test('TranslationLanguage.fromCode covers every native language', () {
+    expect(TranslationLanguage.fromCode('pt'), TranslationLanguage.portuguese);
+    expect(TranslationLanguage.fromCode('zh'), TranslationLanguage.chinese);
+    expect(
+      TranslationLanguage.fromCode('pt_BR'),
+      TranslationLanguage.portuguese,
+    );
+    for (final language in nativeLanguages) {
+      expect(TranslationLanguage.fromCode(language.code), isNotNull);
+    }
+  });
 }

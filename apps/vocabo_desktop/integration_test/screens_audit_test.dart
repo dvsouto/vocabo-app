@@ -248,13 +248,13 @@ void main() {
       }
     });
 
-    await _step('help', () async {
+    await _step('security', () async {
       await tester.tap(_navItem('Settings'));
       await _pumpFor(tester, const Duration(seconds: 2));
-      await tester.ensureVisible(find.text('Help & FAQ'));
-      await tester.tap(find.text('Help & FAQ'));
+      await tester.ensureVisible(find.text('Privacy Policy'));
+      await tester.tap(find.text('Privacy Policy'));
       await _pumpFor(tester, const Duration(seconds: 1));
-      await _audit(tester, 'help');
+      await _audit(tester, 'privacy');
       await tester.tap(find.byTooltip('Close'));
       await _pumpFor(tester, const Duration(milliseconds: 500));
       await tester.ensureVisible(find.text('Change password'));
