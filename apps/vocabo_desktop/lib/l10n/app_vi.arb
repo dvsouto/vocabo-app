@@ -469,5 +469,16 @@
   "proExportFailed": "Không thể xuất thư viện.",
   "settingsVoiceLabel": "GIỌNG PHÁT ÂM",
   "settingsVoiceFemale": "Nữ",
-  "settingsVoiceMale": "Nam"
+  "settingsVoiceMale": "Nam",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Đang viết Study Note hôm nay…",
+  "studyNoteUnavailable": "Study Note hiện không khả dụng.",
+  "studyNoteUnchanged": "Không có hoạt động mới kể từ ghi chú này. Hãy học một chút và ngày mai bạn sẽ có ghi chú mới.",
+  "studyNoteWordsAtRisk": "Từ cần củng cố",
+  "studyNoteWatchOut": "Lưu ý",
+  "studyNotePlanToday": "Kế hoạch hôm nay",
+  "studyNoteChallenge": "Thử thách nhỏ",
+  "studyNoteShowAnswer": "Hiện đáp án",
+  "studyNoteTeaser": "Mỗi ngày, một ghi chú AI về tiến độ của bạn: những từ cần củng cố, các lỗi thường gặp với ngôn ngữ của bạn và một thử thách nhỏ.",
+  "proBenefitStudyNote": "Study Note AI hằng ngày về tiến độ của bạn"
 }

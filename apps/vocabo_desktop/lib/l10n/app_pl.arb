@@ -469,5 +469,16 @@
   "proExportFailed": "Nie udało się wyeksportować biblioteki.",
   "settingsVoiceLabel": "GŁOS WYMOWY",
   "settingsVoiceFemale": "Żeński",
-  "settingsVoiceMale": "Męski"
+  "settingsVoiceMale": "Męski",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Piszemy dzisiejszą Study Note…",
+  "studyNoteUnavailable": "Study Note jest teraz niedostępna.",
+  "studyNoteUnchanged": "Brak nowej aktywności od tej notatki. Poucz się trochę, a jutro pojawi się nowa notatka.",
+  "studyNoteWordsAtRisk": "Słowa do utrwalenia",
+  "studyNoteWatchOut": "Uważaj",
+  "studyNotePlanToday": "Plan na dziś",
+  "studyNoteChallenge": "Mini wyzwanie",
+  "studyNoteShowAnswer": "Pokaż odpowiedź",
+  "studyNoteTeaser": "Codziennie notatka AI o twoich postępach: słowa do utrwalenia, typowe pułapki dla twojego języka i mini wyzwanie.",
+  "proBenefitStudyNote": "Codzienna Study Note od AI o twoich postępach"
 }

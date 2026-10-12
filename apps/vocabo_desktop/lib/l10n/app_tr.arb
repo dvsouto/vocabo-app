@@ -469,5 +469,16 @@
   "proExportFailed": "Kütüphane dışa aktarılamadı.",
   "settingsVoiceLabel": "TELAFFUZ SESİ",
   "settingsVoiceFemale": "Kadın",
-  "settingsVoiceMale": "Erkek"
+  "settingsVoiceMale": "Erkek",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Bugünün Study Note'u yazılıyor…",
+  "studyNoteUnavailable": "Study Note şu anda kullanılamıyor.",
+  "studyNoteUnchanged": "Bu nottan beri yeni etkinlik yok. Biraz çalış, yarın yeni bir not gelsin.",
+  "studyNoteWordsAtRisk": "Pekiştirilecek kelimeler",
+  "studyNoteWatchOut": "Dikkat",
+  "studyNotePlanToday": "Bugünün planı",
+  "studyNoteChallenge": "Mini görev",
+  "studyNoteShowAnswer": "Cevabı göster",
+  "studyNoteTeaser": "Her gün ilerlemen hakkında yapay zekâ notu: pekiştirilecek kelimeler, dilin için yaygın tuzaklar ve bir mini görev.",
+  "proBenefitStudyNote": "İlerlemen hakkında günlük yapay zekâ Study Note'u"
 }

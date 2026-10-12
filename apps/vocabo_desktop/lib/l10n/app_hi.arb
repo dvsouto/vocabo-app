@@ -469,5 +469,16 @@
   "proExportFailed": "लाइब्रेरी एक्सपोर्ट नहीं हो सकी।",
   "settingsVoiceLabel": "उच्चारण की आवाज़",
   "settingsVoiceFemale": "महिला",
-  "settingsVoiceMale": "पुरुष"
+  "settingsVoiceMale": "पुरुष",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "आज का Study Note लिखा जा रहा है…",
+  "studyNoteUnavailable": "Study Note अभी उपलब्ध नहीं है।",
+  "studyNoteUnchanged": "इस नोट के बाद कोई नई गतिविधि नहीं हुई। थोड़ा पढ़ाई करें और कल एक नया नोट आएगा।",
+  "studyNoteWordsAtRisk": "मज़बूत करने वाले शब्द",
+  "studyNoteWatchOut": "ध्यान दें",
+  "studyNotePlanToday": "आज की योजना",
+  "studyNoteChallenge": "छोटी चुनौती",
+  "studyNoteShowAnswer": "जवाब दिखाएँ",
+  "studyNoteTeaser": "हर दिन, आपकी प्रगति पर AI का एक नोट: मज़बूत करने वाले शब्द, आपकी भाषा के लिए आम गलतियाँ और एक छोटी चुनौती।",
+  "proBenefitStudyNote": "आपकी प्रगति पर रोज़ाना AI Study Note"
 }

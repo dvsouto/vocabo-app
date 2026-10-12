@@ -1370,5 +1370,16 @@
   "proExportFailed": "Could not export the library.",
   "settingsVoiceLabel": "PRONUNCIATION VOICE",
   "settingsVoiceFemale": "Female",
-  "settingsVoiceMale": "Male"
+  "settingsVoiceMale": "Male",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Writing today's Study Note…",
+  "studyNoteUnavailable": "The Study Note is unavailable right now.",
+  "studyNoteUnchanged": "No new activity since this note. Study a little and a fresh note comes tomorrow.",
+  "studyNoteWordsAtRisk": "Words to strengthen",
+  "studyNoteWatchOut": "Watch out",
+  "studyNotePlanToday": "Today's plan",
+  "studyNoteChallenge": "Mini challenge",
+  "studyNoteShowAnswer": "Show answer",
+  "studyNoteTeaser": "Every day, an AI note on your progress: the words to strengthen, common traps for your language and a mini challenge.",
+  "proBenefitStudyNote": "A daily AI Study Note on your progress"
 }

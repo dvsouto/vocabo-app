@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_desktop/src/pro/study_note_card.dart';
 import 'package:vocabo_desktop/src/pro/pro_locked_card.dart';
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
@@ -52,6 +53,8 @@ class ProgressContent extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: VocaboSpacing.xl),
+            const StudyNoteCard(),
+            const SizedBox(height: VocaboSpacing.lg),
             _MetricsGrid(stats: data),
             const SizedBox(height: VocaboSpacing.lg),
             if (data.fullStats) ...[

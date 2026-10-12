@@ -149,6 +149,7 @@ class _PaywallDialogState extends ConsumerState<_PaywallDialog> {
                 l10n.proBenefitUnlimitedWords,
                 l10n.proBenefitUnlimitedLookups,
                 l10n.proBenefitDevices,
+                l10n.proBenefitStudyNote,
                 l10n.proBenefitStats,
                 l10n.proBenefitArchive,
                 l10n.proBenefitExport,

@@ -13,6 +13,7 @@ export 'src/repositories/auth_repository.dart';
 export 'src/repositories/dictionary_repository.dart';
 export 'src/repositories/flashcards_repository.dart';
 export 'src/repositories/lookups_repository.dart';
+export 'src/repositories/study_notes_repository.dart';
 export 'src/repositories/subscriptions_repository.dart';
 export 'src/repositories/user_repository.dart';
 export 'src/repositories/user_vocabulary_repository.dart';

@@ -469,5 +469,16 @@
   "proExportFailed": "ライブラリをエクスポートできませんでした。",
   "settingsVoiceLabel": "発音の声",
   "settingsVoiceFemale": "女性",
-  "settingsVoiceMale": "男性"
+  "settingsVoiceMale": "男性",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "今日の Study Note を作成しています…",
+  "studyNoteUnavailable": "現在 Study Note を利用できません。",
+  "studyNoteUnchanged": "このノート以降、新しい学習はありません。少し学習すると、明日新しいノートが届きます。",
+  "studyNoteWordsAtRisk": "強化したい単語",
+  "studyNoteWatchOut": "注意ポイント",
+  "studyNotePlanToday": "今日のプラン",
+  "studyNoteChallenge": "ミニチャレンジ",
+  "studyNoteShowAnswer": "答えを表示",
+  "studyNoteTeaser": "毎日、AI があなたの進み具合をノートにまとめます。強化したい単語、あなたの言語の人が陥りやすいポイント、ミニチャレンジをお届けします。",
+  "proBenefitStudyNote": "進み具合をまとめた毎日の AI Study Note"
 }

@@ -469,5 +469,16 @@
   "proExportFailed": "Tidak dapat mengekspor pustaka.",
   "settingsVoiceLabel": "SUARA PELAFALAN",
   "settingsVoiceFemale": "Perempuan",
-  "settingsVoiceMale": "Laki-laki"
+  "settingsVoiceMale": "Laki-laki",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Menulis Study Note hari ini…",
+  "studyNoteUnavailable": "Study Note sedang tidak tersedia.",
+  "studyNoteUnchanged": "Belum ada aktivitas baru sejak catatan ini. Belajarlah sedikit dan catatan baru akan hadir besok.",
+  "studyNoteWordsAtRisk": "Kata yang perlu diperkuat",
+  "studyNoteWatchOut": "Hati-hati",
+  "studyNotePlanToday": "Rencana hari ini",
+  "studyNoteChallenge": "Tantangan mini",
+  "studyNoteShowAnswer": "Tampilkan jawaban",
+  "studyNoteTeaser": "Setiap hari, catatan AI tentang progresmu: kata yang perlu diperkuat, jebakan umum untuk bahasamu, dan tantangan mini.",
+  "proBenefitStudyNote": "Study Note AI harian tentang progresmu"
 }

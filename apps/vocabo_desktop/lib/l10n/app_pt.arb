@@ -469,5 +469,16 @@
   "proExportFailed": "Não foi possível exportar a biblioteca.",
   "settingsVoiceLabel": "VOZ DA PRONÚNCIA",
   "settingsVoiceFemale": "Feminina",
-  "settingsVoiceMale": "Masculina"
+  "settingsVoiceMale": "Masculina",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Escrevendo a Study Note de hoje…",
+  "studyNoteUnavailable": "A Study Note não está disponível no momento.",
+  "studyNoteUnchanged": "Nenhuma atividade nova desde esta nota. Estude um pouco e uma nova nota chega amanhã.",
+  "studyNoteWordsAtRisk": "Palavras para reforçar",
+  "studyNoteWatchOut": "Atenção",
+  "studyNotePlanToday": "Plano de hoje",
+  "studyNoteChallenge": "Minidesafio",
+  "studyNoteShowAnswer": "Mostrar resposta",
+  "studyNoteTeaser": "Todos os dias, uma nota de IA sobre o seu progresso: as palavras para reforçar, armadilhas comuns para o seu idioma e um minidesafio.",
+  "proBenefitStudyNote": "Uma Study Note diária com IA sobre o seu progresso"
 }

@@ -469,5 +469,16 @@
   "proExportFailed": "无法导出词库。",
   "settingsVoiceLabel": "发音声音",
   "settingsVoiceFemale": "女声",
-  "settingsVoiceMale": "男声"
+  "settingsVoiceMale": "男声",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "正在撰写今天的 Study Note…",
+  "studyNoteUnavailable": "Study Note 暂时不可用。",
+  "studyNoteUnchanged": "自这条笔记以来没有新的学习活动。学一会儿，明天就会有新的笔记。",
+  "studyNoteWordsAtRisk": "需要巩固的单词",
+  "studyNoteWatchOut": "注意",
+  "studyNotePlanToday": "今日计划",
+  "studyNoteChallenge": "小挑战",
+  "studyNoteShowAnswer": "显示答案",
+  "studyNoteTeaser": "每天一条关于你学习进度的 AI 笔记：需要巩固的单词、你的母语使用者常见的陷阱，以及一个小挑战。",
+  "proBenefitStudyNote": "每日 AI Study Note，总结你的学习进度"
 }

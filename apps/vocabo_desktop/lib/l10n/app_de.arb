@@ -469,5 +469,16 @@
   "proExportFailed": "Die Bibliothek konnte nicht exportiert werden.",
   "settingsVoiceLabel": "AUSSPRACHESTIMME",
   "settingsVoiceFemale": "Weiblich",
-  "settingsVoiceMale": "Männlich"
+  "settingsVoiceMale": "Männlich",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Die heutige Study Note wird geschrieben…",
+  "studyNoteUnavailable": "Die Study Note ist gerade nicht verfügbar.",
+  "studyNoteUnchanged": "Keine neue Aktivität seit dieser Notiz. Lerne ein bisschen und morgen kommt eine neue Notiz.",
+  "studyNoteWordsAtRisk": "Wörter zum Festigen",
+  "studyNoteWatchOut": "Achtung",
+  "studyNotePlanToday": "Heutiger Plan",
+  "studyNoteChallenge": "Mini-Challenge",
+  "studyNoteShowAnswer": "Antwort anzeigen",
+  "studyNoteTeaser": "Jeden Tag eine KI-Notiz zu deinem Fortschritt: die Wörter zum Festigen, typische Stolperfallen für deine Sprache und eine Mini-Challenge.",
+  "proBenefitStudyNote": "Eine tägliche KI-Study-Note zu deinem Fortschritt"
 }

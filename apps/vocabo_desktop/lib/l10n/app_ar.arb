@@ -469,5 +469,16 @@
   "proExportFailed": "تعذّر تصدير المكتبة.",
   "settingsVoiceLabel": "صوت النطق",
   "settingsVoiceFemale": "أنثوي",
-  "settingsVoiceMale": "ذكوري"
+  "settingsVoiceMale": "ذكوري",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "جارٍ كتابة Study Note لليوم…",
+  "studyNoteUnavailable": "Study Note غير متاحة حاليًا.",
+  "studyNoteUnchanged": "لا يوجد نشاط جديد منذ هذه الملاحظة. ادرس قليلًا وستصلك ملاحظة جديدة غدًا.",
+  "studyNoteWordsAtRisk": "كلمات تحتاج إلى تقوية",
+  "studyNoteWatchOut": "انتبه",
+  "studyNotePlanToday": "خطة اليوم",
+  "studyNoteChallenge": "تحدٍّ صغير",
+  "studyNoteShowAnswer": "إظهار الإجابة",
+  "studyNoteTeaser": "كل يوم، ملاحظة من الذكاء الاصطناعي عن تقدّمك: الكلمات التي تحتاج إلى تقوية، والأخطاء الشائعة لمتحدثي لغتك، وتحدٍّ صغير.",
+  "proBenefitStudyNote": "Study Note يومية بالذكاء الاصطناعي عن تقدّمك"
 }

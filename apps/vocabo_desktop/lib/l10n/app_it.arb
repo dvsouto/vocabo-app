@@ -469,5 +469,16 @@
   "proExportFailed": "Impossibile esportare la libreria.",
   "settingsVoiceLabel": "VOCE DI PRONUNCIA",
   "settingsVoiceFemale": "Femminile",
-  "settingsVoiceMale": "Maschile"
+  "settingsVoiceMale": "Maschile",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Sto scrivendo la Study Note di oggi…",
+  "studyNoteUnavailable": "La Study Note non è disponibile al momento.",
+  "studyNoteUnchanged": "Nessuna nuova attività da questa nota. Studia un po' e domani arriverà una nuova nota.",
+  "studyNoteWordsAtRisk": "Parole da rafforzare",
+  "studyNoteWatchOut": "Attenzione",
+  "studyNotePlanToday": "Piano di oggi",
+  "studyNoteChallenge": "Mini sfida",
+  "studyNoteShowAnswer": "Mostra risposta",
+  "studyNoteTeaser": "Ogni giorno, una nota dell'IA sui tuoi progressi: le parole da rafforzare, le trappole comuni per la tua lingua e una mini sfida.",
+  "proBenefitStudyNote": "Una Study Note giornaliera con l'IA sui tuoi progressi"
 }

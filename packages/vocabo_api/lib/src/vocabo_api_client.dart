@@ -15,6 +15,7 @@ import 'package:vocabo_api/src/repositories/auth_repository.dart';
 import 'package:vocabo_api/src/repositories/dictionary_repository.dart';
 import 'package:vocabo_api/src/repositories/flashcards_repository.dart';
 import 'package:vocabo_api/src/repositories/lookups_repository.dart';
+import 'package:vocabo_api/src/repositories/study_notes_repository.dart';
 import 'package:vocabo_api/src/repositories/subscriptions_repository.dart';
 import 'package:vocabo_api/src/repositories/user_repository.dart';
 import 'package:vocabo_api/src/repositories/user_vocabulary_repository.dart';
@@ -31,6 +32,7 @@ class VocaboApiClient {
   final FlashcardsRepository flashcards;
   final LookupsRepository lookups;
   final SubscriptionsRepository subscriptions;
+  final StudyNotesRepository studyNotes;
 
   VocaboApiClient._({
     required this.auth,
@@ -42,6 +44,7 @@ class VocaboApiClient {
     required this.flashcards,
     required this.lookups,
     required this.subscriptions,
+    required this.studyNotes,
   });
 
   factory VocaboApiClient({
@@ -85,6 +88,7 @@ class VocaboApiClient {
       subscriptions: SubscriptionsRepository(
         dataSource: SubscriptionsDataSource(dio),
       ),
+      studyNotes: StudyNotesRepository(dio),
     );
   }
 }

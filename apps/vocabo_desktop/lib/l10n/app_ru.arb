@@ -469,5 +469,16 @@
   "proExportFailed": "Не удалось экспортировать библиотеку.",
   "settingsVoiceLabel": "ГОЛОС ПРОИЗНОШЕНИЯ",
   "settingsVoiceFemale": "Женский",
-  "settingsVoiceMale": "Мужской"
+  "settingsVoiceMale": "Мужской",
+  "studyNoteTitle": "Study Note",
+  "studyNoteWriting": "Пишем сегодняшнюю Study Note…",
+  "studyNoteUnavailable": "Study Note сейчас недоступна.",
+  "studyNoteUnchanged": "С момента этой заметки новой активности не было. Позанимайся немного, и завтра появится новая заметка.",
+  "studyNoteWordsAtRisk": "Слова для закрепления",
+  "studyNoteWatchOut": "Обрати внимание",
+  "studyNotePlanToday": "План на сегодня",
+  "studyNoteChallenge": "Мини-задание",
+  "studyNoteShowAnswer": "Показать ответ",
+  "studyNoteTeaser": "Каждый день — заметка от ИИ о твоём прогрессе: слова для закрепления, типичные ловушки для твоего языка и мини-задание.",
+  "proBenefitStudyNote": "Ежедневная Study Note от ИИ о твоём прогрессе"
 }
