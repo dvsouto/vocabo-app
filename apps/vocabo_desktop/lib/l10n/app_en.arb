@@ -972,6 +972,11 @@
   "flashcardsHideMeaning": "Hide meaning",
   "flashcardsShowMeaning": "Show meaning",
   "flashcardsListen": "Listen",
+  "audioPlayHint": "Listen · click again to hear it slowly",
+  "audioPlaySlow": "Listen slowly (0.5×)",
+  "@audioPlayHint": {
+    "description": "Tooltip of every pronunciation play button; a second click replays at half speed"
+  },
   "@flashcardsListen": {
     "description": "Tooltip of the button that plays the pronunciation"
   },
@@ -1381,5 +1386,109 @@
   "studyNoteChallenge": "Mini challenge",
   "studyNoteShowAnswer": "Show answer",
   "studyNoteTeaser": "Every day, an AI note on your progress: the words to strengthen, common traps for your language and a mini challenge.",
-  "proBenefitStudyNote": "A daily AI Study Note on your progress"
+  "proBenefitStudyNote": "A daily AI Study Note on your progress",
+  "libraryTabMyWords": "My words",
+  "libraryTabForYou": "For you",
+  "libraryTabCollections": "Collections",
+  "collectionDifficultyEasy": "Easy",
+  "collectionDifficultyMedium": "Medium",
+  "collectionDifficultyHard": "Hard",
+  "collectionsFilterAll": "All",
+  "collectionsSubtitle": "Ready-made lists to study apart from your library, each with its own flashcards.",
+  "collectionsItemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@collectionsItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionsAdded": "Added",
+  "collectionsProgress": "{started} of {total} started",
+  "@collectionsProgress": {
+    "placeholders": {
+      "started": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionsAddToFlashcards": "Add to flashcards",
+  "collectionsAddedNotice": "Added. {perDay} new words a day will show up in your collection flashcards.",
+  "@collectionsAddedNotice": {
+    "placeholders": {
+      "perDay": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionsStudyNow": "Study now",
+  "collectionsBack": "All collections",
+  "collectionsLoadFailed": "Couldn't load the collections.",
+  "collectionsLockedTitle": "Study ready-made collections with Pro",
+  "collectionsLockedBody": "The 1000 most spoken words, travel English, phrasal verbs, idioms and more, each with its own flashcards.",
+  "collectionsTapToTranslate": "Click a card to see the translation.",
+  "suggestedTranslateFailed": "Couldn't translate this one. Try again.",
+  "suggestedAddToLibrary": "Add to library",
+  "suggestedInLibrary": "In your library",
+  "suggestedAddedToLibrary": "Added to your library.",
+  "forYouTitle": "Picked for you today",
+  "forYouUnchanged": "Nothing new since then. Save or translate words and fresh picks come tomorrow.",
+  "forYouMaking": "Picking today’s words for you…",
+  "forYouUnavailable": "Recommendations are unavailable right now.",
+  "forYouWordsTitle": "Words for today",
+  "forYouCollectionsTitle": "Collections that suit you",
+  "forYouNeedsMoreTitle": "Save or translate {count} words to unlock your daily picks",
+  "@forYouNeedsMoreTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forYouNeedsMoreBody": "We look at the words you save and translate to suggest new ones every day. So far: {library} saved, {translated} translated.",
+  "@forYouNeedsMoreBody": {
+    "placeholders": {
+      "library": {
+        "type": "int"
+      },
+      "translated": {
+        "type": "int"
+      }
+    }
+  },
+  "forYouLockedTitle": "Words picked for you, every day",
+  "forYouLockedBody": "With Pro, Vocabo picks 20 new words a day from what you study and suggests the collections that suit you.",
+  "flashcardsDeckMyWords": "My words",
+  "flashcardsDeckCollections": "Collections",
+  "flashcardsCollectionsEmptyTitle": "No collections yet",
+  "flashcardsCollectionsEmptySubtitle": "Add a collection and its words will show up here, a few new ones each day.",
+  "flashcardsExploreCollections": "Explore collections",
+  "flashcardsCollectionsLockedTitle": "Collection flashcards are part of Pro",
+  "flashcardsCollectionsLockedBody": "Review ready-made collections in their own deck, apart from your words.",
+  "flashcardsTranslating": "Translating…",
+  "commonUpdatedToday": "Updated today at {time}",
+  "@commonUpdatedToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonUpdatedOn": "Updated on {date} at {time}",
+  "@commonUpdatedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "proBenefitCollections": "Ready-made collections with their own flashcards",
+  "proBenefitRecommendations": "20 words picked for you every day",
+  "proGateUnlock": "Unlock with Pro"
 }

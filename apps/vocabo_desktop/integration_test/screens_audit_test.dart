@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -19,10 +20,13 @@ import 'package:vocabo_desktop/src/config/env.dart';
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
+import 'package:vocabo_desktop/src/widgets/discover/collection_word_card.dart';
+import 'package:vocabo_desktop/src/widgets/discover/collections_catalog.dart';
 
 const _email = String.fromEnvironment('E2E_EMAIL');
 const _password = String.fromEnvironment('E2E_PASSWORD');
 const _unverifiedEmail = String.fromEnvironment('AUDIT_UNVERIFIED_EMAIL');
+const _freeEmail = String.fromEnvironment('AUDIT_FREE_EMAIL');
 
 /// Interface language of the audit; the runner sets it on the test users.
 const _localeCode = String.fromEnvironment('AUDIT_LOCALE', defaultValue: 'en');
@@ -69,7 +73,6 @@ Future<void> _snap(WidgetTester tester, String name) async {
   final file = File(
     '${_shotsDir.path}/${_shotIndex.toString().padLeft(2, '0')}-$name.png',
   );
-  // macOS may purge the container's tmp folder while the test runs.
   await file.parent.create(recursive: true);
   await file.writeAsBytes(bytes!);
 }
@@ -164,7 +167,7 @@ void main() {
     await windowManager.center();
     await InterfaceLanguageStore().write(_localeCode);
     _shotsDir = Directory(
-      '${Directory.systemTemp.path}/vocabo_audit/$_localeCode',
+      '${Directory.systemTemp.parent.path}/Documents/vocabo_audit/$_localeCode',
     );
     if (_shotsDir.existsSync()) _shotsDir.deleteSync(recursive: true);
     _shotsDir.createSync(recursive: true);
@@ -223,12 +226,45 @@ void main() {
       () => api.auth.login(email: _email, password: _password),
     );
     await _launch(tester, api);
-    await _pumpUntil(
-      tester,
-      find.text(_l.sidebarPersonalWorkspace),
-    );
+    await _pumpUntil(tester, find.text(_l.sidebarPersonalWorkspace));
     await _pumpFor(tester, const Duration(seconds: 2));
     await _audit(tester, 'library');
+
+    await _step('for-you', () async {
+      await tester.tap(find.text(_l.libraryTabForYou));
+      await _pumpUntil(
+        tester,
+        find.text(_l.forYouTitle.toUpperCase()),
+        timeout: const Duration(seconds: 60),
+      );
+      await _pumpFor(tester, const Duration(seconds: 1));
+      await _audit(tester, 'for-you');
+    });
+
+    await _step('collections', () async {
+      await tester.tap(find.text(_l.libraryTabCollections));
+      await _pumpFor(tester, const Duration(seconds: 3));
+      await _audit(tester, 'collections');
+      await tester.tap(
+        find.text(_l.collectionDifficultyHard.toUpperCase()).first,
+      );
+      await _pumpFor(tester, const Duration(milliseconds: 500));
+      await _audit(tester, 'collections-hard');
+    });
+
+    await _step('collection-detail', () async {
+      await tester.tap(find.text(_l.collectionsFilterAll.toUpperCase()).first);
+      await _pumpFor(tester, const Duration(milliseconds: 500));
+      await tester.tap(find.byType(CollectionCard).first);
+      await _pumpFor(tester, const Duration(seconds: 3));
+      await tester.tap(find.byType(CollectionWordCard).first);
+      await _pumpFor(tester, const Duration(seconds: 8));
+      await _audit(tester, 'collection-detail');
+      await tester.tap(find.text(_l.collectionsBack));
+      await _pumpFor(tester, const Duration(milliseconds: 500));
+      await tester.tap(find.text(_l.libraryTabMyWords));
+      await _pumpFor(tester, const Duration(seconds: 1));
+    });
 
     await _step('word-detail', () async {
       await tester.tap(find.text('run').first);
@@ -264,6 +300,16 @@ void main() {
         await _pumpFor(tester, const Duration(seconds: 2));
         await _audit(tester, 'flashcards-session-back');
       }
+    });
+
+    await _step('flashcards-collections', () async {
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _pumpFor(tester, const Duration(seconds: 1));
+      await tester.tap(find.text(_l.flashcardsDeckCollections).first);
+      await _pumpFor(tester, const Duration(seconds: 2));
+      await _audit(tester, 'flashcards-collections');
+      await tester.tap(find.text(_l.flashcardsDeckMyWords).first);
+      await _pumpFor(tester, const Duration(seconds: 1));
     });
 
     await _step('security', () async {
@@ -324,6 +370,46 @@ void main() {
       await _audit(tester, 'change-phone');
       await _closeDialog(tester);
       await _closeDialog(tester);
+    });
+  });
+
+  testWidgets('free plan locks', (tester) async {
+    if (_freeEmail.isEmpty) return;
+    final api = VocaboApiClient(
+      baseUrl: Env.apiUrl,
+      tokenStorage: InMemoryTokenStorage(),
+    );
+    await tester.runAsync(
+      () => api.auth.login(email: _freeEmail, password: _password),
+    );
+    await _launch(tester, api);
+    await _pumpUntil(tester, find.text(_l.sidebarPersonalWorkspace));
+    await _pumpFor(tester, const Duration(seconds: 2));
+
+    await _step('free-for-you', () async {
+      await tester.tap(find.text(_l.libraryTabForYou));
+      await _pumpFor(tester, const Duration(seconds: 1));
+      await _audit(tester, 'free-for-you');
+    });
+
+    await _step('free-collections', () async {
+      await tester.tap(find.text(_l.libraryTabCollections));
+      await _pumpFor(tester, const Duration(seconds: 3));
+      await _audit(tester, 'free-collections');
+    });
+
+    await _step('free-flashcards-collections', () async {
+      await tester.tap(_navItem(_l.sidebarFlashcards));
+      await _pumpFor(tester, const Duration(seconds: 2));
+      await tester.tap(find.text(_l.flashcardsDeckCollections).first);
+      await _pumpFor(tester, const Duration(seconds: 1));
+      await _audit(tester, 'free-flashcards-collections');
+    });
+
+    await _step('free-progress', () async {
+      await tester.tap(_navItem(_l.sidebarProgress));
+      await _pumpFor(tester, const Duration(seconds: 2));
+      await _audit(tester, 'free-progress');
     });
   });
 }

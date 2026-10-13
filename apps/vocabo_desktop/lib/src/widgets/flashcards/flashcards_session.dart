@@ -51,8 +51,11 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
 
-    final notifier = ref.read(flashcardSessionProvider.notifier);
-    final state = ref.read(flashcardSessionProvider);
+    final provider = flashcardDeckSessionProvider(
+      ref.read(currentFlashcardDeckProvider),
+    );
+    final notifier = ref.read(provider.notifier);
+    final state = ref.read(provider);
     final key = event.logicalKey;
 
     if (key == LogicalKeyboardKey.escape) {
@@ -80,13 +83,22 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
       hasHistory: card.flashcard.hasHistory,
     );
     if (!confirmed || !mounted) return;
-    await ref.read(flashcardSessionProvider.notifier).archiveCurrent();
+    await ref
+        .read(
+          flashcardDeckSessionProvider(
+            ref.read(currentFlashcardDeckProvider),
+          ).notifier,
+        )
+        .archiveCurrent();
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(flashcardSessionProvider);
-    final notifier = ref.read(flashcardSessionProvider.notifier);
+    final provider = flashcardDeckSessionProvider(
+      ref.watch(currentFlashcardDeckProvider),
+    );
+    final state = ref.watch(provider);
+    final notifier = ref.read(provider.notifier);
     final l10n = context.l10n;
     final card = state.currentCard;
     final stages =

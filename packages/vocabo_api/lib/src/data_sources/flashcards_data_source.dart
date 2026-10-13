@@ -18,18 +18,26 @@ class FlashcardsDataSource {
     );
   }
 
-  Future<FlashcardStatusSummary> getStatus() async {
-    final response = await _dio.get<Map<String, dynamic>>('/flashcards/status');
+  Future<FlashcardStatusSummary> getStatus({
+    FlashcardDeck deck = FlashcardDeck.library,
+  }) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/flashcards/status',
+      queryParameters: {'deck': deck.value},
+    );
 
     return FlashcardStatusSummary.fromJson(
       response.data!['data'] as Map<String, dynamic>,
     );
   }
 
-  Future<FlashcardSession?> getSession({int? size}) async {
+  Future<FlashcardSession?> getSession({
+    int? size,
+    FlashcardDeck deck = FlashcardDeck.library,
+  }) async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/flashcards/session',
-      queryParameters: {if (size != null) 'size': size},
+      queryParameters: {'deck': deck.value, if (size != null) 'size': size},
     );
 
     final data = response.data!['data'] as Map<String, dynamic>;
@@ -41,6 +49,7 @@ class FlashcardsDataSource {
   }
 
   Future<FlashcardEvaluationResult> startSession({
+    FlashcardDeck deck = FlashcardDeck.library,
     required List<String> flashcardIds,
     required String firstFlashcardId,
     required FlashcardEvaluation evaluation,
@@ -48,6 +57,7 @@ class FlashcardsDataSource {
     final response = await _dio.post<Map<String, dynamic>>(
       '/flashcards/session/start',
       data: {
+        'deck': deck.value,
         'flashcard_ids': flashcardIds,
         'first_flashcard_id': firstFlashcardId,
         'evaluation': evaluation.value,

@@ -10,12 +10,11 @@ import 'package:vocabo_desktop/src/pro/paywall_dialog.dart';
 import 'package:vocabo_desktop/src/l10n/memory_strength_label.dart';
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
-import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
-import 'package:vocabo_desktop/src/services/audio_player_service.dart';
+import 'package:vocabo_desktop/src/widgets/audio/pronunciation_button.dart';
 
 class WordDetailModal extends ConsumerWidget {
   const WordDetailModal({super.key, required this.userVocabulary});
@@ -35,17 +34,10 @@ class WordDetailModal extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vocabulary = userVocabulary.vocabulary!;
-    final showDetail = ref.watch(showWordDetailModalProvider);
-    final audioState = ref.watch(audioPlayerStateProvider);
     final flashcard = ref
         .watch(flashcardByVocabularyProvider(userVocabulary.id))
         .valueOrNull;
     final contentHash = vocabulary.contentHash ?? '';
-    final isThisPlaying =
-        showDetail && audioState.currentPlayingHash == contentHash;
-    final isBusy =
-        audioState.status == AudioPlayerStatus.loading ||
-        audioState.status == AudioPlayerStatus.playing;
 
     final hasTranslation =
         vocabulary.translation != null && vocabulary.translation!.isNotEmpty;
@@ -80,14 +72,7 @@ class WordDetailModal extends ConsumerWidget {
                 children: [
                   _buildHeader(context, ref, vocabulary, flashcard),
                   const SizedBox(height: VocaboSpacing.lg),
-                  _buildTermRow(
-                    ref,
-                    vocabulary,
-                    contentHash,
-                    isThisPlaying,
-                    isBusy,
-                    audioState,
-                  ),
+                  _buildTermRow(ref, vocabulary, contentHash),
                   const SizedBox(height: VocaboSpacing.xl),
                   _buildTopColumns(
                     context,
@@ -151,9 +136,6 @@ class WordDetailModal extends ConsumerWidget {
     WidgetRef ref,
     Vocabulary vocabulary,
     String contentHash,
-    bool isThisPlaying,
-    bool isBusy,
-    AudioPlayerState audioState,
   ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -167,60 +149,13 @@ class WordDetailModal extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: VocaboSpacing.md),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            mouseCursor: contentHash.isEmpty
-                ? SystemMouseCursors.basic
-                : SystemMouseCursors.click,
-            onTap: contentHash.isEmpty
-                ? null
-                : () {
-                    final player = ref.read(audioPlayerServiceProvider);
-                    if (isThisPlaying && isBusy) {
-                      player.stop();
-                    } else if (!isBusy) {
-                      player.play(
-                        vocabularyId: vocabulary.id,
-                        type:
-                            userVocabulary.vocabularyType ==
-                                VocabularyType.custom
-                            ? 'custom'
-                            : 'system',
-                        contentHash: contentHash,
-                      );
-                    }
-                  },
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: contentHash.isEmpty
-                    ? VocaboColors.primary.withValues(alpha: 0.5)
-                    : VocaboColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child:
-                  isThisPlaying &&
-                      audioState.status == AudioPlayerStatus.loading
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: VocaboColors.onPrimary,
-                      ),
-                    )
-                  : Icon(
-                      isThisPlaying &&
-                              audioState.status == AudioPlayerStatus.playing
-                          ? Icons.stop
-                          : Icons.volume_up,
-                      color: VocaboColors.onPrimary,
-                      size: 22,
-                    ),
-            ),
-          ),
+        PronunciationButton(
+          vocabularyId: vocabulary.id,
+          type: userVocabulary.vocabularyType.value,
+          contentHash: contentHash,
+          size: 48,
+          iconSize: 22,
+          showSlowButton: true,
         ),
       ],
     );

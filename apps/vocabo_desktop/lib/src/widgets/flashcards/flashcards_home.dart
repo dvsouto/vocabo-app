@@ -7,6 +7,8 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/pro/plan_providers.dart';
 import 'package:vocabo_desktop/src/pro/paywall_dialog.dart';
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
+import 'package:vocabo_desktop/src/providers/discover_providers.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/archived_flashcards_dialog.dart';
 import 'package:vocabo_desktop/src/widgets/flashcards/claim_focus.dart';
@@ -17,7 +19,8 @@ class FlashcardsHome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final status = ref.watch(flashcardStatusProvider);
+    final deck = ref.watch(currentFlashcardDeckProvider);
+    final status = ref.watch(flashcardDeckStatusProvider(deck));
 
     return status.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -34,20 +37,24 @@ class FlashcardsHome extends ConsumerWidget {
             const SizedBox(height: VocaboSpacing.sm),
             VocaboPrimaryButton(
               label: context.l10n.commonTryAgain,
-              onPressed: () => ref.invalidate(flashcardStatusProvider),
+              onPressed: () =>
+                  ref.invalidate(flashcardDeckStatusProvider(deck)),
             ),
           ],
         ),
       ),
-      data: (summary) => _HomeBody(summary: summary),
+      data: (summary) => _HomeBody(summary: summary, deck: deck),
     );
   }
 }
 
 class _HomeBody extends ConsumerWidget {
-  const _HomeBody({required this.summary});
+  const _HomeBody({required this.summary, required this.deck});
 
   final FlashcardStatusSummary summary;
+  final FlashcardDeck deck;
+
+  bool get _isCollections => deck == FlashcardDeck.collections;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,7 +67,7 @@ class _HomeBody extends ConsumerWidget {
         if (event is! KeyDownEvent || !isEnter || !summary.canStartSession) {
           return KeyEventResult.ignored;
         }
-        ref.read(flashcardSessionProvider.notifier).startSession();
+        ref.read(flashcardDeckSessionProvider(deck).notifier).startSession();
         return KeyEventResult.handled;
       },
       child: _buildBody(context, ref),
@@ -69,23 +76,25 @@ class _HomeBody extends ConsumerWidget {
 
   Widget _buildBody(BuildContext context, WidgetRef ref) {
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(VocaboSpacing.xxl),
-              decoration: BoxDecoration(
-                color: VocaboColors.surfaceContainerLow,
-                borderRadius: VocaboRadius.lg,
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(VocaboSpacing.xxl),
+                decoration: BoxDecoration(
+                  color: VocaboColors.surfaceContainerLow,
+                  borderRadius: VocaboRadius.lg,
+                ),
+                child: _buildState(context, ref),
               ),
-              child: _buildState(context, ref),
-            ),
-            const SizedBox(height: VocaboSpacing.lg),
-            _buildFooter(context, ref),
-          ],
+              const SizedBox(height: VocaboSpacing.lg),
+              _buildFooter(context, ref),
+            ],
+          ),
         ),
       ),
     );
@@ -93,6 +102,24 @@ class _HomeBody extends ConsumerWidget {
 
   Widget _buildState(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+
+    if (!summary.hasCards && summary.completedCount == 0 && _isCollections) {
+      return _HeroContent(
+        icon: Icons.collections_bookmark_outlined,
+        title: l10n.flashcardsCollectionsEmptyTitle,
+        subtitle: l10n.flashcardsCollectionsEmptySubtitle,
+        action: VocaboPrimaryButton(
+          label: l10n.flashcardsExploreCollections,
+          onPressed: () {
+            ref.read(libraryTabProvider.notifier).state =
+                LibraryTab.collections;
+            ref.read(openCollectionIdProvider.notifier).state = null;
+            ref.read(dashboardSectionProvider.notifier).state =
+                DashboardSection.library;
+          },
+        ),
+      );
+    }
 
     if (!summary.hasCards && summary.completedCount == 0) {
       return _HeroContent(
@@ -116,8 +143,9 @@ class _HomeBody extends ConsumerWidget {
             l10n.flashcardsKeyEnter,
             color: VocaboColors.onPrimary,
           ),
-          onPressed: () =>
-              ref.read(flashcardSessionProvider.notifier).startSession(),
+          onPressed: () => ref
+              .read(flashcardDeckSessionProvider(deck).notifier)
+              .startSession(),
         ),
       );
     }
@@ -129,7 +157,7 @@ class _HomeBody extends ConsumerWidget {
         subtitle: l10n.flashcardsWaitingSubtitle,
         action: FlashcardCountdown(
           target: summary.nextReviewAt!,
-          onFinished: () => ref.invalidate(flashcardStatusProvider),
+          onFinished: () => ref.invalidate(flashcardDeckStatusProvider(deck)),
         ),
       );
     }
@@ -170,40 +198,46 @@ class _HomeBody extends ConsumerWidget {
         l10n.flashcardsMasteredCount(summary.completedCount),
     ];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
           parts.join(' · '),
           style: VocaboTypography.bodySm.copyWith(color: VocaboColors.neutral),
         ),
-        const SizedBox(width: VocaboSpacing.sm),
-        TextButton(
-          onPressed: () {
-            final canArchive =
-                ref.read(planStatusProvider).valueOrNull?.limits.archive ??
-                true;
-            if (canArchive) {
-              showArchivedFlashcardsDialog(context);
-            } else {
-              showPaywall(context, const UpgradeReason(UpgradeTrigger.feature));
-            }
-          },
-          style: TextButton.styleFrom(
-            foregroundColor: VocaboColors.neutral,
-            minimumSize: const Size(44, 32),
-            padding: const EdgeInsets.symmetric(horizontal: VocaboSpacing.sm),
-            textStyle: VocaboTypography.bodySm.copyWith(
-              fontWeight: FontWeight.w600,
+        if (!_isCollections) ...[
+          const SizedBox(width: VocaboSpacing.sm),
+          TextButton(
+            onPressed: () {
+              final canArchive =
+                  ref.read(planStatusProvider).valueOrNull?.limits.archive ??
+                  true;
+              if (canArchive) {
+                showArchivedFlashcardsDialog(context);
+              } else {
+                showPaywall(
+                  context,
+                  const UpgradeReason(UpgradeTrigger.feature),
+                );
+              }
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: VocaboColors.neutral,
+              minimumSize: const Size(44, 32),
+              padding: const EdgeInsets.symmetric(horizontal: VocaboSpacing.sm),
+              textStyle: VocaboTypography.bodySm.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              enabledMouseCursor: SystemMouseCursors.click,
             ),
-            enabledMouseCursor: SystemMouseCursors.click,
+            child: Text(
+              summary.archivedCount > 0
+                  ? l10n.flashcardsArchivedWithCount(summary.archivedCount)
+                  : l10n.flashcardsArchivedButton,
+            ),
           ),
-          child: Text(
-            summary.archivedCount > 0
-                ? l10n.flashcardsArchivedWithCount(summary.archivedCount)
-                : l10n.flashcardsArchivedButton,
-          ),
-        ),
+        ],
       ],
     );
   }

@@ -11,20 +11,25 @@ class FlashcardsRepository {
 
   Future<FlashcardConfig> getConfig() => apiCall(() => _dataSource.getConfig());
 
-  Future<FlashcardStatusSummary> getStatus() =>
-      apiCall(() => _dataSource.getStatus());
+  Future<FlashcardStatusSummary> getStatus({
+    FlashcardDeck deck = FlashcardDeck.library,
+  }) => apiCall(() => _dataSource.getStatus(deck: deck));
 
   /// Pass [size] for a shorter deck; an in-progress session is always
   /// resumed as is.
-  Future<FlashcardSession?> getSession({int? size}) =>
-      apiCall(() => _dataSource.getSession(size: size));
+  Future<FlashcardSession?> getSession({
+    int? size,
+    FlashcardDeck deck = FlashcardDeck.library,
+  }) => apiCall(() => _dataSource.getSession(size: size, deck: deck));
 
   Future<FlashcardEvaluationResult> startSession({
+    FlashcardDeck deck = FlashcardDeck.library,
     required List<String> flashcardIds,
     required String firstFlashcardId,
     required FlashcardEvaluation evaluation,
   }) => apiCall(
     () => _dataSource.startSession(
+      deck: deck,
       flashcardIds: flashcardIds,
       firstFlashcardId: firstFlashcardId,
       evaluation: evaluation,

@@ -27,6 +27,9 @@ class StudyNote extends Equatable {
 
   /// True when nothing changed since this note was written.
   final bool unchanged;
+
+  /// When the note was written.
+  final DateTime? createdAt;
   final String headline;
   final String summary;
   final List<StudyNoteTip> wordsAtRisk;
@@ -38,6 +41,7 @@ class StudyNote extends Equatable {
   const StudyNote({
     required this.day,
     required this.unchanged,
+    this.createdAt,
     required this.headline,
     required this.summary,
     this.wordsAtRisk = const [],
@@ -61,6 +65,7 @@ class StudyNote extends Equatable {
     return StudyNote(
       day: json['day'] as String,
       unchanged: json['unchanged'] as bool? ?? false,
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
       headline: json['headline'] as String? ?? '',
       summary: json['summary'] as String? ?? '',
       wordsAtRisk: tips('words_at_risk', 'tip'),
@@ -80,6 +85,7 @@ class StudyNote extends Equatable {
   List<Object?> get props => [
     day,
     unchanged,
+    createdAt,
     headline,
     summary,
     wordsAtRisk,

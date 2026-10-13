@@ -37,7 +37,11 @@ class Vocabulary extends Equatable {
   final String? contentHash;
 
   /// Voice genders (`female`, `male`) with a recorded pronunciation.
-  @JsonKey(name: 'audios', fromJson: _audioVoicesFromJson, toJson: _audioVoicesToJson)
+  @JsonKey(
+    name: 'audios',
+    fromJson: _audioVoicesFromJson,
+    toJson: _audioVoicesToJson,
+  )
   final List<String> audioVoices;
 
   const Vocabulary({
@@ -73,6 +77,19 @@ class Vocabulary extends Equatable {
   }
 
   Map<String, dynamic> toJson() => _$VocabularyToJson(this);
+
+  /// The body that saves this entry, as it is, to the user's library.
+  Map<String, dynamic> toLibraryRequest() => {
+    'term': term,
+    'language': language,
+    'translation': translation,
+    'meaning': meaning ?? '',
+    'word_type': wordType.value,
+    'pronunciation': pronunciation ?? '',
+    'tts_pronunciation': ttsPronunciation ?? '',
+    'usage_examples': usageExamples?.toJson() ?? <String>[],
+    'content_hash': contentHash,
+  };
 
   @override
   List<Object?> get props => [

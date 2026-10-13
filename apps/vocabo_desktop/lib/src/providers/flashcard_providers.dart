@@ -5,14 +5,28 @@ import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
+import 'package:vocabo_desktop/src/providers/discover_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
 
-final flashcardStatusProvider = FutureProvider<FlashcardStatusSummary>((
-  ref,
-) async {
-  final api = ref.watch(apiClientProvider);
-  return api.flashcards.getStatus();
-});
+final flashcardDeckStatusProvider =
+    FutureProvider.family<FlashcardStatusSummary, FlashcardDeck>((
+      ref,
+      deck,
+    ) async {
+      final api = ref.watch(apiClientProvider);
+      return api.flashcards.getStatus(deck: deck);
+    });
+
+/// The status of the library deck.
+final flashcardStatusProvider = flashcardDeckStatusProvider(
+  FlashcardDeck.library,
+);
+
+/// The deck shown by the flashcards widgets below it. The collections tab
+/// overrides it in a nested [ProviderScope].
+final currentFlashcardDeckProvider = Provider<FlashcardDeck>(
+  (_) => FlashcardDeck.library,
+);
 
 /// Stage intervals and reverse stages shared by the API. Falls back to the
 /// API defaults while loading or offline so the UI never blocks on it.
@@ -104,12 +118,14 @@ class FlashcardSessionState {
   }
 }
 
-class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
+class FlashcardSessionNotifier
+    extends FamilyNotifier<FlashcardSessionState, FlashcardDeck> {
   /// Time the chosen evaluation stays highlighted before the next card.
   static const evaluationHold = Duration(milliseconds: 375);
 
   @override
-  FlashcardSessionState build() => const FlashcardSessionState();
+  FlashcardSessionState build(FlashcardDeck deck) =>
+      const FlashcardSessionState();
 
   AppLocalizations get _l10n => ref.read(appLocalizationsProvider);
 
@@ -128,7 +144,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
 
     try {
       final api = ref.read(apiClientProvider);
-      final session = await api.flashcards.getSession(size: size);
+      final session = await api.flashcards.getSession(size: size, deck: arg);
 
       if (session == null || session.isEmpty) {
         _goHome(notice: _l10n.flashcardsNothingToReview);
@@ -204,6 +220,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
 
       if (session.isVirtual) {
         result = await api.flashcards.startSession(
+          deck: arg,
           flashcardIds: session.flashcardIds,
           firstFlashcardId: card.flashcard.id,
           evaluation: evaluation,
@@ -339,9 +356,13 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
   }
 
   void _complete(FlashcardSession session) {
-    ref.invalidate(flashcardStatusProvider);
-    // Library items show each word's memory strength, which just changed.
-    ref.invalidate(userVocabularyListProvider);
+    ref.invalidate(flashcardDeckStatusProvider(arg));
+    if (arg == FlashcardDeck.collections) {
+      ref.invalidate(collectionsProvider);
+    } else {
+      // Library items show each word's memory strength, which just changed.
+      ref.invalidate(userVocabularyListProvider);
+    }
     state = state.copyWith(
       phase: FlashcardsPhase.completion,
       session: () => session,
@@ -351,7 +372,7 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
   }
 
   void _goHome({String? notice}) {
-    ref.invalidate(flashcardStatusProvider);
+    ref.invalidate(flashcardDeckStatusProvider(arg));
     state = FlashcardSessionState(
       notice: notice,
       noticeNonce: notice == null ? state.noticeNonce : state.noticeNonce + 1,
@@ -366,7 +387,19 @@ class FlashcardSessionNotifier extends Notifier<FlashcardSessionState> {
   }
 }
 
-final flashcardSessionProvider =
-    NotifierProvider<FlashcardSessionNotifier, FlashcardSessionState>(
-      FlashcardSessionNotifier.new,
-    );
+final flashcardDeckSessionProvider =
+    NotifierProvider.family<
+      FlashcardSessionNotifier,
+      FlashcardSessionState,
+      FlashcardDeck
+    >(FlashcardSessionNotifier.new);
+
+/// The session of the library deck.
+final flashcardSessionProvider = flashcardDeckSessionProvider(
+  FlashcardDeck.library,
+);
+
+/// The deck tab open in Flashcards.
+final flashcardsDeckTabProvider = StateProvider<FlashcardDeck>(
+  (_) => FlashcardDeck.library,
+);

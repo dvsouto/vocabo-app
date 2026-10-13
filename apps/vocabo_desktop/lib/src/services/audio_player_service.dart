@@ -8,14 +8,24 @@ import 'package:vocabo_desktop/src/services/audio_cache_service.dart';
 
 enum AudioPlayerStatus { idle, loading, playing, failed }
 
+/// The speed of a slow replay, for learners to catch each sound.
+const slowAudioSpeed = 0.5;
+
+/// How long after a word finishes a second click still means "slower".
+const _replaySlowWindow = Duration(seconds: 4);
+
 class AudioPlayerState {
   final AudioPlayerStatus status;
   final String? currentPlayingHash;
+  final double speed;
 
   const AudioPlayerState({
     this.status = AudioPlayerStatus.idle,
     this.currentPlayingHash,
+    this.speed = 1,
   });
+
+  bool get isSlow => speed < 1;
 
   AudioPlayerState copyWith({
     AudioPlayerStatus? status,
@@ -26,6 +36,7 @@ class AudioPlayerState {
       currentPlayingHash: currentPlayingHash != null
           ? currentPlayingHash()
           : this.currentPlayingHash,
+      speed: speed,
     );
   }
 }
@@ -38,14 +49,16 @@ class AudioPlayerService extends ChangeNotifier {
   AudioPlayerState _state = const AudioPlayerState();
   Timer? _failResetTimer;
   int _playGeneration = 0;
+  String? _lastFinishedHash;
+  DateTime? _lastFinishedAt;
 
   AudioPlayerService({
     required VocabularyAudioRepository audioRepository,
     required AudioCacheService cacheService,
     required String Function() voice,
-  })  : _audioRepository = audioRepository,
-        _cacheService = cacheService,
-        _voice = voice;
+  }) : _audioRepository = audioRepository,
+       _cacheService = cacheService,
+       _voice = voice;
 
   /// The user's preferred voice gender, read on every play.
   final String Function() _voice;
@@ -57,21 +70,63 @@ class AudioPlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// What a click on a play button does, like Google Translate: the first
+  /// click plays at normal speed, clicking again while it plays or right
+  /// after it ends replays it at [slowAudioSpeed], and a click during the
+  /// slow replay stops it. [slow] skips straight to the slow replay.
+  Future<void> toggle({
+    required String vocabularyId,
+    required String type,
+    required String contentHash,
+    bool slow = false,
+  }) {
+    final isThis = _state.currentPlayingHash == contentHash;
+    final status = _state.status;
+
+    if (isThis && status == AudioPlayerStatus.loading) return stop();
+    if (isThis && status == AudioPlayerStatus.playing) {
+      if (_state.isSlow && !slow) return stop();
+      return play(
+        vocabularyId: vocabularyId,
+        type: type,
+        contentHash: contentHash,
+        speed: slowAudioSpeed,
+      );
+    }
+
+    final finishedAt = _lastFinishedAt;
+    final justHeard =
+        _lastFinishedHash == contentHash &&
+        finishedAt != null &&
+        DateTime.now().difference(finishedAt) < _replaySlowWindow;
+    return play(
+      vocabularyId: vocabularyId,
+      type: type,
+      contentHash: contentHash,
+      speed: slow || justHeard ? slowAudioSpeed : 1,
+    );
+  }
+
   Future<void> play({
     required String vocabularyId,
     required String type,
     required String contentHash,
+    double speed = 1,
   }) async {
     _failResetTimer?.cancel();
     _playGeneration++;
     final generation = _playGeneration;
+    _lastFinishedHash = null;
 
     await _player.stop();
 
-    _updateState(AudioPlayerState(
-      status: AudioPlayerStatus.loading,
-      currentPlayingHash: contentHash,
-    ));
+    _updateState(
+      AudioPlayerState(
+        status: AudioPlayerStatus.loading,
+        currentPlayingHash: contentHash,
+        speed: speed,
+      ),
+    );
 
     try {
       final voice = _voice();
@@ -97,6 +152,7 @@ class AudioPlayerService extends ChangeNotifier {
       if (generation != _playGeneration) return;
 
       await _player.setFilePath(audioPath);
+      await _player.setSpeed(speed);
 
       if (generation != _playGeneration) return;
 
@@ -109,6 +165,12 @@ class AudioPlayerService extends ChangeNotifier {
           .timeout(const Duration(seconds: 30));
 
       if (generation == _playGeneration) {
+        // Only a normal-speed play arms the slow replay; after the slow one
+        // the next click starts over at normal speed.
+        if (speed == 1) {
+          _lastFinishedHash = contentHash;
+          _lastFinishedAt = DateTime.now();
+        }
         _updateState(const AudioPlayerState());
       }
     } catch (e) {

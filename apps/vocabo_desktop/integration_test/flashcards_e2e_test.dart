@@ -252,7 +252,7 @@ Future<void> _runMainFlow(WidgetTester tester) async {
   void recordStatus() => audioStatuses.add(player.state.status);
   player.addListener(recordStatus);
 
-  await tester.tap(find.byTooltip('Listen'));
+  await tester.tap(find.byTooltip('Listen · click again to hear it slowly'));
   await _pumpUntilTrue(
     tester,
     () => audioStatuses.contains(AudioPlayerStatus.playing),
@@ -269,6 +269,21 @@ Future<void> _runMainFlow(WidgetTester tester) async {
   expect(audioStatuses.last, AudioPlayerStatus.idle);
   expect(find.byIcon(Icons.volume_up), findsOneWidget);
   await _snap(tester, 'session-card-audio-played');
+
+  // A second click right after the word ends replays it at half speed.
+  await tester.tap(find.byTooltip('Listen · click again to hear it slowly'));
+  await _pumpUntilTrue(
+    tester,
+    () => player.state.status == AudioPlayerStatus.playing,
+    description: 'slow replay to start',
+  );
+  expect(player.state.isSlow, isTrue);
+  await _snap(tester, 'session-card-audio-slow');
+  await _pumpUntilTrue(
+    tester,
+    () => player.state.status == AudioPlayerStatus.idle,
+    description: 'slow replay to finish',
+  );
 
   // Card 1 with the mouse: flip, reveal meaning, answer "hard".
   await tester.tap(find.text('Continue'));

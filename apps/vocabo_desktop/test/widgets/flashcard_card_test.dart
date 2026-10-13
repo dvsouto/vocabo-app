@@ -80,7 +80,7 @@ void main() {
 
     expect(find.text('ephemeral'), findsOneWidget);
     expect(find.text('efêmero'), findsNothing);
-    expect(find.byTooltip('Listen'), findsOneWidget);
+    expect(find.byTooltip('Listen · click again to hear it slowly'), findsOneWidget);
     expect(find.text('FAMILIAR'), findsOneWidget);
   });
 
@@ -101,7 +101,7 @@ void main() {
     expect(find.text('WHICH ENGLISH WORD IS THIS?'), findsOneWidget);
     expect(find.text('efêmero'), findsOneWidget);
     expect(find.text('ephemeral'), findsNothing);
-    expect(find.byTooltip('Listen'), findsNothing);
+    expect(find.byTooltip('Listen · click again to hear it slowly'), findsNothing);
     expect(find.text('ANCHORED'), findsOneWidget);
   });
 
@@ -121,7 +121,7 @@ void main() {
 
     expect(find.text('ephemeral'), findsOneWidget);
     expect(find.text('efêmero'), findsOneWidget);
-    expect(find.byTooltip('Listen'), findsOneWidget);
+    expect(find.byTooltip('Listen · click again to hear it slowly'), findsOneWidget);
   });
 
   testWidgets('reverse cards fall back to the meaning without a translation', (

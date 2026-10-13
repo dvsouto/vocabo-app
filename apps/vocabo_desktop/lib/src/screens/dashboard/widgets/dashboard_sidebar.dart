@@ -5,6 +5,8 @@ import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
 import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
 import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
+import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_desktop/src/pro/plan_providers.dart';
 
 class DashboardSidebar extends ConsumerWidget {
   const DashboardSidebar({
@@ -20,8 +22,19 @@ class DashboardSidebar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hasCollections =
+        ref.watch(planStatusProvider).valueOrNull?.limits.collections ?? false;
     final dueCount =
-        ref.watch(flashcardStatusProvider).valueOrNull?.dueCount ?? 0;
+        (ref.watch(flashcardStatusProvider).valueOrNull?.dueCount ?? 0) +
+        (hasCollections
+            ? ref
+                      .watch(
+                        flashcardDeckStatusProvider(FlashcardDeck.collections),
+                      )
+                      .valueOrNull
+                      ?.dueCount ??
+                  0
+            : 0);
     final l10n = context.l10n;
     final navItems = [
       (icon: Icons.auto_stories, label: l10n.sidebarLibrary),

@@ -11,6 +11,7 @@ export 'src/data_sources/auth_data_source.dart'
     show SignUpRequest, SocialAuthProvider;
 export 'src/repositories/auth_repository.dart';
 export 'src/repositories/dictionary_repository.dart';
+export 'src/repositories/discover_repository.dart';
 export 'src/repositories/flashcards_repository.dart';
 export 'src/repositories/lookups_repository.dart';
 export 'src/repositories/study_notes_repository.dart';

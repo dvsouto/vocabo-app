@@ -32,14 +32,17 @@ class FlashcardsCompletion extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(flashcardSessionProvider);
-    final notifier = ref.read(flashcardSessionProvider.notifier);
+    final provider = flashcardDeckSessionProvider(
+      ref.watch(currentFlashcardDeckProvider),
+    );
+    final state = ref.watch(provider);
+    final notifier = ref.read(provider.notifier);
     final l10n = context.l10n;
     final cards = state.session?.cards ?? const <FlashcardSessionCard>[];
     final blankTerms = cards
         .where((card) => card.evaluation == FlashcardEvaluation.hard)
-        .map((card) => card.flashcard.vocabulary?.term)
-        .whereType<String>()
+        .map((card) => card.flashcard.term)
+        .where((term) => term.isNotEmpty)
         .toList();
 
     void seeProgress() {

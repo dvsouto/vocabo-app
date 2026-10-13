@@ -7,10 +7,9 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/l10n/memory_strength_label.dart';
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
-import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/user_preferences_provider.dart';
 import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
-import 'package:vocabo_desktop/src/services/audio_player_service.dart';
+import 'package:vocabo_desktop/src/widgets/audio/pronunciation_button.dart';
 
 class VocabularyListItem extends ConsumerWidget {
   const VocabularyListItem({super.key, required this.userVocabulary});
@@ -32,15 +31,8 @@ class VocabularyListItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final vocabulary = userVocabulary.vocabulary!;
     final l10n = context.l10n;
-    final audioState = ref.watch(audioPlayerStateProvider);
-    final isModalOpen = ref.watch(showWordDetailModalProvider);
     final showTranslations = ref.watch(showTranslationsProvider);
     final contentHash = vocabulary.contentHash ?? '';
-    final isThisPlaying =
-        !isModalOpen && audioState.currentPlayingHash == contentHash;
-    final isBusy =
-        audioState.status == AudioPlayerStatus.loading ||
-        audioState.status == AudioPlayerStatus.playing;
 
     return Material(
       color: Colors.transparent,
@@ -62,61 +54,12 @@ class VocabularyListItem extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Audio button
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  mouseCursor: contentHash.isEmpty
-                      ? SystemMouseCursors.basic
-                      : SystemMouseCursors.click,
-                  onTap: contentHash.isEmpty
-                      ? null
-                      : () {
-                          final player = ref.read(audioPlayerServiceProvider);
-                          if (isThisPlaying && isBusy) {
-                            player.stop();
-                          } else if (!isBusy) {
-                            player.play(
-                              vocabularyId: vocabulary.id,
-                              type:
-                                  userVocabulary.vocabularyType ==
-                                      VocabularyType.custom
-                                  ? 'custom'
-                                  : 'system',
-                              contentHash: contentHash,
-                            );
-                          }
-                        },
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: contentHash.isEmpty
-                          ? VocaboColors.primary.withValues(alpha: 0.5)
-                          : VocaboColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child:
-                        isThisPlaying &&
-                            audioState.status == AudioPlayerStatus.loading
-                        ? const Padding(
-                            padding: EdgeInsets.all(12),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: VocaboColors.onPrimary,
-                            ),
-                          )
-                        : Icon(
-                            isThisPlaying &&
-                                    audioState.status ==
-                                        AudioPlayerStatus.playing
-                                ? Icons.stop
-                                : Icons.volume_up,
-                            color: VocaboColors.onPrimary,
-                            size: 20,
-                          ),
-                  ),
-                ),
+              PronunciationButton(
+                vocabularyId: vocabulary.id,
+                type: userVocabulary.vocabularyType.value,
+                contentHash: contentHash,
+                size: 44,
+                iconSize: 20,
               ),
               const SizedBox(width: VocaboSpacing.md),
 

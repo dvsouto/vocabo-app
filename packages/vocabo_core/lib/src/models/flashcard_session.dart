@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:vocabo_core/src/enums/flashcard_deck.dart';
 import 'package:vocabo_core/src/enums/flashcard_evaluation.dart';
 import 'package:vocabo_core/src/enums/flashcard_status.dart';
 import 'package:vocabo_core/src/models/flashcard.dart';
@@ -55,6 +56,7 @@ class FlashcardSessionCard extends Equatable {
 /// persisted by the API on the first evaluation.
 class FlashcardSession extends Equatable {
   final String? id;
+  final FlashcardDeck deck;
   final FlashcardSessionStatus status;
   final DateTime? startedAt;
   final DateTime? completedAt;
@@ -63,6 +65,7 @@ class FlashcardSession extends Equatable {
 
   const FlashcardSession({
     required this.id,
+    this.deck = FlashcardDeck.library,
     required this.status,
     required this.cards,
     this.startedAt,
@@ -73,6 +76,7 @@ class FlashcardSession extends Equatable {
   factory FlashcardSession.fromJson(Map<String, dynamic> json) {
     return FlashcardSession(
       id: json['id'] as String?,
+      deck: FlashcardDeck.fromValue(json['deck'] as String?),
       status: FlashcardSessionStatus.fromValue(json['status'] as String?),
       startedAt: json['started_at'] == null
           ? null
@@ -108,6 +112,7 @@ class FlashcardSession extends Equatable {
   }) {
     return FlashcardSession(
       id: id,
+      deck: deck,
       status: status,
       startedAt: startedAt,
       completedAt: completedAt,
@@ -119,6 +124,7 @@ class FlashcardSession extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    deck,
     status,
     startedAt,
     completedAt,

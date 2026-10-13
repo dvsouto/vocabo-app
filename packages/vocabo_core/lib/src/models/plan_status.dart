@@ -12,6 +12,8 @@ class PlanLimits extends Equatable {
   final bool reverseCards;
   final bool export;
   final bool studyNote;
+  final bool collections;
+  final bool recommendations;
 
   const PlanLimits({
     this.libraryWords,
@@ -22,6 +24,8 @@ class PlanLimits extends Equatable {
     this.reverseCards = false,
     this.export = false,
     this.studyNote = false,
+    this.collections = false,
+    this.recommendations = false,
   });
 
   factory PlanLimits.fromJson(Map<String, dynamic> json) => PlanLimits(
@@ -33,6 +37,8 @@ class PlanLimits extends Equatable {
     reverseCards: json['reverse_cards'] as bool? ?? false,
     export: json['export'] as bool? ?? false,
     studyNote: json['study_note'] as bool? ?? false,
+    collections: json['collections'] as bool? ?? false,
+    recommendations: json['recommendations'] as bool? ?? false,
   );
 
   @override
@@ -45,6 +51,8 @@ class PlanLimits extends Equatable {
     reverseCards,
     export,
     studyNote,
+    collections,
+    recommendations,
   ];
 }
 

@@ -210,7 +210,7 @@ class SpotlightController extends Notifier<SpotlightState> {
     if (vocabulary == null || hash == null) return;
     await ref
         .read(audioPlayerServiceProvider)
-        .play(
+        .toggle(
           vocabularyId: vocabulary.id,
           type: state.selected!.vocabularyType,
           contentHash: hash,

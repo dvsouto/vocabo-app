@@ -166,7 +166,7 @@ class _ArchivedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final term = flashcard.vocabulary?.term ?? '—';
+    final term = flashcard.term.isEmpty ? '—' : flashcard.term;
 
     return Container(
       padding: const EdgeInsets.symmetric(

@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
 import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
-import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
 import 'package:vocabo_desktop/src/providers/search_providers.dart';
-import 'package:vocabo_desktop/src/services/audio_player_service.dart';
 import 'package:vocabo_desktop/src/widgets/add_word_modal/part_of_speech_selector.dart';
+import 'package:vocabo_desktop/src/widgets/audio/pronunciation_button.dart';
 
 class AddWordModal extends ConsumerStatefulWidget {
   const AddWordModal({super.key, this.initialTerm});
@@ -263,59 +262,12 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     String contentHash,
     AddWordState wordState,
   ) {
-    final audioState = ref.watch(audioPlayerStateProvider);
-    final isThisPlaying =
-        contentHash.isNotEmpty && audioState.currentPlayingHash == contentHash;
-    final isLoading =
-        isThisPlaying && audioState.status == AudioPlayerStatus.loading;
-    final isPlaying =
-        isThisPlaying && audioState.status == AudioPlayerStatus.playing;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: canPlay
-            ? () {
-                final player = ref.read(audioPlayerServiceProvider);
-                if (isThisPlaying && (isLoading || isPlaying)) {
-                  player.stop();
-                } else {
-                  player.play(
-                    vocabularyId: wordState.backendResult!.id,
-                    type: 'system',
-                    contentHash: contentHash,
-                  );
-                }
-              }
-            : null,
-        mouseCursor: canPlay
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.basic,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: canPlay
-                ? VocaboColors.primary
-                : VocaboColors.primary.withValues(alpha: 0.5),
-            shape: BoxShape.circle,
-          ),
-          child: isLoading
-              ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: VocaboColors.onPrimary,
-                  ),
-                )
-              : Icon(
-                  isPlaying ? Icons.stop : Icons.volume_up,
-                  color: VocaboColors.onPrimary,
-                  size: 20,
-                ),
-        ),
-      ),
+    return PronunciationButton(
+      vocabularyId: canPlay ? wordState.backendResult!.id : null,
+      type: 'system',
+      contentHash: contentHash,
+      size: 44,
+      iconSize: 20,
     );
   }
 

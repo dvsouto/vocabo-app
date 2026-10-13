@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:vocabo_core/src/enums/flashcard_deck.dart';
 import 'package:vocabo_core/src/enums/flashcard_evaluation.dart';
 import 'package:vocabo_core/src/enums/flashcard_status.dart';
 import 'package:vocabo_core/src/enums/vocabulary_type.dart';
@@ -46,9 +47,39 @@ class FlashcardStageHistory extends Equatable {
   ];
 }
 
+/// The collection word behind a card of the collections deck.
+class FlashcardCollectionItem extends Equatable {
+  final String id;
+  final String term;
+  final String collectionId;
+  final String collectionTitle;
+
+  const FlashcardCollectionItem({
+    required this.id,
+    required this.term,
+    required this.collectionId,
+    required this.collectionTitle,
+  });
+
+  factory FlashcardCollectionItem.fromJson(Map<String, dynamic> json) =>
+      FlashcardCollectionItem(
+        id: json['id'] as String,
+        term: json['term'] as String,
+        collectionId: json['collection_id'] as String? ?? '',
+        collectionTitle: json['collection_title'] as String? ?? '',
+      );
+
+  @override
+  List<Object?> get props => [id, term, collectionId, collectionTitle];
+}
+
 class Flashcard extends Equatable {
   final String id;
-  final String userVocabularyId;
+
+  /// Null for cards of the collections deck.
+  final String? userVocabularyId;
+  final FlashcardDeck deck;
+  final FlashcardCollectionItem? collectionItem;
   final FlashcardStatus status;
   final int currentStageIndex;
   final String stageLabel;
@@ -64,7 +95,9 @@ class Flashcard extends Equatable {
 
   const Flashcard({
     required this.id,
-    required this.userVocabularyId,
+    this.userVocabularyId,
+    this.deck = FlashcardDeck.library,
+    this.collectionItem,
     required this.status,
     required this.currentStageIndex,
     required this.stageLabel,
@@ -81,10 +114,15 @@ class Flashcard extends Equatable {
 
   factory Flashcard.fromJson(Map<String, dynamic> json) {
     final vocabularyJson = json['vocabulary'];
+    final itemJson = json['collection_item'];
 
     return Flashcard(
       id: json['id'] as String,
-      userVocabularyId: json['user_vocabulary_id'] as String,
+      userVocabularyId: json['user_vocabulary_id'] as String?,
+      deck: FlashcardDeck.fromValue(json['deck'] as String?),
+      collectionItem: itemJson is Map<String, dynamic>
+          ? FlashcardCollectionItem.fromJson(itemJson)
+          : null,
       status: FlashcardStatus.fromValue(json['status'] as String?),
       currentStageIndex: json['current_stage_index'] as int,
       stageLabel:
@@ -118,7 +156,11 @@ class Flashcard extends Equatable {
   bool get isArchived => status == FlashcardStatus.archived;
   bool get hasHistory => currentStageIndex > 0 || lastEvaluatedAt != null;
 
+  /// The English term, also before a collection word is translated.
+  String get term => vocabulary?.term ?? collectionItem?.term ?? '';
+
   Flashcard copyWith({
+    Vocabulary? Function()? vocabulary,
     FlashcardStatus? status,
     int? currentStageIndex,
     String? stageLabel,
@@ -128,6 +170,8 @@ class Flashcard extends Equatable {
     return Flashcard(
       id: id,
       userVocabularyId: userVocabularyId,
+      deck: deck,
+      collectionItem: collectionItem,
       status: status ?? this.status,
       currentStageIndex: currentStageIndex ?? this.currentStageIndex,
       stageLabel: stageLabel ?? this.stageLabel,
@@ -139,7 +183,7 @@ class Flashcard extends Equatable {
       updatedAt: updatedAt,
       lastEvaluatedAt: lastEvaluatedAt,
       vocabularyType: vocabularyType,
-      vocabulary: vocabulary,
+      vocabulary: vocabulary != null ? vocabulary() : this.vocabulary,
     );
   }
 
@@ -147,6 +191,8 @@ class Flashcard extends Equatable {
   List<Object?> get props => [
     id,
     userVocabularyId,
+    deck,
+    collectionItem,
     status,
     currentStageIndex,
     stageLabel,

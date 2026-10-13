@@ -7,8 +7,8 @@ import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/providers/audio_player_providers.dart';
-import 'package:vocabo_desktop/src/services/audio_player_service.dart';
+import 'package:vocabo_desktop/src/providers/discover_providers.dart';
+import 'package:vocabo_desktop/src/widgets/audio/pronunciation_button.dart';
 
 const _flipDuration = Duration(milliseconds: 375);
 const _flipCurve = Cubic(0.3, 0.3, 0.24, 1);
@@ -70,7 +70,11 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
   }
 
   Flashcard get _flashcard => widget.card.flashcard;
-  Vocabulary? get _vocabulary => _flashcard.vocabulary;
+  Vocabulary? _fetched;
+
+  /// Collection words may not be translated yet; they are fetched when
+  /// their card shows up.
+  Vocabulary? get _vocabulary => _flashcard.vocabulary ?? _fetched;
   bool get _isReverse => _flashcard.direction == FlashcardDirection.reverse;
   bool get _compact => widget.compact;
   int get _maxExamples => _compact ? 1 : 2;
@@ -85,6 +89,11 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
 
   @override
   Widget build(BuildContext context) {
+    _fetched =
+        _flashcard.vocabulary == null && _flashcard.collectionItem != null
+        ? ref.watch(suggestedVocabularyProvider(_flashcard.term)).valueOrNull
+        : null;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
@@ -232,11 +241,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
     final pronunciation = vocabulary?.pronunciation;
 
     return [
-      Text(
-        vocabulary?.term ?? '—',
-        textAlign: TextAlign.center,
-        style: _termStyle,
-      ),
+      Text(_flashcard.term, textAlign: TextAlign.center, style: _termStyle),
       if (pronunciation != null && pronunciation.isNotEmpty) ...[
         const SizedBox(height: VocaboSpacing.sm),
         Text(
@@ -303,7 +308,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
             ),
           ] else ...[
             Text(
-              vocabulary?.term ?? '—',
+              _flashcard.term,
               textAlign: TextAlign.center,
               style: VocaboTypography.titleLg.copyWith(
                 color: VocaboColors.neutral,
@@ -346,7 +351,7 @@ class _FlashcardCardState extends ConsumerState<FlashcardCard>
                   padding: const EdgeInsets.only(bottom: VocaboSpacing.sm),
                   child: HighlightedExampleText(
                     example: example,
-                    term: vocabulary?.term ?? '',
+                    term: _flashcard.term,
                     textAlign: TextAlign.center,
                     fontSize: _compact ? 13 : 14,
                   ),
@@ -428,7 +433,7 @@ class _RoundIconButton extends StatelessWidget {
   }
 }
 
-class _AudioButton extends ConsumerWidget {
+class _AudioButton extends StatelessWidget {
   const _AudioButton({
     required this.vocabulary,
     required this.vocabularyType,
@@ -440,68 +445,13 @@ class _AudioButton extends ConsumerWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final audioState = ref.watch(audioPlayerStateProvider);
-    final contentHash = vocabulary?.contentHash ?? '';
-    final canPlay = vocabulary != null && contentHash.isNotEmpty;
-    final isThisPlaying =
-        canPlay && audioState.currentPlayingHash == contentHash;
-    final isBusy =
-        audioState.status == AudioPlayerStatus.loading ||
-        audioState.status == AudioPlayerStatus.playing;
-
-    return Tooltip(
-      message: context.l10n.flashcardsListen,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          mouseCursor: canPlay
-              ? SystemMouseCursors.click
-              : SystemMouseCursors.basic,
-          onTap: !canPlay
-              ? null
-              : () {
-                  final player = ref.read(audioPlayerServiceProvider);
-                  if (isThisPlaying && isBusy) {
-                    player.stop();
-                  } else if (!isBusy) {
-                    player.play(
-                      vocabularyId: vocabulary!.id,
-                      type: vocabularyType.value,
-                      contentHash: contentHash,
-                    );
-                  }
-                },
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: canPlay
-                  ? VocaboColors.primary
-                  : VocaboColors.primary.withValues(alpha: 0.5),
-              shape: BoxShape.circle,
-            ),
-            child:
-                isThisPlaying && audioState.status == AudioPlayerStatus.loading
-                ? Padding(
-                    padding: EdgeInsets.all(size * 0.27),
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: VocaboColors.onPrimary,
-                    ),
-                  )
-                : Icon(
-                    isThisPlaying &&
-                            audioState.status == AudioPlayerStatus.playing
-                        ? Icons.stop
-                        : Icons.volume_up,
-                    color: VocaboColors.onPrimary,
-                    size: size * 0.45,
-                  ),
-          ),
-        ),
-      ),
+  Widget build(BuildContext context) {
+    return PronunciationButton(
+      vocabularyId: vocabulary?.id,
+      type: vocabularyType.value,
+      contentHash: vocabulary?.contentHash,
+      size: size,
+      showSlowButton: true,
     );
   }
 }

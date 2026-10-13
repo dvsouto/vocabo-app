@@ -4,8 +4,9 @@ import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/pro/paywall_dialog.dart';
+import 'package:vocabo_desktop/src/l10n/updated_at_label.dart';
 import 'package:vocabo_desktop/src/pro/plan_providers.dart';
+import 'package:vocabo_desktop/src/pro/pro_feature_gate.dart';
 import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
 
 /// Today's Study Note; only requested for Pro accounts.
@@ -147,6 +148,15 @@ class _StudyNoteContentState extends State<_StudyNoteContent> {
               height: 1.45,
             ),
           ),
+          if (note.createdAt case final createdAt?) ...[
+            const SizedBox(height: VocaboSpacing.xs),
+            Text(
+              updatedAtLabel(context, createdAt),
+              style: VocaboTypography.bodySm.copyWith(
+                color: VocaboColors.neutral,
+              ),
+            ),
+          ],
           if (note.unchanged) ...[
             const SizedBox(height: VocaboSpacing.xs),
             Text(
@@ -281,35 +291,11 @@ class _StudyNoteTeaser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return _Frame(
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _Overline(),
-                const SizedBox(height: VocaboSpacing.xs),
-                Text(
-                  l10n.studyNoteTeaser,
-                  style: VocaboTypography.bodyMd.copyWith(
-                    color: VocaboColors.neutral700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: VocaboSpacing.md),
-          VocaboPrimaryButton(
-            label: l10n.proUpgradeButton,
-            onPressed: () => showPaywall(
-              context,
-              const UpgradeReason(UpgradeTrigger.feature),
-            ),
-          ),
-        ],
-      ),
+    return ProLockedPanel(
+      icon: Icons.auto_awesome_outlined,
+      title: context.l10n.studyNoteTitle,
+      body: context.l10n.studyNoteTeaser,
+      compact: true,
     );
   }
 }
