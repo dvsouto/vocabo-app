@@ -5,10 +5,11 @@ import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 import 'package:vocabo_core/vocabo_core.dart' show initLogger, appLogger;
 import 'package:window_manager/window_manager.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
+import 'package:vocabo_app/vocabo_app.dart';
 import 'package:vocabo_desktop/src/app.dart';
-import 'package:vocabo_desktop/src/auth/device_info.dart';
-import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
+import 'package:vocabo_l10n/vocabo_l10n.dart';
+import 'package:vocabo_desktop/src/settings/spotlight_settings_card.dart';
+import 'package:vocabo_desktop/src/shell/desktop_platform_adapter.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_view.dart';
 import 'package:vocabo_desktop/src/widgets/tray_panel/tray_panel.dart';
 
@@ -32,7 +33,15 @@ void main() async {
   runApp(
     ProviderScope(
       observers: [TalkerRiverpodObserver(talker: appLogger)],
-      overrides: [deviceInfoProvider.overrideWithValue(device)],
+      overrides: [
+        deviceInfoProvider.overrideWithValue(device),
+        platformAdapterProvider.overrideWithValue(
+          const DesktopPlatformAdapter(),
+        ),
+        platformSettingsCardProvider.overrideWithValue(
+          const SpotlightSettingsCard(),
+        ),
+      ],
       child: const VocaboDesktopApp(),
     ),
   );

@@ -15,13 +15,9 @@ import 'package:vocabo_api/vocabo_api.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'package:vocabo_app/vocabo_app.dart';
 import 'package:vocabo_desktop/src/app.dart';
-import 'package:vocabo_desktop/src/config/env.dart';
-import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
-import 'package:vocabo_desktop/src/providers/api_client_provider.dart';
-import 'package:vocabo_desktop/src/widgets/discover/collection_word_card.dart';
-import 'package:vocabo_desktop/src/widgets/discover/collections_catalog.dart';
+import 'package:vocabo_l10n/vocabo_l10n.dart';
 
 const _email = String.fromEnvironment('E2E_EMAIL');
 const _password = String.fromEnvironment('E2E_PASSWORD');

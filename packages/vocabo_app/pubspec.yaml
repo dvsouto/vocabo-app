@@ -1,0 +1,43 @@
+name: vocabo_app
+description: Shared application logic of the Vocabo apps (providers, services, auth, plans)
+publish_to: none
+version: 0.0.1
+
+environment:
+  sdk: ^3.11.3
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.7.0
+  flutter_riverpod: ^2.6.1
+  flutter_secure_storage: ^9.2.4
+  just_audio: ^0.9.43
+  path_provider: ^2.1.0
+  flutter_local_notifications: ^22.3.1
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^8.2.0
+  package_info_plus: ^9.0.1
+  in_app_purchase: ^3.3.1
+  google_fonts: ^6.2.1
+  intl: any
+  talker_flutter: ^5.1.16
+  url_launcher: ^6.3.3
+  vocabo_core:
+    path: ../vocabo_core
+  vocabo_api:
+    path: ../vocabo_api
+  vocabo_translation:
+    path: ../vocabo_translation
+  vocabo_ui:
+    path: ../vocabo_ui
+  vocabo_l10n:
+    path: ../vocabo_l10n
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

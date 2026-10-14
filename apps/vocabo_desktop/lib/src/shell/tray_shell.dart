@@ -6,14 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:vocabo_core/vocabo_core.dart' show appLogger;
 import 'package:window_manager/window_manager.dart';
-import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
-import 'package:vocabo_desktop/src/providers/add_word_providers.dart';
-import 'package:vocabo_desktop/src/providers/auth_providers.dart';
-import 'package:vocabo_desktop/src/providers/dashboard_providers.dart';
+import 'package:vocabo_l10n/vocabo_l10n.dart';
+import 'package:vocabo_app/vocabo_app.dart';
 import 'package:vocabo_desktop/src/providers/spotlight_providers.dart';
-import 'package:vocabo_desktop/src/providers/user_vocabulary_providers.dart';
-import 'package:vocabo_desktop/src/providers/word_detail_providers.dart';
 
 class TrayShell extends ConsumerStatefulWidget {
   const TrayShell({super.key, required this.child});

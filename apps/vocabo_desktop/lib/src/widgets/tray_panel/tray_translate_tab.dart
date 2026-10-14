@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
-import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/providers/translation_providers.dart';
+import 'package:vocabo_l10n/vocabo_l10n.dart';
+import 'package:vocabo_app/vocabo_app.dart';
 
 class TrayTranslateTab extends ConsumerStatefulWidget {
   const TrayTranslateTab({super.key, this.inputFocusNode});

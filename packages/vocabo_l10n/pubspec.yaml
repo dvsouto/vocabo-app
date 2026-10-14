@@ -1,0 +1,26 @@
+name: vocabo_l10n
+description: Shared translations (16 languages) and localized label helpers for the Vocabo apps
+publish_to: none
+version: 0.0.1
+
+environment:
+  sdk: ^3.11.3
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  vocabo_core:
+    path: ../vocabo_core
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  generate: true

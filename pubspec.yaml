@@ -11,6 +11,8 @@ workspace:
   - packages/vocabo_api
   - packages/vocabo_translation
   - packages/vocabo_ui
+  - packages/vocabo_l10n
+  - packages/vocabo_app
 
 dev_dependencies:
   melos: ^7.4.1
@@ -86,6 +88,12 @@ melos:
       run: flutter build macos --dart-define-from-file=.env
       packageFilters:
         scope: vocabo_desktop
+
+    gen:l10n:
+      description: Generate the translations in vocabo_l10n
+      run: flutter gen-l10n
+      packageFilters:
+        scope: vocabo_l10n
 
     gen:
       description: Run build_runner in packages that use it

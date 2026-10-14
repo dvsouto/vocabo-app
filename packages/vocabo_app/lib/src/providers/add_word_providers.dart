@@ -1,0 +1,347 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabo_core/vocabo_core.dart';
+import 'package:vocabo_app/src/pro/plan_providers.dart';
+import 'package:vocabo_app/src/l10n/locale_providers.dart';
+import 'package:vocabo_app/src/providers/api_client_provider.dart';
+import 'package:vocabo_app/src/providers/user_vocabulary_providers.dart';
+
+final showAddWordModalProvider = StateProvider<bool>((ref) => false);
+final addWordInitialTermProvider = StateProvider<String>((ref) => '');
+
+class AddWordState {
+  final String term;
+  final String language;
+  final String? meaning;
+  final String? translation;
+  final WordType? wordType;
+  final String? pronunciation;
+  final String? ttsPronunciation;
+  final String? exampleSentence;
+  final bool autoDetect;
+  final bool isSearching;
+  final bool isValid;
+  final String? backendHash;
+  final Vocabulary? backendResult;
+  final String? errorMessage;
+  final bool isSaving;
+
+  const AddWordState({
+    this.term = '',
+    this.language = 'English',
+    this.meaning,
+    this.translation,
+    this.wordType,
+    this.pronunciation,
+    this.ttsPronunciation,
+    this.exampleSentence,
+    this.autoDetect = true,
+    this.isSearching = false,
+    this.isValid = false,
+    this.backendHash,
+    this.backendResult,
+    this.errorMessage,
+    this.isSaving = false,
+  });
+
+  bool get canSave {
+    if (isSaving) return false;
+
+    if (autoDetect) {
+      return isValid && backendResult != null;
+    }
+
+    return term.trim().isNotEmpty &&
+        ((meaning != null && meaning!.trim().isNotEmpty) ||
+            (translation != null && translation!.trim().isNotEmpty));
+  }
+
+  AddWordState copyWith({
+    String? term,
+    String? language,
+    String? Function()? meaning,
+    String? Function()? translation,
+    WordType? Function()? wordType,
+    String? Function()? pronunciation,
+    String? Function()? ttsPronunciation,
+    String? Function()? exampleSentence,
+    bool? autoDetect,
+    bool? isSearching,
+    bool? isValid,
+    String? Function()? backendHash,
+    Vocabulary? Function()? backendResult,
+    String? Function()? errorMessage,
+    bool? isSaving,
+  }) {
+    return AddWordState(
+      term: term ?? this.term,
+      language: language ?? this.language,
+      meaning: meaning != null ? meaning() : this.meaning,
+      translation: translation != null ? translation() : this.translation,
+      wordType: wordType != null ? wordType() : this.wordType,
+      pronunciation: pronunciation != null
+          ? pronunciation()
+          : this.pronunciation,
+      ttsPronunciation: ttsPronunciation != null
+          ? ttsPronunciation()
+          : this.ttsPronunciation,
+      exampleSentence: exampleSentence != null
+          ? exampleSentence()
+          : this.exampleSentence,
+      autoDetect: autoDetect ?? this.autoDetect,
+      isSearching: isSearching ?? this.isSearching,
+      isValid: isValid ?? this.isValid,
+      backendHash: backendHash != null ? backendHash() : this.backendHash,
+      backendResult: backendResult != null
+          ? backendResult()
+          : this.backendResult,
+      errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
+      isSaving: isSaving ?? this.isSaving,
+    );
+  }
+}
+
+class AddWordNotifier extends Notifier<AddWordState> {
+  Timer? _debounceTimer;
+  CancelToken? _cancelToken;
+
+  @override
+  AddWordState build() => const AddWordState();
+
+  void setTerm(String value) {
+    state = state.copyWith(term: value);
+
+    if (state.autoDetect && value.trim().isNotEmpty) {
+      _debounceSearch();
+    }
+  }
+
+  void setLanguage(String value) {
+    state = state.copyWith(language: value);
+  }
+
+  void setMeaning(String value) {
+    _disableAutoDetectIfNeeded();
+    state = state.copyWith(meaning: () => value);
+  }
+
+  void setTranslation(String value) {
+    _disableAutoDetectIfNeeded();
+    state = state.copyWith(translation: () => value);
+  }
+
+  void setWordType(WordType? value) {
+    _disableAutoDetectIfNeeded();
+    state = state.copyWith(wordType: () => value);
+  }
+
+  void setPronunciation(String value) {
+    _disableAutoDetectIfNeeded();
+    state = state.copyWith(pronunciation: () => value);
+  }
+
+  void setExampleSentence(String value) {
+    _disableAutoDetectIfNeeded();
+    state = state.copyWith(exampleSentence: () => value);
+  }
+
+  void toggleAutoDetect(bool value) {
+    state = state.copyWith(autoDetect: value);
+
+    if (value && state.term.trim().isNotEmpty) {
+      _search();
+    }
+  }
+
+  void _disableAutoDetectIfNeeded() {
+    if (state.autoDetect) {
+      state = state.copyWith(autoDetect: false);
+    }
+  }
+
+  void _debounceSearch() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), _search);
+  }
+
+  Future<void> _search() async {
+    final term = state.term.trim();
+    if (term.isEmpty) return;
+
+    _cancelToken?.cancel();
+    _cancelToken = CancelToken();
+
+    state = state.copyWith(isSearching: true, errorMessage: () => null);
+
+    try {
+      final api = ref.read(apiClientProvider);
+      final result = await api.vocabulary.search(
+        sourceLang: state.language,
+        term: term,
+        cancelToken: _cancelToken,
+      );
+
+      state = state.copyWith(
+        isSearching: false,
+        isValid: true,
+        meaning: () => result.meaning,
+        translation: () => result.translation,
+        wordType: () => result.wordType,
+        pronunciation: () => result.pronunciation,
+        ttsPronunciation: () => result.ttsPronunciation,
+        exampleSentence: () => _extractExampleSentence(result.usageExamples),
+        backendHash: () => result.contentHash,
+        backendResult: () => result,
+        errorMessage: () => null,
+      );
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) return;
+      state = state.copyWith(
+        isSearching: false,
+        isValid: false,
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordSearchFailed,
+      );
+    } on UnprocessableException {
+      state = state.copyWith(
+        isSearching: false,
+        isValid: false,
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordInvalidTerm,
+      );
+    } on ForbiddenException catch (e) {
+      _showPlanLimit(e, isSearching: false);
+    } catch (e) {
+      appLogger.error('AddWord search() error', e);
+      state = state.copyWith(
+        isSearching: false,
+        isValid: false,
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordSearchFailed,
+      );
+    }
+  }
+
+  /// Explains the free plan limit and opens the upgrade offer.
+  void _showPlanLimit(
+    ForbiddenException error, {
+    bool? isSearching,
+    bool? isSaving,
+  }) {
+    final reason = upgradeReasonFor(error);
+    state = state.copyWith(
+      isSearching: isSearching,
+      isSaving: isSaving,
+      isValid: false,
+      errorMessage: () => reason == null
+          ? ref.read(appLocalizationsProvider).addWordSaveFailed
+          : reason.headline(ref.read(appLocalizationsProvider)),
+    );
+    if (reason != null) {
+      ref.read(upgradePromptProvider.notifier).state = reason;
+    }
+  }
+
+  String? _extractExampleSentence(UsageExamples? examples) {
+    if (examples == null) return null;
+    final sourceLang = examples.sourceLang;
+    if (sourceLang.isEmpty) return null;
+    return sourceLang.join('\n');
+  }
+
+  Future<bool> save() async {
+    if (!state.canSave) return false;
+
+    state = state.copyWith(isSaving: true);
+
+    try {
+      final usageExamples = _buildUsageExamples();
+
+      final currentHash = computeVocabularyHash(
+        term: state.term,
+        language: state.language,
+        translation: state.translation,
+        meaning: state.meaning,
+        wordType: state.wordType?.value,
+        pronunciation: state.pronunciation,
+        ttsPronunciation: state.ttsPronunciation,
+        usageExamples: usageExamples,
+      );
+
+      final data = {
+        'term': state.term,
+        'language': state.language,
+        'translation': state.translation,
+        'meaning': state.meaning ?? '',
+        'word_type': state.wordType?.value ?? 'noun',
+        'pronunciation': state.pronunciation ?? '',
+        'tts_pronunciation': state.ttsPronunciation ?? '',
+        'usage_examples': usageExamples,
+        'content_hash': state.autoDetect
+            ? (state.backendHash ?? currentHash)
+            : currentHash,
+      };
+
+      appLogger.debug('AddWord save() - sending data: $data');
+      appLogger.debug(
+        'AddWord save() - autoDetect: ${state.autoDetect}, backendHash: ${state.backendHash}, currentHash: $currentHash',
+      );
+
+      await ref.read(userVocabularyListProvider.notifier).addVocabulary(data);
+
+      state = state.copyWith(isSaving: false);
+      return true;
+    } on ForbiddenException catch (e) {
+      _showPlanLimit(e, isSaving: false);
+      return false;
+    } on ConflictException catch (e) {
+      appLogger.warning('AddWord save() conflict: $e');
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordAlreadyInVocabulary,
+      );
+      return false;
+    } catch (e, st) {
+      appLogger.handle(e, st, 'AddWord save() error');
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: () =>
+            ref.read(appLocalizationsProvider).addWordSaveFailed,
+      );
+      return false;
+    }
+  }
+
+  dynamic _buildUsageExamples() {
+    if (state.backendResult?.usageExamples != null && state.autoDetect) {
+      return state.backendResult!.usageExamples!.toJson();
+    }
+
+    if (state.exampleSentence != null &&
+        state.exampleSentence!.trim().isNotEmpty) {
+      return [state.exampleSentence!.trim()];
+    }
+
+    return <String>[];
+  }
+
+  void reset() {
+    _debounceTimer?.cancel();
+    _cancelToken?.cancel();
+    state = const AddWordState();
+  }
+
+  void initFromTerm(String term) {
+    state = const AddWordState().copyWith(term: term);
+    if (term.trim().isNotEmpty) {
+      _search();
+    }
+  }
+}
+
+final addWordNotifierProvider = NotifierProvider<AddWordNotifier, AddWordState>(
+  AddWordNotifier.new,
+);

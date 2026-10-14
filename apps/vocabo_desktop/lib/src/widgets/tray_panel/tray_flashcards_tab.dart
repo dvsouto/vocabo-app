@@ -4,12 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
-import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/providers/flashcard_providers.dart';
-import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_card.dart';
-import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_countdown.dart';
-import 'package:vocabo_desktop/src/widgets/flashcards/flashcard_evaluation_bar.dart';
-import 'package:vocabo_desktop/src/widgets/flashcards/flashcards_completion.dart';
+import 'package:vocabo_l10n/vocabo_l10n.dart';
+import 'package:vocabo_app/vocabo_app.dart';
 
 /// Cards per round in the menu bar panel. A session left open in the main
 /// window is resumed in full instead.

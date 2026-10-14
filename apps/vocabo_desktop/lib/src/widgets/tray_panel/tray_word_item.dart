@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
-import 'package:vocabo_desktop/src/widgets/audio/pronunciation_button.dart';
+import 'package:vocabo_app/vocabo_app.dart';
 
 class TrayWordItem extends ConsumerWidget {
   const TrayWordItem({super.key, required this.userVocabulary});

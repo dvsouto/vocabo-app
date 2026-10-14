@@ -1,6 +1,6 @@
 import 'package:vocabo_core/vocabo_core.dart';
 
-import 'package:vocabo_desktop/src/l10n/l10n.dart';
+import 'package:vocabo_l10n/vocabo_l10n.dart';
 
 enum SpotlightSection {
   recent,

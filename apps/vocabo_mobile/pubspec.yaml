@@ -20,6 +20,10 @@ dependencies:
     path: ../../packages/vocabo_translation
   vocabo_ui:
     path: ../../packages/vocabo_ui
+  vocabo_l10n:
+    path: ../../packages/vocabo_l10n
+  vocabo_app:
+    path: ../../packages/vocabo_app
   talker_flutter: ^5.1.16
   talker_riverpod_logger: ^5.0.1
 

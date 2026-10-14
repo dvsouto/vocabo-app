@@ -4,11 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/vocabo_ui.dart';
 
-import 'package:vocabo_desktop/src/l10n/word_type_labels.dart';
-import 'package:vocabo_desktop/src/l10n/memory_strength_label.dart';
-import 'package:vocabo_desktop/src/l10n/l10n.dart';
-import 'package:vocabo_desktop/src/l10n/locale_providers.dart';
-import 'package:vocabo_desktop/src/providers/dictionary_providers.dart';
+import 'package:vocabo_l10n/vocabo_l10n.dart';
+import 'package:vocabo_app/vocabo_app.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_controller.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_host.dart';
 import 'package:vocabo_desktop/src/spotlight/spotlight_items.dart';
