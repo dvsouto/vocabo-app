@@ -2,6 +2,7 @@ library vocabo_ui;
 
 // Theme
 export 'src/theme/vocabo_colors.dart';
+export 'src/theme/vocabo_layout.dart';
 export 'src/theme/vocabo_typography.dart';
 export 'src/theme/vocabo_shadows.dart';
 export 'src/theme/vocabo_spacing.dart';
@@ -46,3 +47,4 @@ export 'src/widgets/flashcards/vocabo_key_cap.dart';
 
 // Widgets - Text
 export 'src/widgets/text/highlighted_example_text.dart';
+export 'src/widgets/modal/vocabo_modal.dart';

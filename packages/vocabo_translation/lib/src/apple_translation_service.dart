@@ -17,14 +17,13 @@ class AppleTranslationService implements TranslationService {
     required TranslationLanguage targetLanguage,
   }) async {
     try {
-      final result = await _channel.invokeMapMethod<String, dynamic>(
-        'translate',
-        {
-          'text': text,
-          'sourceLocale': sourceLanguage.localeCode,
-          'targetLocale': targetLanguage.localeCode,
-        },
-      ).timeout(_timeout);
+      final result = await _channel
+          .invokeMapMethod<String, dynamic>('translate', {
+            'text': text,
+            'sourceLocale': sourceLanguage.localeCode,
+            'targetLocale': targetLanguage.localeCode,
+          })
+          .timeout(_timeout);
 
       if (result == null) {
         throw const TranslationException('No result from native translation');
@@ -49,9 +48,7 @@ class AppleTranslationService implements TranslationService {
             e.message ?? 'Translation languages not installed',
           );
         default:
-          throw TranslationException(
-            e.message ?? 'Translation failed',
-          );
+          throw TranslationException(e.message ?? 'Translation failed');
       }
     } on TimeoutException {
       throw const TranslationException('Translation timed out');
@@ -78,13 +75,12 @@ class AppleTranslationService implements TranslationService {
     required TranslationLanguage target,
   }) async {
     try {
-      final result = await _channel.invokeMethod<bool>(
-        'isLanguagePairInstalled',
-        {
-          'sourceLocale': source.localeCode,
-          'targetLocale': target.localeCode,
-        },
-      ).timeout(_timeout);
+      final result = await _channel
+          .invokeMethod<bool>('isLanguagePairInstalled', {
+            'sourceLocale': source.localeCode,
+            'targetLocale': target.localeCode,
+          })
+          .timeout(_timeout);
       return result ?? false;
     } on PlatformException {
       return false;

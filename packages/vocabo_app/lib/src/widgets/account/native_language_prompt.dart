@@ -9,9 +9,9 @@ import 'package:vocabo_l10n/vocabo_l10n.dart';
 /// Asks accounts created with Google or Apple to confirm the native
 /// language, which was only guessed from the system.
 Future<void> showNativeLanguagePrompt(BuildContext context, User user) {
-  return showDialog<void>(
+  return showVocaboModal<void>(
     context: context,
-    barrierDismissible: false,
+    dismissible: false,
     builder: (_) => _NativeLanguagePrompt(user: user),
   );
 }
@@ -52,11 +52,11 @@ class _NativeLanguagePromptState extends ConsumerState<_NativeLanguagePrompt> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return AlertDialog(
+    return VocaboAlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       title: Text(l10n.authNativeLanguagePromptTitle),
       content: SizedBox(
-        width: 400,
+        width: context.dialogWidth(400),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

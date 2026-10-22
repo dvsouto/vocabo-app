@@ -1,7 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 import 'package:vocabo_ui/src/theme/vocabo_colors.dart';
+import 'package:vocabo_ui/src/theme/vocabo_layout.dart';
+import 'package:vocabo_ui/src/widgets/modal/vocabo_modal.dart';
 import 'package:vocabo_ui/src/theme/vocabo_radius.dart';
 import 'package:vocabo_ui/src/theme/vocabo_spacing.dart';
 import 'package:vocabo_ui/src/theme/vocabo_typography.dart';
@@ -76,7 +80,7 @@ class VocaboPhoneField extends StatelessWidget {
   final String noCountryFoundText;
 
   Future<void> _pickCountry(BuildContext context) async {
-    final picked = await showDialog<PhoneCountry>(
+    final picked = await showVocaboModal<PhoneCountry>(
       context: context,
       builder: (_) => _CountryPickerDialog(
         selected: country,
@@ -163,12 +167,14 @@ class _CountryPickerDialogState extends State<_CountryPickerDialog> {
   Widget build(BuildContext context) {
     final countries = phoneCountries.where((c) => c.matches(_query)).toList();
 
-    return Dialog(
+    final inSheet = VocaboSheetScope.of(context);
+    return VocaboDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(borderRadius: VocaboRadius.lg),
       child: SizedBox(
-        width: 380,
-        height: 480,
+        width: context.dialogWidth(380),
+        height: inSheet
+            ? MediaQuery.sizeOf(context).height * 0.7
+            : math.min(480, MediaQuery.sizeOf(context).height - 96),
         child: Padding(
           padding: const EdgeInsets.all(VocaboSpacing.md),
           child: Column(

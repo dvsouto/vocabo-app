@@ -392,6 +392,16 @@
     }
   },
   "authSessionRevokedNotice": "This session was ended. Sign in again.",
+  "authSignedOutOtherDevices": "{count, plural, =1{You were signed out of 1 other device.} other{You were signed out of {count} other devices.}}",
+  "@authSignedOutOtherDevices": {
+    "description": "Snackbar after signing in when the device limit signed out other devices",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authDeviceLimitHint": "Signing in here signs you out of your other devices on the free plan.",
   "settingsTitle": "Account Settings",
   "settingsSubtitle": "Curate your learning environment and profile",
   "settingsSignOut": "Sign Out",
@@ -415,11 +425,11 @@
   "@settingsPhoneNotAdded": {
     "description": "Shown instead of a phone number when none is set."
   },
-  "settingsSignInMethods": "SIGN IN",
+  "settingsSignInMethods": "SIGN-IN METHOD",
   "@settingsSignInMethods": {
     "description": "Uppercase label above the list of sign-in methods (Password · Apple · Google)."
   },
-  "settingsSignInPassword": "Password",
+  "settingsSignInPassword": "Email and password",
   "@settingsSignInPassword": {
     "description": "Sign-in method name."
   },
@@ -676,6 +686,10 @@
     }
   },
   "reminderNotificationTitle": "Your flashcards are ready",
+  "reminderNotificationBodyGeneric": "Your words are waiting for review.",
+  "@reminderNotificationBodyGeneric": {
+    "description": "Body of the reminder scheduled with the OS on phones, where the due count is unknown"
+  },
   "reminderNotificationBody": "{count, plural, =0{{count} words are waiting to be recalled.} =1{1 word is waiting to be recalled.} other{{count} words are waiting to be recalled.}}",
   "@reminderNotificationBody": {
     "placeholders": {
@@ -973,7 +987,6 @@
   "flashcardsShowMeaning": "Show meaning",
   "flashcardsListen": "Listen",
   "audioPlayHint": "Listen · click again to hear it slowly",
-  "audioPlaySlow": "Listen slowly (0.5×)",
   "@audioPlayHint": {
     "description": "Tooltip of every pronunciation play button; a second click replays at half speed"
   },
@@ -1490,5 +1503,20 @@
   },
   "proBenefitCollections": "Ready-made collections with their own flashcards",
   "proBenefitRecommendations": "20 words picked for you every day",
-  "proGateUnlock": "Unlock with Pro"
+  "proGateUnlock": "Unlock with Pro",
+  "syncDownloading": "Syncing…",
+  "syncOffline": "No connection",
+  "syncOfflinePending": "{count, plural, =1{1 change waiting for a connection} other{{count} changes waiting for a connection}}",
+  "@syncOfflinePending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "offlineNoticeTitle": "No connection",
+  "offlineNoticeBody": "This will be available when you're back online.",
+  "syncChangeRejected": "A change made offline couldn't be saved.",
+  "addWordOfflineNotice": "No connection: the word will be saved and translated when you're back online.",
+  "wordAwaitingTranslation": "Waiting for translation…"
 }

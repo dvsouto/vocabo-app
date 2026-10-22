@@ -8,7 +8,7 @@ import 'package:vocabo_l10n/vocabo_l10n.dart';
 import 'package:vocabo_app/vocabo_app.dart';
 
 Future<void> showArchivedFlashcardsDialog(BuildContext context) {
-  return showDialog<void>(
+  return showVocaboModal<void>(
     context: context,
     builder: (_) => const _ArchivedFlashcardsDialog(),
   );
@@ -30,7 +30,7 @@ class _ArchivedFlashcardsDialogState
     setState(() => _restoring.add(flashcard.id));
 
     try {
-      await ref.read(apiClientProvider).flashcards.restore(flashcard.id);
+      await ref.read(flashcardWriterProvider).restore(flashcard);
       ref.invalidate(archivedFlashcardsProvider);
       ref.invalidate(flashcardStatusProvider);
     } catch (e, st) {
@@ -55,11 +55,11 @@ class _ArchivedFlashcardsDialogState
     final archived = ref.watch(archivedFlashcardsProvider);
     final l10n = context.l10n;
 
-    return Dialog(
+    return VocaboDialog(
       backgroundColor: VocaboColors.surface,
       shape: RoundedRectangleBorder(borderRadius: VocaboRadius.lg),
       child: SizedBox(
-        width: 480,
+        width: context.dialogWidth(480),
         child: Padding(
           padding: const EdgeInsets.all(VocaboSpacing.lg),
           child: Column(

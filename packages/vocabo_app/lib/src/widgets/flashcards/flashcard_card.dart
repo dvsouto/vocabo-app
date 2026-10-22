@@ -449,7 +449,6 @@ class _AudioButton extends StatelessWidget {
       type: vocabularyType.value,
       contentHash: vocabulary?.contentHash,
       size: size,
-      showSlowButton: true,
     );
   }
 }

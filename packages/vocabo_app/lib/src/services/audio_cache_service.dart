@@ -18,6 +18,14 @@ class AudioCacheService {
     if (voice == 'female') contentHash,
   ];
 
+  /// Deletes every cached pronunciation.
+  Future<void> clear() async {
+    if (_cacheDirPath == null) await init();
+    final dir = Directory(_cacheDirPath!);
+    if (await dir.exists()) await dir.delete(recursive: true);
+    await dir.create(recursive: true);
+  }
+
   Future<File?> getCached(String contentHash, {required String voice}) async {
     if (_cacheDirPath == null) await init();
     for (final name in _names(contentHash, voice)) {

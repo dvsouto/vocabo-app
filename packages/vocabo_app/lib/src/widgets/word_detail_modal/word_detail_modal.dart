@@ -37,26 +37,23 @@ class WordDetailModal extends ConsumerWidget {
         vocabulary.meaning != null && vocabulary.meaning!.isNotEmpty;
     final examples = vocabulary.usageExamples?.sourceLang ?? [];
 
-    return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          width: 760,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.9,
-          ),
-          decoration: BoxDecoration(
-            color: VocaboColors.surface,
-            borderRadius: VocaboRadius.lg,
-            boxShadow: [VocaboShadows.whisper],
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                VocaboSpacing.xl,
+    final inSheet = VocaboSheetScope.of(context);
+    final side = inSheet ? VocaboSpacing.lg : VocaboSpacing.xl;
+
+    return VocaboModalSurface(
+      width: 760,
+      maxHeight: MediaQuery.of(context).size.height * 0.9,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Flexible(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                side,
+                inSheet ? 0 : VocaboSpacing.lg,
+                side,
                 VocaboSpacing.lg,
-                VocaboSpacing.xl,
-                VocaboSpacing.xl,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,13 +75,22 @@ class WordDetailModal extends ConsumerWidget {
                   ],
                   const SizedBox(height: VocaboSpacing.xl),
                   _buildDateSection(context, flashcard),
-                  const SizedBox(height: VocaboSpacing.xl),
-                  _buildActions(context, ref, flashcard),
                 ],
               ),
             ),
           ),
-        ),
+          Padding(
+            padding: inSheet
+                ? EdgeInsets.zero
+                : const EdgeInsets.fromLTRB(
+                    VocaboSpacing.xl,
+                    0,
+                    VocaboSpacing.xl,
+                    VocaboSpacing.xl,
+                  ),
+            child: _buildActions(context, ref, flashcard),
+          ),
+        ],
       ),
     );
   }
@@ -147,7 +153,6 @@ class WordDetailModal extends ConsumerWidget {
           contentHash: contentHash,
           size: 48,
           iconSize: 22,
-          showSlowButton: true,
         ),
       ],
     );
@@ -320,14 +325,16 @@ class WordDetailModal extends ConsumerWidget {
     final l10n = context.l10n;
     final lastPracticed = flashcard?.lastEvaluatedAt;
 
-    return Row(
+    return Wrap(
+      spacing: VocaboSpacing.xl,
+      runSpacing: VocaboSpacing.md,
+      alignment: WrapAlignment.spaceBetween,
       children: [
         _buildDateItem(
           icon: Icons.calendar_today_outlined,
           label: l10n.wordDateAdded,
           value: _formatFullDate(context, userVocabulary.createdAt),
         ),
-        const Spacer(),
         _buildDateItem(
           icon: Icons.bolt_outlined,
           label: l10n.wordLastPracticed,
@@ -383,14 +390,19 @@ class WordDetailModal extends ConsumerWidget {
     WidgetRef ref,
     Flashcard flashcard,
   ) async {
-    final api = ref.read(apiClientProvider);
+    final writer = ref.read(flashcardWriterProvider);
     final l10n = context.l10n;
     final archived = flashcard.status == FlashcardStatus.archived;
+    final plan = ref.read(planStatusProvider).valueOrNull;
+    if (!archived && plan != null && !plan.limits.archive) {
+      showPaywall(context, const UpgradeReason(UpgradeTrigger.feature));
+      return;
+    }
     try {
       if (archived) {
-        await api.flashcards.restore(flashcard.id);
+        await writer.restore(flashcard);
       } else {
-        await api.flashcards.archive(flashcard.id);
+        await writer.archive(flashcard);
       }
       ref.invalidate(flashcardByVocabularyProvider(userVocabulary.id));
       ref.invalidate(archivedFlashcardsProvider);
@@ -423,9 +435,9 @@ class WordDetailModal extends ConsumerWidget {
   Future<void> _remove(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final term = userVocabulary.vocabulary?.term;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showVocaboModal<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => VocaboAlertDialog(
         title: Text(
           term == null
               ? l10n.wordRemoveTitleFallback
@@ -474,19 +486,19 @@ class WordDetailModal extends ConsumerWidget {
     final l10n = context.l10n;
     final archived = flashcard?.status == FlashcardStatus.archived;
 
-    return Row(
-      children: [
-        if (flashcard != null)
-          VocaboTextButton(
-            label: archived
-                ? l10n.wordRestoreFlashcard
-                : l10n.wordArchiveFlashcard,
-            leading: Icon(
-              archived ? Icons.unarchive_outlined : Icons.archive_outlined,
+    return VocaboModalActions(
+      leading: flashcard == null
+          ? null
+          : VocaboTextButton(
+              label: archived
+                  ? l10n.wordRestoreFlashcard
+                  : l10n.wordArchiveFlashcard,
+              leading: Icon(
+                archived ? Icons.unarchive_outlined : Icons.archive_outlined,
+              ),
+              onPressed: () => _toggleArchive(context, ref, flashcard),
             ),
-            onPressed: () => _toggleArchive(context, ref, flashcard),
-          ),
-        const Spacer(),
+      actions: [
         VocaboNeutralButton(
           label: l10n.commonRemove,
           leading: const Icon(Icons.delete_outline),

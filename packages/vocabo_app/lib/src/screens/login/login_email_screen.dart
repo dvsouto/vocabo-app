@@ -93,6 +93,7 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final sessionNotice = ref.watch(sessionNoticeProvider);
 
     return Scaffold(
       body: Stack(
@@ -117,11 +118,20 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
           Center(
             child: SingleChildScrollView(
               child: GlassCard(
-                width: 440,
+                width: context.dialogWidth(440),
                 padding: const EdgeInsets.all(VocaboSpacing.xl),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (sessionNotice != null) ...[
+                      _SessionNoticeBanner(
+                        message: sessionNotice,
+                        onDismiss: () =>
+                            ref.read(sessionNoticeProvider.notifier).state =
+                                null,
+                      ),
+                      const SizedBox(height: VocaboSpacing.lg),
+                    ],
                     // App icon
                     Container(
                       width: 56,
@@ -187,6 +197,14 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
                           size: 18,
                         ),
                         onPressed: _onContinue,
+                      ),
+                    ),
+                    const SizedBox(height: VocaboSpacing.sm),
+                    Text(
+                      l10n.authDeviceLimitHint,
+                      textAlign: TextAlign.center,
+                      style: VocaboTypography.bodySm.copyWith(
+                        color: VocaboColors.neutral,
                       ),
                     ),
                     const SizedBox(height: VocaboSpacing.lg),
@@ -278,6 +296,51 @@ class _LoginEmailScreenState extends ConsumerState<LoginEmailScreen> {
       width: 16,
       height: 16,
       child: CircularProgressIndicator(strokeWidth: 2),
+    );
+  }
+}
+
+/// Why the user is back on the login screen, e.g. signed out by another
+/// device. Stays until dismissed or the next sign in.
+class _SessionNoticeBanner extends StatelessWidget {
+  const _SessionNoticeBanner({required this.message, required this.onDismiss});
+
+  final String message;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+        VocaboSpacing.md,
+        VocaboSpacing.sm,
+        VocaboSpacing.xs,
+        VocaboSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: VocaboColors.primary50,
+        borderRadius: VocaboRadius.md,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.devices, size: 18, color: VocaboColors.primary),
+          const SizedBox(width: VocaboSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: VocaboTypography.bodySm.copyWith(
+                color: VocaboColors.onSurface,
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: context.l10n.commonClose,
+            icon: const Icon(Icons.close, size: 16),
+            color: VocaboColors.neutral,
+            onPressed: onDismiss,
+          ),
+        ],
+      ),
     );
   }
 }

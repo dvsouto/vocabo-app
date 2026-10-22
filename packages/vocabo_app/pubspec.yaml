@@ -26,6 +26,10 @@ dependencies:
   intl: any
   talker_flutter: ^5.1.16
   url_launcher: ^6.3.3
+  drift: ^2.34.0
+  drift_flutter: ^0.3.1
+  connectivity_plus: ^7.3.1
+  uuid: ^4.5.3
   vocabo_core:
     path: ../vocabo_core
   vocabo_api:
@@ -41,3 +45,5 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  build_runner: ^2.13.1
+  drift_dev: ^2.34.0

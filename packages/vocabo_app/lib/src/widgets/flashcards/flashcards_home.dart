@@ -17,23 +17,26 @@ class FlashcardsHome extends ConsumerWidget {
 
     return status.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_outlined, size: 48),
-            const SizedBox(height: VocaboSpacing.md),
-            Text(
-              context.l10n.flashcardsLoadFailed,
-              style: VocaboTypography.titleLg,
-            ),
-            const SizedBox(height: VocaboSpacing.sm),
-            VocaboPrimaryButton(
-              label: context.l10n.commonTryAgain,
-              onPressed: () =>
-                  ref.invalidate(flashcardDeckStatusProvider(deck)),
-            ),
-          ],
+      error: (error, _) => OfflineNotice.orElse(
+        error,
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off_outlined, size: 48),
+              const SizedBox(height: VocaboSpacing.md),
+              Text(
+                context.l10n.flashcardsLoadFailed,
+                style: VocaboTypography.titleLg,
+              ),
+              const SizedBox(height: VocaboSpacing.sm),
+              VocaboPrimaryButton(
+                label: context.l10n.commonTryAgain,
+                onPressed: () =>
+                    ref.invalidate(flashcardDeckStatusProvider(deck)),
+              ),
+            ],
+          ),
         ),
       ),
       data: (summary) => _HomeBody(summary: summary, deck: deck),
@@ -132,10 +135,12 @@ class _HomeBody extends ConsumerWidget {
               ? l10n.flashcardsContinueReviewing
               : l10n.flashcardsReviewNow,
           isExpanded: true,
-          trailing: VocaboKeyCap(
-            l10n.flashcardsKeyEnter,
-            color: VocaboColors.onPrimary,
-          ),
+          trailing: context.isCompact
+              ? null
+              : VocaboKeyCap(
+                  l10n.flashcardsKeyEnter,
+                  color: VocaboColors.onPrimary,
+                ),
           onPressed: () => ref
               .read(flashcardDeckSessionProvider(deck).notifier)
               .startSession(),

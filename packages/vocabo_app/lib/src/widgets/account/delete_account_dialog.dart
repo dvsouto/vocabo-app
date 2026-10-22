@@ -10,7 +10,7 @@ const _confirmationWord = 'DELETE';
 /// Permanently deletes the account. Password accounts confirm with the
 /// password; Google and Apple accounts type a confirmation word.
 Future<void> showDeleteAccountDialog(BuildContext context, User user) {
-  return showDialog<void>(
+  return showVocaboModal<void>(
     context: context,
     builder: (_) => _DeleteAccountDialog(user: user),
   );
@@ -70,11 +70,11 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
     final deleting = ref.watch(deleteAccountProvider).isLoading;
     final l10n = context.l10n;
 
-    return AlertDialog(
+    return VocaboAlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       title: Text(l10n.authDeleteAccountTitle),
       content: SizedBox(
-        width: 420,
+        width: context.dialogWidth(420),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

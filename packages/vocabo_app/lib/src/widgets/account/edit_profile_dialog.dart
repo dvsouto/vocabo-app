@@ -9,7 +9,7 @@ import 'package:vocabo_app/vocabo_app.dart';
 import 'package:vocabo_l10n/vocabo_l10n.dart';
 
 Future<void> showEditProfileDialog(BuildContext context, User user) {
-  return showDialog<void>(
+  return showVocaboModal<void>(
     context: context,
     builder: (_) => _EditProfileDialog(user: user),
   );
@@ -115,11 +115,11 @@ class _EditProfileDialogState extends ConsumerState<_EditProfileDialog> {
     final user = ref.watch(userProfileProvider).valueOrNull ?? widget.user;
     final l10n = context.l10n;
 
-    return AlertDialog(
+    return VocaboAlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       title: Text(l10n.authEditProfileTitle),
       content: SizedBox(
-        width: 440,
+        width: context.dialogWidth(440),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

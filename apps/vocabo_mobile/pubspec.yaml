@@ -12,6 +12,15 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  path_provider: ^2.1.0
+  audio_session: any
+  flutter_timezone: any
+  timezone: ^0.11.0
+  flutter_local_notifications: ^22.3.1
+  share_plus: ^12.0.1
+  image_picker: ^1.2.0
+  talker_riverpod_logger: ^5.0.1
   vocabo_core:
     path: ../../packages/vocabo_core
   vocabo_api:
@@ -24,13 +33,22 @@ dependencies:
     path: ../../packages/vocabo_l10n
   vocabo_app:
     path: ../../packages/vocabo_app
-  talker_flutter: ^5.1.16
-  talker_riverpod_logger: ^5.0.1
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.4
+  integration_test:
     sdk: flutter
   flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: "#1A1B2E"
+  adaptive_icon_foreground: assets/icon/app_icon.png

@@ -85,7 +85,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
           // Centered card
           Center(
             child: GlassCard(
-              width: 440,
+              width: context.dialogWidth(440),
               padding: const EdgeInsets.all(VocaboSpacing.xl),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

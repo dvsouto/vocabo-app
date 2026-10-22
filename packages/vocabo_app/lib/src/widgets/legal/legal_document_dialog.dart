@@ -5,7 +5,7 @@ import 'package:vocabo_l10n/vocabo_l10n.dart';
 import 'package:vocabo_app/vocabo_app.dart';
 
 Future<void> showLegalDocument(BuildContext context, LegalDocument document) {
-  return showDialog<void>(
+  return showVocaboModal<void>(
     context: context,
     builder: (_) => _LegalDocumentDialog(document: document),
   );
@@ -18,11 +18,11 @@ class _LegalDocumentDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
+    return VocaboDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       shape: RoundedRectangleBorder(borderRadius: VocaboRadius.lg),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 620),
+        constraints: BoxConstraints(maxWidth: context.dialogWidth(620)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

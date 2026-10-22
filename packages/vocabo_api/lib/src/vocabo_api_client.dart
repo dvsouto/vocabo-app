@@ -1,7 +1,10 @@
+import 'package:dio/dio.dart';
+import 'package:meta/meta.dart';
 import 'package:vocabo_api/src/auth/token_storage.dart';
 import 'package:vocabo_api/src/client/api_client.dart';
 import 'package:vocabo_api/src/client/device_info.dart';
 import 'package:vocabo_api/src/client/interceptors/auth_interceptor.dart';
+import 'package:vocabo_api/src/client/interceptors/offline_cache_interceptor.dart';
 import 'package:vocabo_api/src/data_sources/auth_data_source.dart';
 import 'package:vocabo_api/src/data_sources/dictionary_data_source.dart';
 import 'package:vocabo_api/src/data_sources/flashcards_data_source.dart';
@@ -18,6 +21,7 @@ import 'package:vocabo_api/src/repositories/flashcards_repository.dart';
 import 'package:vocabo_api/src/repositories/lookups_repository.dart';
 import 'package:vocabo_api/src/repositories/study_notes_repository.dart';
 import 'package:vocabo_api/src/repositories/subscriptions_repository.dart';
+import 'package:vocabo_api/src/repositories/sync_repository.dart';
 import 'package:vocabo_api/src/repositories/user_repository.dart';
 import 'package:vocabo_api/src/repositories/user_vocabulary_repository.dart';
 import 'package:vocabo_api/src/repositories/vocabulary_audio_repository.dart';
@@ -35,6 +39,7 @@ class VocaboApiClient {
   final SubscriptionsRepository subscriptions;
   final StudyNotesRepository studyNotes;
   final DiscoverRepository discover;
+  final SyncRepository sync;
 
   VocaboApiClient._({
     required this.auth,
@@ -48,6 +53,7 @@ class VocaboApiClient {
     required this.subscriptions,
     required this.studyNotes,
     required this.discover,
+    required this.sync,
   });
 
   factory VocaboApiClient({
@@ -55,13 +61,19 @@ class VocaboApiClient {
     required TokenStorage tokenStorage,
     DeviceInfo device = const DeviceInfo(),
     SessionEndedCallback? onSessionEnded,
+    ResponseCache? responseCache,
+    bool Function()? isOffline,
+    @visibleForTesting HttpClientAdapter? httpClientAdapter,
   }) {
     final apiClient = ApiClient(
       baseUrl: baseUrl,
       tokenStorage: tokenStorage,
       onSessionEnded: onSessionEnded,
+      responseCache: responseCache,
+      isOffline: isOffline,
     );
     final dio = apiClient.dio;
+    if (httpClientAdapter != null) dio.httpClientAdapter = httpClientAdapter;
 
     final authDataSource = AuthDataSource(dio, device: device);
     final userDataSource = UserDataSource(dio);
@@ -93,6 +105,7 @@ class VocaboApiClient {
       ),
       studyNotes: StudyNotesRepository(dio),
       discover: DiscoverRepository(dio),
+      sync: SyncRepository(dio),
     );
   }
 }

@@ -8,7 +8,7 @@ import 'package:vocabo_app/vocabo_app.dart';
 /// Changes the password, or sets a first one for accounts created with
 /// Google or Apple. Returns true when saved.
 Future<bool?> showChangePasswordDialog(BuildContext context, User user) {
-  return showDialog<bool>(
+  return showVocaboModal<bool>(
     context: context,
     builder: (_) => _ChangePasswordDialog(user: user),
   );
@@ -84,13 +84,13 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return AlertDialog(
+    return VocaboAlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       title: Text(
         _hasPassword ? l10n.authChangePasswordTitle : l10n.authSetPasswordTitle,
       ),
       content: SizedBox(
-        width: 400,
+        width: context.dialogWidth(400),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

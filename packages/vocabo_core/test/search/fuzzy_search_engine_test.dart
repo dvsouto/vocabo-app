@@ -88,7 +88,10 @@ void main() {
       final largeEngine = FuzzySearchEngine();
       final words = List.generate(
         30000,
-        (i) => DictionaryWord(word: 'word${i.toString().padLeft(5, '0')}', frequency: 30000 - i),
+        (i) => DictionaryWord(
+          word: 'word${i.toString().padLeft(5, '0')}',
+          frequency: 30000 - i,
+        ),
       );
       largeEngine.load(words);
 

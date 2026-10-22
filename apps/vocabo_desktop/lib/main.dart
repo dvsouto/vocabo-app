@@ -54,6 +54,7 @@ void trayPanelMain() {
 
   runApp(
     ProviderScope(
+      overrides: [syncEnabledProvider.overrideWithValue(false)],
       child: _LocalizedApp(
         home: Scaffold(
           backgroundColor: Colors.transparent,
@@ -90,7 +91,8 @@ void spotlightMain() {
   initLogger(verbose: kDebugMode);
 
   runApp(
-    const ProviderScope(
+    ProviderScope(
+      overrides: [syncEnabledProvider.overrideWithValue(false)],
       child: _LocalizedApp(
         home: Scaffold(
           backgroundColor: Colors.transparent,

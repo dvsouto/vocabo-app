@@ -36,9 +36,17 @@ const _options = [
 
 const _clearGreen = Color(0xFF1E8E3E);
 
+typedef EvaluationPalette = ({
+  Color foreground,
+  Color background,
+  Color selectedBackground,
+});
+
 /// Palette shared with the session note so each answer keeps one color.
-({Color foreground, Color background, Color selectedBackground})
-evaluationPalette(BuildContext context, FlashcardEvaluation evaluation) {
+EvaluationPalette evaluationPalette(
+  BuildContext context,
+  FlashcardEvaluation evaluation,
+) {
   final error = Theme.of(context).colorScheme.error;
   return switch (evaluation) {
     FlashcardEvaluation.hard => (
@@ -158,55 +166,89 @@ class _EvaluationButton extends StatelessWidget {
                   ? SystemMouseCursors.basic
                   : SystemMouseCursors.click,
               child: Container(
-                height: compact ? 54 : 64,
+                height: context.isCompact ? 76 : (compact ? 54 : 64),
                 padding: EdgeInsets.symmetric(
                   horizontal: compact ? VocaboSpacing.sm : VocaboSpacing.md,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClarityIcon(
-                      clarity: option.clarity,
-                      color: palette.foreground,
-                      size: compact ? 14 : 18,
-                    ),
-                    SizedBox(width: compact ? 6 : VocaboSpacing.sm),
-                    Flexible(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.clarityLabel(option.evaluation),
-                            overflow: TextOverflow.ellipsis,
-                            style: VocaboTypography.bodyMd.copyWith(
-                              color: palette.foreground,
-                              fontWeight: FontWeight.w600,
-                              height: 1.2,
-                            ),
-                          ),
-                          Text(
-                            caption,
-                            overflow: TextOverflow.ellipsis,
-                            style: VocaboTypography.bodySm.copyWith(
-                              color: palette.foreground.withValues(alpha: 0.7),
-                              height: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!compact) ...[
-                      const SizedBox(width: VocaboSpacing.sm),
-                      VocaboKeyCap(option.shortcut, color: palette.foreground),
-                    ],
-                  ],
-                ),
+                child: context.isCompact
+                    ? _buildStacked(context, palette, caption)
+                    : _buildInline(context, palette, caption),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Text _label(BuildContext context, EvaluationPalette palette) => Text(
+    context.l10n.clarityLabel(option.evaluation),
+    overflow: TextOverflow.ellipsis,
+    textAlign: TextAlign.center,
+    style: VocaboTypography.bodyMd.copyWith(
+      color: palette.foreground,
+      fontWeight: FontWeight.w600,
+      height: 1.2,
+    ),
+  );
+
+  Text _caption(EvaluationPalette palette, String caption) => Text(
+    caption,
+    overflow: TextOverflow.ellipsis,
+    textAlign: TextAlign.center,
+    style: VocaboTypography.bodySm.copyWith(
+      color: palette.foreground.withValues(alpha: 0.7),
+      height: 1.2,
+    ),
+  );
+
+  /// Phones: icon above the words, so three buttons fit side by side.
+  Widget _buildStacked(
+    BuildContext context,
+    EvaluationPalette palette,
+    String caption,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ClarityIcon(
+          clarity: option.clarity,
+          color: palette.foreground,
+          size: 16,
+        ),
+        const SizedBox(height: 4),
+        _label(context, palette),
+        _caption(palette, caption),
+      ],
+    );
+  }
+
+  Widget _buildInline(
+    BuildContext context,
+    EvaluationPalette palette,
+    String caption,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ClarityIcon(
+          clarity: option.clarity,
+          color: palette.foreground,
+          size: compact ? 14 : 18,
+        ),
+        SizedBox(width: compact ? 6 : VocaboSpacing.sm),
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [_label(context, palette), _caption(palette, caption)],
+          ),
+        ),
+        if (!compact) ...[
+          const SizedBox(width: VocaboSpacing.sm),
+          VocaboKeyCap(option.shortcut, color: palette.foreground),
+        ],
+      ],
     );
   }
 }

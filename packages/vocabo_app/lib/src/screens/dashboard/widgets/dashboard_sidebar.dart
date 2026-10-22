@@ -53,7 +53,8 @@ class DashboardSidebar extends ConsumerWidget {
           Row(
             children: [
               Image.asset(
-                'assets/tray_icon@2x.png',
+                'assets/logo.png',
+                package: 'vocabo_ui',
                 width: 24,
                 height: 24,
                 color: Colors.white,
@@ -65,6 +66,8 @@ class DashboardSidebar extends ConsumerWidget {
                   color: Colors.white,
                 ),
               ),
+              const Spacer(),
+              const SyncIndicator(color: Colors.white70),
             ],
           ),
           const SizedBox(height: VocaboSpacing.xl),

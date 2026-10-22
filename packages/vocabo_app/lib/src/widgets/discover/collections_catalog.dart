@@ -44,22 +44,25 @@ class _CollectionsCatalogState extends ConsumerState<CollectionsCatalog> {
 
     return collections.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.collectionsLoadFailed,
-              style: VocaboTypography.bodyMd.copyWith(
-                color: VocaboColors.neutral,
+      error: (error, _) => OfflineNotice.orElse(
+        error,
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.collectionsLoadFailed,
+                style: VocaboTypography.bodyMd.copyWith(
+                  color: VocaboColors.neutral,
+                ),
               ),
-            ),
-            const SizedBox(height: VocaboSpacing.sm),
-            VocaboTextButton(
-              label: l10n.commonTryAgain,
-              onPressed: () => ref.invalidate(collectionsProvider),
-            ),
-          ],
+              const SizedBox(height: VocaboSpacing.sm),
+              VocaboTextButton(
+                label: l10n.commonTryAgain,
+                onPressed: () => ref.invalidate(collectionsProvider),
+              ),
+            ],
+          ),
         ),
       ),
       data: (all) {

@@ -46,8 +46,9 @@ class VocabularyList extends StatelessWidget {
             return index == 0 ? const SizedBox.shrink() : const _EmptyLibrary();
           }
 
-          // Header row
+          // Header row, only where the columns have room
           if (index == 0) {
+            if (context.isCompact) return const SizedBox.shrink();
             return Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: VocaboSpacing.lg,

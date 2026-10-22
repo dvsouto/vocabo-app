@@ -180,11 +180,14 @@ class _LibraryContentState extends ConsumerState<LibraryContent> {
                 hasMore: ref.read(userVocabularyListProvider.notifier).hasMore,
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text(
-                  l10n.libraryLoadFailed,
-                  style: VocaboTypography.bodyMd.copyWith(
-                    color: VocaboColors.neutral,
+              error: (e, _) => OfflineNotice.orElse(
+                e,
+                Center(
+                  child: Text(
+                    l10n.libraryLoadFailed,
+                    style: VocaboTypography.bodyMd.copyWith(
+                      color: VocaboColors.neutral,
+                    ),
                   ),
                 ),
               ),

@@ -1,8 +1,7 @@
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:vocabo_core/vocabo_core.dart';
 
-import 'translation_result.dart';
-import 'translation_service.dart';
+import 'package:vocabo_translation/vocabo_translation.dart';
 
 class MlKitTranslationService implements TranslationService {
   OnDeviceTranslator? _translator;

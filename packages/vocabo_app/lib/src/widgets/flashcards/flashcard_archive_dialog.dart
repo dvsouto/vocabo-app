@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vocabo_ui/vocabo_ui.dart';
 
 import 'package:vocabo_l10n/vocabo_l10n.dart';
 
@@ -11,9 +12,9 @@ Future<bool> confirmArchiveFlashcard(
   if (!hasHistory) return true;
 
   final l10n = context.l10n;
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showVocaboModal<bool>(
     context: context,
-    builder: (ctx) => AlertDialog(
+    builder: (ctx) => VocaboAlertDialog(
       title: Text(l10n.flashcardsSetAsideTitle),
       content: Text(l10n.flashcardsSetAsideBody),
       actions: [

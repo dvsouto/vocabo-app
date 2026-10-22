@@ -8,6 +8,7 @@ import 'package:vocabo_app/src/auth/device_info.dart';
 import 'package:vocabo_app/src/auth/social_sign_in.dart';
 import 'package:vocabo_app/src/l10n/locale_providers.dart';
 import 'package:vocabo_app/src/providers/api_client_provider.dart';
+import 'package:vocabo_app/src/services/local_data_service.dart';
 import 'package:vocabo_app/src/providers/user_profile_provider.dart';
 
 /// Mirrors the API limit; the oldest session is signed out beyond it.
@@ -45,6 +46,16 @@ void _refreshAccount(Ref ref) {
   ref.invalidate(authStatusProvider);
 }
 
+/// After a sign in, tells the user which other devices it signed out
+/// because of the plan's device limit.
+void _noticeRevoked(Ref ref, List<RevokedSession> revoked) {
+  ref.read(sessionNoticeProvider.notifier).state = revoked.isEmpty
+      ? null
+      : ref
+            .read(appLocalizationsProvider)
+            .authSignedOutOtherDevices(revoked.length);
+}
+
 final loginProvider = AsyncNotifierProvider<LoginNotifier, void>(
   LoginNotifier.new,
 );
@@ -79,7 +90,8 @@ class LoginNotifier extends AsyncNotifier<void> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final api = ref.read(apiClientProvider);
-      await api.auth.login(email: email, password: password);
+      final revoked = await api.auth.login(email: email, password: password);
+      _noticeRevoked(ref, revoked);
       _refreshAccount(ref);
     });
   }
@@ -96,7 +108,8 @@ class SignUpNotifier extends AsyncNotifier<void> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final api = ref.read(apiClientProvider);
-      await api.auth.register(request);
+      final revoked = await api.auth.register(request);
+      _noticeRevoked(ref, revoked);
 
       if (avatarPng != null) {
         try {
@@ -124,16 +137,17 @@ class SocialLoginNotifier extends AsyncNotifier<void> {
       if (credential == null) return;
 
       final api = ref.read(apiClientProvider);
-      final created = await api.auth.socialLogin(
+      final result = await api.auth.socialLogin(
         provider: provider.provider,
         idToken: credential.idToken,
         name: credential.name,
         nativeLanguage: systemNativeLanguage(),
         interfaceLanguage: ref.read(interfaceLanguageProvider).valueOrNull,
       );
-      if (created) {
+      if (result.created) {
         ref.read(confirmNativeLanguageProvider.notifier).state = true;
       }
+      _noticeRevoked(ref, result.revokedSessions);
       _refreshAccount(ref);
     });
   }
@@ -152,11 +166,12 @@ class PasswordResetNotifier extends AsyncNotifier<void> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final api = ref.read(apiClientProvider);
-      await api.auth.resetPassword(
+      final revoked = await api.auth.resetPassword(
         email: email,
         code: code,
         password: password,
       );
+      _noticeRevoked(ref, revoked);
       _refreshAccount(ref);
     });
   }
@@ -190,6 +205,7 @@ class LogoutNotifier extends AsyncNotifier<void> {
     state = await AsyncValue.guard(() async {
       final api = ref.read(apiClientProvider);
       await api.auth.logout();
+      await ref.read(localDataServiceProvider).clearAccountData();
       ref.read(sessionNoticeProvider.notifier).state = null;
       _refreshAccount(ref);
     });

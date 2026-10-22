@@ -14,7 +14,6 @@ dependencies:
     sdk: flutter
   vocabo_core:
     path: ../vocabo_core
-  google_mlkit_translation: ^0.13.0
 
 dev_dependencies:
   flutter_test:

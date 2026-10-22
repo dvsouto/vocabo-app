@@ -1,0 +1,23 @@
+name: vocabo_translation_mlkit
+description: On-device translation with Google ML Kit, the fallback for Android and iOS before 26
+publish_to: none
+version: 0.0.1
+
+environment:
+  sdk: ^3.11.3
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mlkit_translation: ^0.13.0
+  vocabo_core:
+    path: ../vocabo_core
+  vocabo_translation:
+    path: ../vocabo_translation
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

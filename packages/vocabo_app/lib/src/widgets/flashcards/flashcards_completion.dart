@@ -153,10 +153,12 @@ class FlashcardsCompletion extends ConsumerWidget {
                         child: VocaboPrimaryButton(
                           label: l10n.flashcardsBackToFlashcards,
                           isExpanded: true,
-                          trailing: VocaboKeyCap(
-                            l10n.flashcardsKeyEnter,
-                            color: VocaboColors.onPrimary,
-                          ),
+                          trailing: context.isCompact
+                              ? null
+                              : VocaboKeyCap(
+                                  l10n.flashcardsKeyEnter,
+                                  color: VocaboColors.onPrimary,
+                                ),
                           onPressed: notifier.finishCompletion,
                         ),
                       ),

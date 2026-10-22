@@ -21,19 +21,22 @@ class ProgressContent extends ConsumerWidget {
 
     return stats.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_outlined, size: 48),
-            const SizedBox(height: VocaboSpacing.md),
-            Text(l10n.progressLoadFailed, style: VocaboTypography.titleLg),
-            const SizedBox(height: VocaboSpacing.sm),
-            VocaboPrimaryButton(
-              label: l10n.commonTryAgain,
-              onPressed: () => ref.invalidate(vocabularyStatsProvider),
-            ),
-          ],
+      error: (error, _) => OfflineNotice.orElse(
+        error,
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off_outlined, size: 48),
+              const SizedBox(height: VocaboSpacing.md),
+              Text(l10n.progressLoadFailed, style: VocaboTypography.titleLg),
+              const SizedBox(height: VocaboSpacing.sm),
+              VocaboPrimaryButton(
+                label: l10n.commonTryAgain,
+                onPressed: () => ref.invalidate(vocabularyStatsProvider),
+              ),
+            ],
+          ),
         ),
       ),
       data: (data) => SingleChildScrollView(

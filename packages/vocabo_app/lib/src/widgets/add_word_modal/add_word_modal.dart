@@ -79,56 +79,61 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
       _syncControllersFromState(wordState);
     }
 
-    return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          width: 680,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height - VocaboSpacing.xl,
+    final inSheet = VocaboSheetScope.of(context);
+    const side = EdgeInsets.symmetric(horizontal: VocaboSpacing.lg);
+
+    return VocaboModalSurface(
+      width: 680,
+      maxHeight: MediaQuery.of(context).size.height - VocaboSpacing.xl,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              VocaboSpacing.lg,
+              inSheet ? 0 : VocaboSpacing.lg,
+              VocaboSpacing.lg,
+              VocaboSpacing.md,
+            ),
+            child: _buildHeader(),
           ),
-          decoration: BoxDecoration(
-            color: VocaboColors.surface,
-            borderRadius: VocaboRadius.lg,
-            boxShadow: [VocaboShadows.whisper],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(VocaboSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: VocaboSpacing.md),
 
-                // Only the form scrolls when the window is short; the header
-                // and the actions stay in view.
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLanguageRow(wordState),
-                        const SizedBox(height: VocaboSpacing.md),
+          // Only the form scrolls when the window is short; the header
+          // and the actions stay in view.
+          Flexible(
+            child: SingleChildScrollView(
+              padding: side,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLanguageRow(wordState),
+                  const SizedBox(height: VocaboSpacing.md),
 
-                        _buildTermInput(wordState, notifier),
-                        const SizedBox(height: VocaboSpacing.md),
+                  _buildTermInput(wordState, notifier),
+                  const SizedBox(height: VocaboSpacing.md),
 
-                        _buildFieldsSection(wordState, notifier, fieldsEnabled),
-                        const SizedBox(height: VocaboSpacing.md),
+                  _buildFieldsSection(wordState, notifier, fieldsEnabled),
+                  const SizedBox(height: VocaboSpacing.md),
 
-                        _buildAutoDetectToggle(wordState, notifier),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: VocaboSpacing.lg),
-
-                _buildActions(wordState, notifier, isAlreadyInVocabulary),
-              ],
+                  _buildAutoDetectToggle(wordState, notifier),
+                  const SizedBox(height: VocaboSpacing.md),
+                ],
+              ),
             ),
           ),
-        ),
+          Padding(
+            padding: inSheet
+                ? EdgeInsets.zero
+                : const EdgeInsets.fromLTRB(
+                    VocaboSpacing.lg,
+                    VocaboSpacing.sm,
+                    VocaboSpacing.lg,
+                    VocaboSpacing.lg,
+                  ),
+            child: _buildActions(wordState, notifier, isAlreadyInVocabulary),
+          ),
+        ],
       ),
     );
   }
@@ -268,6 +273,68 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     );
   }
 
+  Widget _buildMeaningAndPartOfSpeech(
+    AddWordState state,
+    AddWordNotifier notifier,
+    bool fieldsEnabled,
+  ) {
+    final meaning = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.addWordMeaningLabel,
+          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
+        ),
+        const SizedBox(height: 4),
+        Stack(
+          children: [
+            VocaboTextArea(
+              controller: _meaningController,
+              hint: context.l10n.addWordMeaningHint,
+              readOnly: !fieldsEnabled,
+              onChanged: notifier.setMeaning,
+            ),
+            if (state.isSearching) Positioned.fill(child: _buildFieldLoader()),
+          ],
+        ),
+      ],
+    );
+    final partOfSpeech = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.addWordPartOfSpeechLabel,
+          style: VocaboTypography.labelSm.copyWith(color: VocaboColors.neutral),
+        ),
+        const SizedBox(height: 4),
+        PartOfSpeechSelector(
+          selected: state.wordType,
+          enabled: fieldsEnabled,
+          onSelected: notifier.setWordType,
+        ),
+      ],
+    );
+
+    if (context.isCompact) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          meaning,
+          const SizedBox(height: VocaboSpacing.md),
+          partOfSpeech,
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 3, child: meaning),
+        const SizedBox(width: VocaboSpacing.md),
+        Expanded(flex: 2, child: partOfSpeech),
+      ],
+    );
+  }
+
   Widget _buildFieldsSection(
     AddWordState state,
     AddWordNotifier notifier,
@@ -276,60 +343,8 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Meaning + Part of Speech row
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.addWordMeaningLabel,
-                    style: VocaboTypography.labelSm.copyWith(
-                      color: VocaboColors.neutral,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Stack(
-                    children: [
-                      VocaboTextArea(
-                        controller: _meaningController,
-                        hint: context.l10n.addWordMeaningHint,
-                        readOnly: !fieldsEnabled,
-                        onChanged: notifier.setMeaning,
-                      ),
-                      if (state.isSearching)
-                        Positioned.fill(child: _buildFieldLoader()),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: VocaboSpacing.md),
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.addWordPartOfSpeechLabel,
-                    style: VocaboTypography.labelSm.copyWith(
-                      color: VocaboColors.neutral,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  PartOfSpeechSelector(
-                    selected: state.wordType,
-                    enabled: fieldsEnabled,
-                    onSelected: notifier.setWordType,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        // Meaning + part of speech: side by side, stacked on phones
+        _buildMeaningAndPartOfSpeech(state, notifier, fieldsEnabled),
         const SizedBox(height: VocaboSpacing.md),
 
         // Translation
@@ -415,27 +430,33 @@ class _AddWordModalState extends ConsumerState<AddWordModal> {
     bool isAlreadyInVocabulary,
   ) {
     final canSave = state.canSave && !isAlreadyInVocabulary;
+    final inSheet = VocaboSheetScope.of(context);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: inSheet
+          ? CrossAxisAlignment.stretch
+          : CrossAxisAlignment.end,
       children: [
         if (isAlreadyInVocabulary && state.term.trim().isNotEmpty) ...[
-          Text(
-            context.l10n.addWordAlreadyInVocabulary,
-            style: VocaboTypography.bodySm.copyWith(
-              color: VocaboColors.neutral600,
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: inSheet ? VocaboSpacing.lg : 0,
+            ),
+            child: Text(
+              context.l10n.addWordAlreadyInVocabulary,
+              style: VocaboTypography.bodySm.copyWith(
+                color: VocaboColors.neutral600,
+              ),
             ),
           ),
           const SizedBox(height: VocaboSpacing.sm),
         ],
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            VocaboTextButton(
-              label: context.l10n.commonCancel,
-              onPressed: _close,
-            ),
-            const SizedBox(width: VocaboSpacing.sm),
+        VocaboModalActions(
+          leading: VocaboTextButton(
+            label: context.l10n.commonCancel,
+            onPressed: _close,
+          ),
+          actions: [
             VocaboPrimaryButton(
               label: state.isSaving
                   ? context.l10n.addWordSaving

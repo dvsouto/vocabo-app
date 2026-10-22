@@ -65,6 +65,7 @@ Future<void> _pumpUntil(
     await tester.pump(const Duration(milliseconds: 100));
     if (finder.evaluate().isNotEmpty) return;
   }
+  await _snap(tester, 'timeout');
   throw TestFailure('Timed out waiting for $finder');
 }
 
@@ -183,6 +184,10 @@ void main() {
   testWidgets('menu bar quick session', (tester) async {
     await _runTrayFlow(tester);
   });
+
+  testWidgets('reviews offline and syncs when the API is back', (tester) async {
+    await _runOfflineFlow(tester);
+  });
 }
 
 /// Same path as the Add Word modal: search (find-or-translate) and add with
@@ -234,15 +239,16 @@ Future<void> _runMainFlow(WidgetTester tester) async {
   await _pumpUntil(tester, find.text('0/3'));
   expect(find.text(_first), findsOneWidget);
   expect(find.text('Continue'), findsOneWidget);
-  var status = await _getData('/flashcards/status');
-  expect(status['has_active_session'], isFalse);
+  // Sessions live on the device; nothing is sent until the first answer.
+  final container = ProviderScope.containerOf(
+    tester.element(find.byType(DashboardScreen)),
+  );
+  expect(container.read(syncEngineProvider).pending, 0);
   await _snap(tester, 'session-card-front');
 
   // Audio: the card's listen button downloads the server-generated audio
   // and plays it to the end through the real player.
-  final player = ProviderScope.containerOf(
-    tester.element(find.byType(DashboardScreen)),
-  ).read(audioPlayerServiceProvider);
+  final player = container.read(audioPlayerServiceProvider);
   final audioStatuses = <AudioPlayerStatus>[];
   void recordStatus() => audioStatuses.add(player.state.status);
   player.addListener(recordStatus);
@@ -297,8 +303,14 @@ Future<void> _runMainFlow(WidgetTester tester) async {
 
   await tester.tap(find.text('Blank'));
   await _pumpUntil(tester, find.text('1/3'));
-  status = await _getData('/flashcards/status');
-  expect(status['has_active_session'], isTrue);
+  // The answer reaches the API through the outbox.
+  await _pumpUntilTrue(
+    tester,
+    () => container.read(syncEngineProvider).pending == 0,
+    description: 'the evaluation to be pushed',
+  );
+  final reviewed = await _getData('/flashcards/status');
+  expect(reviewed['due_count'], 3);
 
   // Card 2 with the keyboard: Space flips, "2" answers "medium".
   expect(find.text(_second), findsOneWidget);
@@ -393,7 +405,7 @@ Future<void> _runMainFlow(WidgetTester tester) async {
   // The preference survives a cold start.
   await _launchApp(tester);
   await _pumpUntil(tester, find.byTooltip('Show meanings'));
-  await _pumpUntil(tester, find.text(_first));
+  await _pumpUntil(tester, find.byType(VocabularyListItem));
   expect(find.text(_vocab(_first).meaning!), findsNothing);
   await _snap(tester, 'library-hidden-after-restart');
 
@@ -453,9 +465,27 @@ Future<void> _launchTrayPanel(WidgetTester tester) async {
   await _pumpUntil(tester, find.text('Flashcards'));
 }
 
+/// The main window syncs for the panel, which only reads the shared local
+/// database. A headless container plays the main window here.
+Future<void> _syncLikeMainWindow(WidgetTester tester) async {
+  await tester.runAsync(() async {
+    final container = ProviderContainer(
+      overrides: [apiClientProvider.overrideWithValue(_api)],
+    );
+    try {
+      await container.read(syncEngineProvider.notifier).start();
+      await container.read(syncEngineProvider.notifier).syncNow();
+      expect(container.read(syncEngineProvider).pending, 0);
+    } finally {
+      container.dispose();
+    }
+  });
+}
+
 Future<void> _runTrayFlow(WidgetTester tester) async {
   final trayTerms = _trayTermsDefine.split(',').map((t) => t.trim()).toList();
   await tester.runAsync(() => _addWords(trayTerms));
+  await _syncLikeMainWindow(tester);
 
   await _launchTrayPanel(tester);
   await tester.tap(find.text('Flashcards'));
@@ -478,7 +508,7 @@ Future<void> _runTrayFlow(WidgetTester tester) async {
   await tester.sendKeyEvent(LogicalKeyboardKey.space);
   await _waitForEvaluationBar(tester);
   await _snap(tester, 'tray-session-back');
-  await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+  await tester.tap(find.text('Clear'));
   await _pumpUntil(tester, find.text('1/3'));
 
   for (final expected in ['2/3']) {
@@ -498,7 +528,85 @@ Future<void> _runTrayFlow(WidgetTester tester) async {
   await tester.tap(find.text('Done'));
   await _pumpUntil(tester, find.text('1 word is waiting'));
 
+  await _syncLikeMainWindow(tester);
   final status = await tester.runAsync(() => _getData('/flashcards/status'));
   expect(status!['due_count'], 1);
-  expect(status['has_active_session'], isFalse);
+}
+
+/// Launches the app against [baseUrl] with the offline cache wired like in
+/// production, sharing the signed-in token with [_api].
+Future<ProviderContainer> _launchWithBaseUrl(
+  WidgetTester tester,
+  String baseUrl,
+) async {
+  final token = _rawHttp.options.headers['Authorization'] as String;
+  final storage = InMemoryTokenStorage();
+  await tester.runAsync(
+    () => storage.saveToken(token.replaceFirst('Bearer ', '')),
+  );
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pumpWidget(
+    RepaintBoundary(
+      key: _boundaryKey,
+      child: ProviderScope(
+        key: UniqueKey(),
+        overrides: [
+          apiClientProvider.overrideWith(
+            (ref) => VocaboApiClient(
+              baseUrl: baseUrl,
+              tokenStorage: storage,
+              responseCache: ref.watch(localStoreProvider),
+              isOffline: () => !ref.read(isOnlineProvider),
+            ),
+          ),
+        ],
+        child: const VocaboDesktopApp(),
+      ),
+    ),
+  );
+  await _pumpUntil(tester, find.text('PERSONAL WORKSPACE'));
+  return ProviderScope.containerOf(
+    tester.element(find.byType(DashboardScreen)),
+  );
+}
+
+Future<void> _runOfflineFlow(WidgetTester tester) async {
+  // Online first: the device saves the library and the responses it reads.
+  var container = await _launchWithBaseUrl(tester, Env.apiUrl);
+  await _pumpUntil(tester, find.byType(VocabularyListItem));
+  await _pumpUntilTrue(
+    tester,
+    () => container.read(syncEngineProvider).lastSyncedAt != null,
+    description: 'the first sync',
+  );
+  await _openTab(tester, 'Flashcards');
+  await _pumpUntil(tester, find.text('Review now'));
+
+  // The API becomes unreachable: everything keeps working from the device.
+  container = await _launchWithBaseUrl(tester, 'http://127.0.0.1:9');
+  await _pumpUntil(tester, find.byType(VocabularyListItem));
+  await _pumpUntil(tester, find.byTooltip('No connection'));
+  await _snap(tester, 'offline-library');
+
+  await _openTab(tester, 'Flashcards');
+  await _pumpUntil(tester, find.text('Review now'));
+  await tester.tap(find.text('Review now'));
+  await _pumpUntil(tester, find.text('Continue'));
+  await tester.tap(find.text('Continue'));
+  await _waitForEvaluationBar(tester);
+  await tester.tap(find.text('Clear'));
+  await _pumpUntil(tester, find.text('Session complete'));
+  await _snap(tester, 'offline-session-complete');
+  expect(container.read(syncEngineProvider).pending, greaterThanOrEqualTo(2));
+
+  // Back online: the queued review and session reach the API.
+  container = await _launchWithBaseUrl(tester, Env.apiUrl);
+  await _pumpUntilTrue(
+    tester,
+    () => container.read(syncEngineProvider).pending == 0,
+    description: 'the offline reviews to be pushed',
+  );
+  final status = await tester.runAsync(() => _getData('/flashcards/status'));
+  expect(status!['due_count'], 0);
+  await _snap(tester, 'back-online');
 }

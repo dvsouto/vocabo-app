@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabo_core/vocabo_core.dart';
+
+import 'package:vocabo_app/src/data/local_store.dart';
 import 'package:vocabo_app/src/providers/api_client_provider.dart';
+import 'package:vocabo_app/src/sync/connectivity.dart';
+import 'package:vocabo_app/src/sync/sync_engine.dart';
 
 class UserPreferencesNotifier extends AsyncNotifier<UserPreferences> {
   @override
@@ -9,52 +13,61 @@ class UserPreferencesNotifier extends AsyncNotifier<UserPreferences> {
     return api.user.getPreferences();
   }
 
-  Future<void> setShowTranslations(bool value) async {
+  /// Applies the change right away and saves it; offline it waits in the
+  /// outbox instead of being undone.
+  Future<void> _update(
+    UserPreferences optimistic,
+    Map<String, dynamic> payload,
+    Future<UserPreferences> Function() save,
+  ) async {
     final previous = state.valueOrNull ?? const UserPreferences();
-    state = AsyncData(previous.copyWith(showTranslations: value));
-
+    state = AsyncData(optimistic);
     try {
-      final api = ref.read(apiClientProvider);
-      final saved = await api.user.updatePreferences(showTranslations: value);
-      state = AsyncData(saved);
+      state = AsyncData(await save());
+      ref.read(isOnlineProvider.notifier).reportOnline();
     } catch (e, st) {
-      appLogger.handle(e, st, 'UserPreferences setShowTranslations() error');
+      if (isConnectionError(e)) {
+        ref.read(isOnlineProvider.notifier).reportOffline();
+        await ref
+            .read(localStoreProvider)
+            .enqueue('preferences.update', payload);
+        ref.read(syncEngineProvider.notifier).scheduleFlush();
+        return;
+      }
+      appLogger.handle(e, st, 'UserPreferences update error');
       state = AsyncData(previous);
     }
   }
 
-  Future<void> setDailyReminder({bool? enabled, String? time}) async {
-    final previous = state.valueOrNull ?? const UserPreferences();
-    state = AsyncData(
-      previous.copyWith(dailyReminderEnabled: enabled, dailyReminderTime: time),
-    );
+  UserPreferences get _current => state.valueOrNull ?? const UserPreferences();
 
-    try {
-      final api = ref.read(apiClientProvider);
-      final saved = await api.user.updatePreferences(
-        dailyReminderEnabled: enabled,
-        dailyReminderTime: time,
-      );
-      state = AsyncData(saved);
-    } catch (e, st) {
-      appLogger.handle(e, st, 'UserPreferences setDailyReminder() error');
-      state = AsyncData(previous);
-    }
-  }
+  Future<void> setShowTranslations(bool value) => _update(
+    _current.copyWith(showTranslations: value),
+    {'show_translations': value},
+    () => ref
+        .read(apiClientProvider)
+        .user
+        .updatePreferences(showTranslations: value),
+  );
 
-  Future<void> setVoiceGender(String voice) async {
-    final previous = state.valueOrNull ?? const UserPreferences();
-    state = AsyncData(previous.copyWith(voiceGender: voice));
+  Future<void> setDailyReminder({bool? enabled, String? time}) => _update(
+    _current.copyWith(dailyReminderEnabled: enabled, dailyReminderTime: time),
+    {'daily_reminder_enabled': ?enabled, 'daily_reminder_time': ?time},
+    () => ref
+        .read(apiClientProvider)
+        .user
+        .updatePreferences(
+          dailyReminderEnabled: enabled,
+          dailyReminderTime: time,
+        ),
+  );
 
-    try {
-      final api = ref.read(apiClientProvider);
-      final saved = await api.user.updatePreferences(voiceGender: voice);
-      state = AsyncData(saved);
-    } catch (e, st) {
-      appLogger.handle(e, st, 'UserPreferences setVoiceGender() error');
-      state = AsyncData(previous);
-    }
-  }
+  Future<void> setVoiceGender(String voice) => _update(
+    _current.copyWith(voiceGender: voice),
+    {'voice_gender': voice},
+    () =>
+        ref.read(apiClientProvider).user.updatePreferences(voiceGender: voice),
+  );
 
   Future<void> toggleShowTranslations() {
     final current = state.valueOrNull?.showTranslations ?? true;

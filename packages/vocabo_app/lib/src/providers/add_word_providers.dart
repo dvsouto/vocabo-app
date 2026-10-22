@@ -28,6 +28,10 @@ class AddWordState {
   final String? errorMessage;
   final bool isSaving;
 
+  /// The search could not reach the API: the word can still be saved and
+  /// is translated when the connection comes back.
+  final bool savesOffline;
+
   const AddWordState({
     this.term = '',
     this.language = 'English',
@@ -44,10 +48,12 @@ class AddWordState {
     this.backendResult,
     this.errorMessage,
     this.isSaving = false,
+    this.savesOffline = false,
   });
 
   bool get canSave {
     if (isSaving) return false;
+    if (savesOffline && autoDetect) return term.trim().isNotEmpty;
 
     if (autoDetect) {
       return isValid && backendResult != null;
@@ -74,6 +80,7 @@ class AddWordState {
     Vocabulary? Function()? backendResult,
     String? Function()? errorMessage,
     bool? isSaving,
+    bool? savesOffline,
   }) {
     return AddWordState(
       term: term ?? this.term,
@@ -99,6 +106,7 @@ class AddWordState {
           : this.backendResult,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       isSaving: isSaving ?? this.isSaving,
+      savesOffline: savesOffline ?? this.savesOffline,
     );
   }
 }
@@ -173,7 +181,11 @@ class AddWordNotifier extends Notifier<AddWordState> {
     _cancelToken?.cancel();
     _cancelToken = CancelToken();
 
-    state = state.copyWith(isSearching: true, errorMessage: () => null);
+    state = state.copyWith(
+      isSearching: true,
+      errorMessage: () => null,
+      savesOffline: false,
+    );
 
     try {
       final api = ref.read(apiClientProvider);
@@ -198,6 +210,7 @@ class AddWordNotifier extends Notifier<AddWordState> {
       );
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) return;
+      if (e.error is NetworkException) return _searchOffline();
       state = state.copyWith(
         isSearching: false,
         isValid: false,
@@ -213,6 +226,8 @@ class AddWordNotifier extends Notifier<AddWordState> {
       );
     } on ForbiddenException catch (e) {
       _showPlanLimit(e, isSearching: false);
+    } on NetworkException {
+      _searchOffline();
     } catch (e) {
       appLogger.error('AddWord search() error', e);
       state = state.copyWith(
@@ -222,6 +237,16 @@ class AddWordNotifier extends Notifier<AddWordState> {
             ref.read(appLocalizationsProvider).addWordSearchFailed,
       );
     }
+  }
+
+  void _searchOffline() {
+    state = state.copyWith(
+      isSearching: false,
+      isValid: false,
+      savesOffline: true,
+      errorMessage: () =>
+          ref.read(appLocalizationsProvider).addWordOfflineNotice,
+    );
   }
 
   /// Explains the free plan limit and opens the upgrade offer.
@@ -255,6 +280,14 @@ class AddWordNotifier extends Notifier<AddWordState> {
     if (!state.canSave) return false;
 
     state = state.copyWith(isSaving: true);
+
+    if (state.savesOffline && state.autoDetect) {
+      await ref
+          .read(userVocabularyListProvider.notifier)
+          .addTermOffline(state.term.trim(), state.language);
+      state = state.copyWith(isSaving: false);
+      return true;
+    }
 
     try {
       final usageExamples = _buildUsageExamples();

@@ -47,22 +47,25 @@ class _ForYouContent extends ConsumerWidget {
               ],
             ),
           ),
-          error: (_, _) => Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.forYouUnavailable,
-                  style: VocaboTypography.bodyMd.copyWith(
-                    color: VocaboColors.neutral,
+          error: (error, _) => OfflineNotice.orElse(
+            error,
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.forYouUnavailable,
+                    style: VocaboTypography.bodyMd.copyWith(
+                      color: VocaboColors.neutral,
+                    ),
                   ),
-                ),
-                const SizedBox(height: VocaboSpacing.sm),
-                VocaboTextButton(
-                  label: l10n.commonTryAgain,
-                  onPressed: () => ref.invalidate(recommendationsProvider),
-                ),
-              ],
+                  const SizedBox(height: VocaboSpacing.sm),
+                  VocaboTextButton(
+                    label: l10n.commonTryAgain,
+                    onPressed: () => ref.invalidate(recommendationsProvider),
+                  ),
+                ],
+              ),
             ),
           ),
           data: (recommendations) => recommendations.needsMoreData

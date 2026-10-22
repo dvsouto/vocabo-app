@@ -10,6 +10,7 @@ workspace:
   - packages/vocabo_core
   - packages/vocabo_api
   - packages/vocabo_translation
+  - packages/vocabo_translation_mlkit
   - packages/vocabo_ui
   - packages/vocabo_l10n
   - packages/vocabo_app

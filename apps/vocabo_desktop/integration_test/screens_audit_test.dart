@@ -358,7 +358,7 @@ void main() {
     });
 
     await _step('edit-profile', () async {
-      await tester.tap(find.text(_l.settingsEditProfile));
+      await tester.tap(find.byTooltip(_l.settingsEditProfile));
       await _pumpFor(tester, const Duration(seconds: 1));
       await _audit(tester, 'edit-profile');
       await tester.tap(find.text(_l.authAddPhone).first);

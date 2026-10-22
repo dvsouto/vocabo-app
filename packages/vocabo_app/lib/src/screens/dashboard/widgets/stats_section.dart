@@ -15,16 +15,25 @@ class StatsSection extends ConsumerWidget {
     final stats = ref.watch(vocabularyStatsProvider);
 
     return stats.when(
-      data: (data) => IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: _DailyProgressCard(stats: data)),
-            const SizedBox(width: VocaboSpacing.md),
-            Expanded(child: _SummaryCard(stats: data)),
-          ],
-        ),
-      ),
+      data: (data) => context.isCompact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _DailyProgressCard(stats: data),
+                const SizedBox(height: VocaboSpacing.md),
+                _SummaryCard(stats: data),
+              ],
+            )
+          : IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _DailyProgressCard(stats: data)),
+                  const SizedBox(width: VocaboSpacing.md),
+                  Expanded(child: _SummaryCard(stats: data)),
+                ],
+              ),
+            ),
       loading: () => const SizedBox(
         height: 164,
         child: Center(child: CircularProgressIndicator()),

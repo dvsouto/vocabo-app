@@ -17,7 +17,7 @@ Future<void> showPaywall(
   BuildContext context, [
   UpgradeReason reason = const UpgradeReason.manual(),
 ]) {
-  return showDialog<void>(
+  return showVocaboModal<void>(
     context: context,
     builder: (_) => _PaywallDialog(reason: reason),
   );
@@ -86,12 +86,12 @@ class _PaywallDialogState extends ConsumerState<_PaywallDialog> {
     });
     final event = ref.watch(storeEventProvider);
 
-    return Dialog(
+    return VocaboDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       shape: RoundedRectangleBorder(borderRadius: VocaboRadius.lg),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: 520,
+          maxWidth: context.dialogWidth(520),
           maxHeight: MediaQuery.sizeOf(context).height - VocaboSpacing.xl,
         ),
         child: SingleChildScrollView(

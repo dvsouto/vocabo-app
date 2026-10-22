@@ -205,10 +205,12 @@ class _FlashcardsSessionState extends ConsumerState<FlashcardsSession> {
                       : VocaboPrimaryButton(
                           key: ValueKey('continue-${card.id}'),
                           label: l10n.commonContinue,
-                          trailing: VocaboKeyCap(
-                            l10n.flashcardsKeySpace,
-                            color: VocaboColors.onPrimary,
-                          ),
+                          trailing: context.isCompact
+                              ? null
+                              : VocaboKeyCap(
+                                  l10n.flashcardsKeySpace,
+                                  color: VocaboColors.onPrimary,
+                                ),
                           isExpanded: true,
                           onPressed: interactive ? notifier.flip : null,
                         ),

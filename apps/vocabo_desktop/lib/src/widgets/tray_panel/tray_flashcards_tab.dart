@@ -205,16 +205,28 @@ class _TraySessionState extends ConsumerState<_TraySession> {
     LogicalKeyboardKey.digit3: FlashcardEvaluation.easy,
   };
 
+  /// Flipping or answering rebuilds the card and can drop keyboard focus;
+  /// take it back so the shortcuts keep working.
+  void _reclaimFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_focusNode.hasFocus) _focusNode.requestFocus();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(flashcardSessionProvider, (previous, next) {
+      if (previous?.isFlipped != next.isFlipped ||
+          previous?.currentIndex != next.currentIndex) {
+        _reclaimFocus();
+      }
+    });
     final state = ref.watch(flashcardSessionProvider);
     final notifier = ref.read(flashcardSessionProvider.notifier);
     final card = state.currentCard;
     final stages =
         ref.watch(flashcardConfigProvider).valueOrNull?.stages ??
         FlashcardConfig.fallback.stages;
-
-    if (card == null) return const SizedBox.shrink();
 
     final interactive = !state.isSubmitting;
     final progress = state.totalCards == 0
@@ -224,7 +236,9 @@ class _TraySessionState extends ConsumerState<_TraySession> {
     return Focus(
       focusNode: _focusNode,
       onKeyEvent: (node, event) {
-        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+        if (event is! KeyDownEvent || card == null) {
+          return KeyEventResult.ignored;
+        }
         if (event.logicalKey == LogicalKeyboardKey.space && !state.isFlipped) {
           notifier.flip();
           return KeyEventResult.handled;
@@ -236,72 +250,79 @@ class _TraySessionState extends ConsumerState<_TraySession> {
         }
         return KeyEventResult.ignored;
       },
-      child: Column(
-        children: [
-          Row(
-            children: [
-              IconButton(
-                tooltip: context.l10n.trayFlashcardsStop,
-                icon: const Icon(Icons.close, size: 18),
-                color: VocaboColors.neutral,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                onPressed: notifier.leaveSession,
-              ),
-              const SizedBox(width: VocaboSpacing.xs),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: VocaboRadius.sm,
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 4,
-                    color: VocaboColors.onSurface,
-                    backgroundColor: VocaboColors.neutral200,
+      // The focus node stays mounted while the card changes, so the
+      // shortcuts keep working between cards.
+      child: card == null
+          ? const SizedBox.shrink()
+          : Column(
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: context.l10n.trayFlashcardsStop,
+                      icon: const Icon(Icons.close, size: 18),
+                      color: VocaboColors.neutral,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      onPressed: notifier.leaveSession,
+                    ),
+                    const SizedBox(width: VocaboSpacing.xs),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: VocaboRadius.sm,
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 4,
+                          color: VocaboColors.onSurface,
+                          backgroundColor: VocaboColors.neutral200,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: VocaboSpacing.sm),
+                    Text(
+                      '${state.evaluatedCount}/${state.totalCards}',
+                      style: VocaboTypography.bodySm.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: VocaboSpacing.sm),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: FlashcardCard(
+                      key: ValueKey(card.id),
+                      card: card,
+                      compact: true,
+                      isFlipped: state.isFlipped,
+                      isExpanded: state.isExpanded,
+                      enabled: interactive,
+                      onFlip: notifier.flip,
+                      onToggleMeaning: notifier.toggleMeaning,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: VocaboSpacing.sm),
-              Text(
-                '${state.evaluatedCount}/${state.totalCards}',
-                style: VocaboTypography.bodySm.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: VocaboSpacing.sm),
-          Expanded(
-            child: SingleChildScrollView(
-              child: FlashcardCard(
-                key: ValueKey(card.id),
-                card: card,
-                compact: true,
-                isFlipped: state.isFlipped,
-                isExpanded: state.isExpanded,
-                enabled: interactive,
-                onFlip: notifier.flip,
-                onToggleMeaning: notifier.toggleMeaning,
-              ),
+                const SizedBox(height: VocaboSpacing.sm),
+                state.isFlipped
+                    ? FlashcardEvaluationBar(
+                        key: ValueKey('tray-evaluate-${card.id}'),
+                        selected: state.selectedEvaluation,
+                        enabled: interactive,
+                        onEvaluate: notifier.evaluate,
+                        stageIndex: card.flashcard.currentStageIndex,
+                        stages: stages,
+                        compact: true,
+                      )
+                    : VocaboPrimaryButton(
+                        key: ValueKey('tray-continue-${card.id}'),
+                        label: context.l10n.commonContinue,
+                        isExpanded: true,
+                        onPressed: interactive ? notifier.flip : null,
+                      ),
+              ],
             ),
-          ),
-          const SizedBox(height: VocaboSpacing.sm),
-          state.isFlipped
-              ? FlashcardEvaluationBar(
-                  key: ValueKey('tray-evaluate-${card.id}'),
-                  selected: state.selectedEvaluation,
-                  enabled: interactive,
-                  onEvaluate: notifier.evaluate,
-                  stageIndex: card.flashcard.currentStageIndex,
-                  stages: stages,
-                  compact: true,
-                )
-              : VocaboPrimaryButton(
-                  key: ValueKey('tray-continue-${card.id}'),
-                  label: context.l10n.commonContinue,
-                  isExpanded: true,
-                  onPressed: interactive ? notifier.flip : null,
-                ),
-        ],
-      ),
     );
   }
 }

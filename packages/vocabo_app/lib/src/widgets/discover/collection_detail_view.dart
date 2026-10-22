@@ -33,23 +33,27 @@ class CollectionDetailView extends ConsumerWidget {
         Expanded(
           child: detail.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.collectionsLoadFailed,
-                    style: VocaboTypography.bodyMd.copyWith(
-                      color: VocaboColors.neutral,
+            error: (error, _) => OfflineNotice.orElse(
+              error,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.collectionsLoadFailed,
+                      style: VocaboTypography.bodyMd.copyWith(
+                        color: VocaboColors.neutral,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: VocaboSpacing.sm),
-                  VocaboTextButton(
-                    label: l10n.commonTryAgain,
-                    onPressed: () =>
-                        ref.invalidate(collectionDetailProvider(collectionId)),
-                  ),
-                ],
+                    const SizedBox(height: VocaboSpacing.sm),
+                    VocaboTextButton(
+                      label: l10n.commonTryAgain,
+                      onPressed: () => ref.invalidate(
+                        collectionDetailProvider(collectionId),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             data: (detail) => _DetailBody(detail: detail),

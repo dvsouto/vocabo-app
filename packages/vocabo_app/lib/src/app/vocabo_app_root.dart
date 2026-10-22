@@ -42,6 +42,11 @@ class VocaboApp extends ConsumerWidget {
 
     ref.listen(sessionNoticeProvider, (_, notice) {
       if (notice == null) return;
+      // Signed out: the login screen shows the notice as a banner instead.
+      if (ref.read(authStatusProvider).valueOrNull !=
+          AuthStatus.authenticated) {
+        return;
+      }
       _messengerKey.currentState?.showSnackBar(
         SnackBar(content: Text(notice), duration: const Duration(seconds: 6)),
       );

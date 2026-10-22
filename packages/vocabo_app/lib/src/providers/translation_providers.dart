@@ -15,8 +15,14 @@ final translationPreferencesServiceProvider =
       (ref) => TranslationPreferencesService(),
     );
 
+/// The translator used where Apple's framework is missing (Android, iOS
+/// before 26). The mobile app overrides it with ML Kit; desktop has none.
+final translationFallbackProvider = Provider<TranslationService?>((_) => null);
+
 final translationServiceProvider = Provider<TranslationService>((ref) {
-  final service = TranslationServiceFactory.create();
+  final service = TranslationServiceFactory.create(
+    fallback: ref.watch(translationFallbackProvider),
+  );
   ref.onDispose(() => service.dispose());
   return service;
 });

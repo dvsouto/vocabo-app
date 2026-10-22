@@ -7,10 +7,8 @@ import 'package:vocabo_app/vocabo_app.dart';
 
 /// The play button used wherever a pronunciation can be heard.
 ///
-/// A click plays the word; clicking again while it plays or right after
-/// replays it at half speed. A right click or long press goes straight to
-/// the slow replay, and [showSlowButton] adds a visible "0.5×" button for
-/// places with room for it.
+/// Clicks alternate between normal speed and half speed, like Google
+/// Translate; a small tag marks the slow replay while it plays.
 class PronunciationButton extends ConsumerWidget {
   const PronunciationButton({
     super.key,
@@ -20,7 +18,6 @@ class PronunciationButton extends ConsumerWidget {
     this.size = 32,
     this.iconSize,
     this.tonal = false,
-    this.showSlowButton = false,
   });
 
   final String? vocabularyId;
@@ -31,19 +28,17 @@ class PronunciationButton extends ConsumerWidget {
 
   /// A light background with a colored icon, for dense lists.
   final bool tonal;
-  final bool showSlowButton;
 
   bool get _canPlay =>
       vocabularyId != null && (contentHash?.isNotEmpty ?? false);
 
-  void _toggle(WidgetRef ref, {bool slow = false}) {
+  void _toggle(WidgetRef ref) {
     ref
         .read(audioPlayerServiceProvider)
         .toggle(
           vocabularyId: vocabularyId!,
           type: type,
           contentHash: contentHash!,
-          slow: slow,
         );
   }
 
@@ -71,8 +66,6 @@ class PronunciationButton extends ConsumerWidget {
               ? SystemMouseCursors.click
               : SystemMouseCursors.basic,
           onTap: canPlay ? () => _toggle(ref) : null,
-          onSecondaryTap: canPlay ? () => _toggle(ref, slow: true) : null,
-          onLongPress: canPlay ? () => _toggle(ref, slow: true) : null,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -101,7 +94,7 @@ class PronunciationButton extends ConsumerWidget {
                         size: iconSize ?? size * 0.45,
                       ),
               ),
-              if (isSlow && !showSlowButton)
+              if (isSlow)
                 const Positioned(right: -6, bottom: -4, child: _SpeedTag()),
             ],
           ),
@@ -109,46 +102,7 @@ class PronunciationButton extends ConsumerWidget {
       ),
     );
 
-    if (!showSlowButton) return play;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        play,
-        const SizedBox(width: VocaboSpacing.xs),
-        Tooltip(
-          message: context.l10n.audioPlaySlow,
-          child: Material(
-            color: isSlow ? VocaboColors.primary : VocaboColors.primary50,
-            shape: const StadiumBorder(),
-            child: InkWell(
-              customBorder: const StadiumBorder(),
-              mouseCursor: canPlay
-                  ? SystemMouseCursors.click
-                  : SystemMouseCursors.basic,
-              onTap: canPlay ? () => _toggle(ref, slow: true) : null,
-              child: Container(
-                height: size * 0.75,
-                constraints: BoxConstraints(minWidth: size),
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                alignment: Alignment.center,
-                child: Text(
-                  '0.5×',
-                  style: VocaboTypography.labelSm.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: isSlow
-                        ? VocaboColors.onPrimary
-                        : canPlay
-                        ? VocaboColors.primary
-                        : VocaboColors.primary.withValues(alpha: 0.5),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+    return play;
   }
 }
 

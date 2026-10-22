@@ -45,23 +45,27 @@ class StudyNoteCard extends ConsumerWidget {
               ],
             ),
           ),
-          error: (_, _) => _Frame(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    context.l10n.studyNoteUnavailable,
-                    style: VocaboTypography.bodyMd.copyWith(
-                      color: VocaboColors.neutral600,
+          error: (error, _) => OfflineNotice.orElse(
+            error,
+            _Frame(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.l10n.studyNoteUnavailable,
+                      style: VocaboTypography.bodyMd.copyWith(
+                        color: VocaboColors.neutral600,
+                      ),
                     ),
                   ),
-                ),
-                VocaboTextButton(
-                  label: context.l10n.commonRetry,
-                  onPressed: () => ref.invalidate(studyNoteProvider),
-                ),
-              ],
+                  VocaboTextButton(
+                    label: context.l10n.commonRetry,
+                    onPressed: () => ref.invalidate(studyNoteProvider),
+                  ),
+                ],
+              ),
             ),
+            compact: true,
           ),
           data: (note) => _StudyNoteContent(note: note),
         );

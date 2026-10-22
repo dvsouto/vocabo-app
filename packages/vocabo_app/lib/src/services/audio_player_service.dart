@@ -12,7 +12,7 @@ enum AudioPlayerStatus { idle, loading, playing, failed }
 const slowAudioSpeed = 0.5;
 
 /// How long after a word finishes a second click still means "slower".
-const _replaySlowWindow = Duration(seconds: 4);
+const _replaySlowWindow = Duration(seconds: 8);
 
 class AudioPlayerState {
   final AudioPlayerStatus status;
@@ -51,6 +51,7 @@ class AudioPlayerService extends ChangeNotifier {
   int _playGeneration = 0;
   String? _lastFinishedHash;
   DateTime? _lastFinishedAt;
+  double _lastFinishedSpeed = 1;
 
   AudioPlayerService({
     required VocabularyAudioRepository audioRepository,
@@ -70,40 +71,34 @@ class AudioPlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// What a click on a play button does, like Google Translate: the first
-  /// click plays at normal speed, clicking again while it plays or right
-  /// after it ends replays it at [slowAudioSpeed], and a click during the
-  /// slow replay stops it. [slow] skips straight to the slow replay.
+  /// What a click on a play button does, like Google Translate: the clicks
+  /// on the same word alternate between normal speed and [slowAudioSpeed],
+  /// whether the previous play is still running or just ended. Another word,
+  /// or a pause longer than [_replaySlowWindow], starts over at normal speed.
   Future<void> toggle({
     required String vocabularyId,
     required String type,
     required String contentHash,
-    bool slow = false,
   }) {
     final isThis = _state.currentPlayingHash == contentHash;
-    final status = _state.status;
-
-    if (isThis && status == AudioPlayerStatus.loading) return stop();
-    if (isThis && status == AudioPlayerStatus.playing) {
-      if (_state.isSlow && !slow) return stop();
-      return play(
-        vocabularyId: vocabularyId,
-        type: type,
-        contentHash: contentHash,
-        speed: slowAudioSpeed,
-      );
-    }
+    final active =
+        isThis &&
+        (_state.status == AudioPlayerStatus.loading ||
+            _state.status == AudioPlayerStatus.playing);
 
     final finishedAt = _lastFinishedAt;
-    final justHeard =
+    final justHeardNormal =
         _lastFinishedHash == contentHash &&
+        _lastFinishedSpeed == 1 &&
         finishedAt != null &&
         DateTime.now().difference(finishedAt) < _replaySlowWindow;
+
+    final slowNext = active ? !_state.isSlow : justHeardNormal;
     return play(
       vocabularyId: vocabularyId,
       type: type,
       contentHash: contentHash,
-      speed: slow || justHeard ? slowAudioSpeed : 1,
+      speed: slowNext ? slowAudioSpeed : 1,
     );
   }
 
@@ -165,12 +160,9 @@ class AudioPlayerService extends ChangeNotifier {
           .timeout(const Duration(seconds: 30));
 
       if (generation == _playGeneration) {
-        // Only a normal-speed play arms the slow replay; after the slow one
-        // the next click starts over at normal speed.
-        if (speed == 1) {
-          _lastFinishedHash = contentHash;
-          _lastFinishedAt = DateTime.now();
-        }
+        _lastFinishedHash = contentHash;
+        _lastFinishedAt = DateTime.now();
+        _lastFinishedSpeed = speed;
         _updateState(const AudioPlayerState());
       }
     } catch (e) {

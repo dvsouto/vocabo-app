@@ -109,9 +109,9 @@ class SettingsContent extends ConsumerWidget {
   }
 
   void _confirmSignOut(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
+    showVocaboModal<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => VocaboAlertDialog(
         title: Text(ctx.l10n.settingsSignOut),
         content: Text(ctx.l10n.settingsSignOutConfirm),
         actions: [
@@ -160,47 +160,63 @@ class _ProfileSection extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: VocaboSpacing.sm),
-              Wrap(
-                spacing: VocaboSpacing.sm,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (user != null)
-                    _Badge(
-                      label: l10n.planLabel(user.plan),
-                      color: user.plan == UserPlan.pro
-                          ? VocaboColors.primary
-                          : VocaboColors.neutral600,
-                    ),
-                  if (user != null)
-                    VocaboTextButton(
-                      label: l10n.settingsEditProfile,
-                      onPressed: () => showEditProfileDialog(context, user),
-                    ),
-                ],
-              ),
+              if (user != null) ...[
+                const SizedBox(height: VocaboSpacing.xs),
+                _Badge(
+                  label: l10n.planLabel(user.plan),
+                  color: user.plan == UserPlan.pro
+                      ? VocaboColors.primary
+                      : VocaboColors.neutral600,
+                ),
+              ],
             ],
           ),
         ),
+        if (user != null)
+          IconButton(
+            tooltip: l10n.settingsEditProfile,
+            icon: const Icon(Icons.edit_outlined),
+            color: VocaboColors.primary,
+            style: IconButton.styleFrom(
+              backgroundColor: VocaboColors.primary50,
+            ),
+            onPressed: () => showEditProfileDialog(context, user),
+          ),
       ],
     );
 
-    Widget figures({required bool alignEnd}) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _StatColumn(
-          alignEnd: alignEnd,
-          label: l10n.settingsCurrentStreak,
-          value: stats == null ? '--' : l10n.countDays(stats.currentStreak),
-        ),
-        const SizedBox(width: VocaboSpacing.xl),
-        _StatColumn(
-          alignEnd: alignEnd,
-          label: l10n.settingsReviewedThisWeek,
-          value: stats == null ? '--' : l10n.countCards(stats.reviewsThisWeek),
-        ),
-      ],
-    );
+    Widget figures({required bool alignEnd}) {
+      final streak = _StatColumn(
+        alignEnd: alignEnd,
+        label: l10n.settingsCurrentStreak,
+        value: stats == null ? '--' : l10n.countDays(stats.currentStreak),
+      );
+      final reviewed = _StatColumn(
+        alignEnd: alignEnd,
+        label: l10n.settingsReviewedThisWeek,
+        value: stats == null ? '--' : l10n.countCards(stats.reviewsThisWeek),
+      );
+      if (alignEnd) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            streak,
+            const SizedBox(width: VocaboSpacing.xl),
+            reviewed,
+          ],
+        );
+      }
+      // Stacked under the identity: the columns share the width and the
+      // values line up even when one label wraps.
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(child: streak),
+          const SizedBox(width: VocaboSpacing.md),
+          Expanded(child: reviewed),
+        ],
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(VocaboSpacing.lg),

@@ -8,7 +8,7 @@ import 'package:vocabo_l10n/vocabo_l10n.dart';
 /// Changes the phone number in two steps: the new number, then the code
 /// sent to it. The profile only changes after the code is confirmed.
 Future<bool?> showChangePhoneDialog(BuildContext context, {User? user}) {
-  return showDialog<bool>(
+  return showVocaboModal<bool>(
     context: context,
     builder: (_) => _ChangePhoneDialog(user: user),
   );
@@ -65,7 +65,7 @@ class _ChangePhoneDialogState extends ConsumerState<_ChangePhoneDialog> {
     final newPhone = _newPhone;
     final l10n = context.l10n;
 
-    return AlertDialog(
+    return VocaboAlertDialog(
       backgroundColor: VocaboColors.surfaceContainerLowest,
       title: Text(
         newPhone == null
@@ -73,7 +73,7 @@ class _ChangePhoneDialogState extends ConsumerState<_ChangePhoneDialog> {
             : l10n.authConfirmNewPhoneTitle,
       ),
       content: SizedBox(
-        width: 400,
+        width: context.dialogWidth(400),
         child: newPhone == null
             ? Column(
                 mainAxisSize: MainAxisSize.min,

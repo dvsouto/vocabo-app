@@ -106,23 +106,28 @@ class SuggestedTranslation extends ConsumerWidget {
           ),
         ],
       ),
-      error: (_, _) => Row(
-        children: [
-          Expanded(
-            child: Text(
-              l10n.suggestedTranslateFailed,
-              style: VocaboTypography.bodySm.copyWith(
-                color: VocaboColors.neutral,
+      error: (error, _) => OfflineNotice.orElse(
+        error,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.suggestedTranslateFailed,
+                style: VocaboTypography.bodySm.copyWith(
+                  color: VocaboColors.neutral,
+                ),
               ),
             ),
-          ),
-          IconButton(
-            tooltip: l10n.commonRetry,
-            icon: const Icon(Icons.refresh, size: 18),
-            color: VocaboColors.neutral,
-            onPressed: () => ref.invalidate(suggestedVocabularyProvider(term)),
-          ),
-        ],
+            IconButton(
+              tooltip: l10n.commonRetry,
+              icon: const Icon(Icons.refresh, size: 18),
+              color: VocaboColors.neutral,
+              onPressed: () =>
+                  ref.invalidate(suggestedVocabularyProvider(term)),
+            ),
+          ],
+        ),
+        compact: true,
       ),
       data: (vocabulary) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,

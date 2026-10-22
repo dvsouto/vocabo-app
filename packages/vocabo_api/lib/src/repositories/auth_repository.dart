@@ -14,24 +14,30 @@ class AuthRepository {
   }) : _dataSource = dataSource,
        _tokenStorage = tokenStorage;
 
-  Future<void> login({required String email, required String password}) async {
+  /// Signs in and returns the devices this sign in signed out.
+  Future<List<RevokedSession>> login({
+    required String email,
+    required String password,
+  }) async {
     final authToken = await apiCall(
       () => _dataSource.login(email: email, password: password),
     );
 
     await _tokenStorage.saveToken(authToken.token);
+    return authToken.revokedSessions;
   }
 
   /// Creates the account and signs it in.
-  Future<void> register(SignUpRequest request) async {
+  Future<List<RevokedSession>> register(SignUpRequest request) async {
     final authToken = await apiCall(() => _dataSource.register(request));
 
     await _tokenStorage.saveToken(authToken.token);
+    return authToken.revokedSessions;
   }
 
-  /// Signs in with Google or Apple. Returns true when the account was just
-  /// created, so the app can confirm the profile details.
-  Future<bool> socialLogin({
+  /// Signs in with Google or Apple. [created] tells when the account was
+  /// just made, so the app can confirm the profile details.
+  Future<({bool created, List<RevokedSession> revokedSessions})> socialLogin({
     required SocialAuthProvider provider,
     required String idToken,
     String? name,
@@ -49,7 +55,10 @@ class AuthRepository {
     );
 
     await _tokenStorage.saveToken(result.token.token);
-    return result.created;
+    return (
+      created: result.created,
+      revokedSessions: result.token.revokedSessions,
+    );
   }
 
   /// Ends the session on the server when reachable; the local token is
@@ -83,7 +92,7 @@ class AuthRepository {
 
   /// Sets a new password with the emailed code and signs in. Every other
   /// device is signed out.
-  Future<void> resetPassword({
+  Future<List<RevokedSession>> resetPassword({
     required String email,
     required String code,
     required String password,
@@ -97,6 +106,7 @@ class AuthRepository {
     );
 
     await _tokenStorage.saveToken(authToken.token);
+    return authToken.revokedSessions;
   }
 
   Future<User> confirmVerification(String code) =>
